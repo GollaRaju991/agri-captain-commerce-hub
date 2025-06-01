@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Sprout, Droplets, Wrench, Tractor, Leaf, Package, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Sprout, Droplets, Wrench, Tractor, Leaf, Package, ChevronDown, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from '@/components/ui/navigation-menu';
@@ -9,6 +8,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 
 const categories = [
+  {
+    name: 'Greecolur',
+    icon: Palette,
+    path: '/products?category=greecolur',
+    color: 'text-indigo-600',
+    subcategories: [
+      { name: 'Green Solutions', path: '/products?category=greecolur&type=green-solutions' },
+      { name: 'Eco Products', path: '/products?category=greecolur&type=eco-products' },
+      { name: 'Natural Colors', path: '/products?category=greecolur&type=natural-colors' },
+      { name: 'Bio Enhancers', path: '/products?category=greecolur&type=bio-enhancers' },
+      { name: 'Plant Nutrients', path: '/products?category=greecolur&type=plant-nutrients' },
+      { name: 'Growth Promoters', path: '/products?category=greecolur&type=growth-promoters' }
+    ]
+  },
   {
     name: 'Seeds',
     icon: Sprout,

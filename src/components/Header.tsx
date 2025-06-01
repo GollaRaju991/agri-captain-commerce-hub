@@ -1,9 +1,10 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Sprout, Droplets, Wrench, Tractor, Leaf, Package } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Sprout, Droplets, Wrench, Tractor, Leaf, Package, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from '@/components/ui/navigation-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 
@@ -12,37 +13,85 @@ const categories = [
     name: 'Seeds',
     icon: Sprout,
     path: '/products?category=seeds',
-    color: 'text-green-600'
+    color: 'text-green-600',
+    subcategories: [
+      { name: 'Vegetable Seeds', path: '/products?category=seeds&type=vegetable' },
+      { name: 'Fruit Seeds', path: '/products?category=seeds&type=fruit' },
+      { name: 'Flower Seeds', path: '/products?category=seeds&type=flower' },
+      { name: 'Herb Seeds', path: '/products?category=seeds&type=herb' },
+      { name: 'Grain Seeds', path: '/products?category=seeds&type=grain' },
+      { name: 'Hybrid Seeds', path: '/products?category=seeds&type=hybrid' }
+    ]
   },
   {
     name: 'Fertilizers',
     icon: Droplets,
     path: '/products?category=fertilizers',
-    color: 'text-blue-600'
+    color: 'text-blue-600',
+    subcategories: [
+      { name: 'Organic Fertilizers', path: '/products?category=fertilizers&type=organic' },
+      { name: 'Chemical Fertilizers', path: '/products?category=fertilizers&type=chemical' },
+      { name: 'Liquid Fertilizers', path: '/products?category=fertilizers&type=liquid' },
+      { name: 'Granular Fertilizers', path: '/products?category=fertilizers&type=granular' },
+      { name: 'Specialty Fertilizers', path: '/products?category=fertilizers&type=specialty' },
+      { name: 'Micronutrients', path: '/products?category=fertilizers&type=micronutrients' }
+    ]
   },
   {
     name: 'Tools',
     icon: Wrench,
     path: '/products?category=tools',
-    color: 'text-orange-600'
+    color: 'text-orange-600',
+    subcategories: [
+      { name: 'Hand Tools', path: '/products?category=tools&type=hand' },
+      { name: 'Cutting Tools', path: '/products?category=tools&type=cutting' },
+      { name: 'Digging Tools', path: '/products?category=tools&type=digging' },
+      { name: 'Watering Tools', path: '/products?category=tools&type=watering' },
+      { name: 'Measuring Tools', path: '/products?category=tools&type=measuring' },
+      { name: 'Power Tools', path: '/products?category=tools&type=power' }
+    ]
   },
   {
     name: 'Equipment',
     icon: Tractor,
     path: '/products?category=equipment',
-    color: 'text-red-600'
+    color: 'text-red-600',
+    subcategories: [
+      { name: 'Tractors', path: '/products?category=equipment&type=tractors' },
+      { name: 'Harvesters', path: '/products?category=equipment&type=harvesters' },
+      { name: 'Tillers', path: '/products?category=equipment&type=tillers' },
+      { name: 'Sprayers', path: '/products?category=equipment&type=sprayers' },
+      { name: 'Irrigation Systems', path: '/products?category=equipment&type=irrigation' },
+      { name: 'Greenhouse Equipment', path: '/products?category=equipment&type=greenhouse' }
+    ]
   },
   {
     name: 'Organic',
     icon: Leaf,
     path: '/products?category=organic',
-    color: 'text-emerald-600'
+    color: 'text-emerald-600',
+    subcategories: [
+      { name: 'Organic Seeds', path: '/products?category=organic&type=seeds' },
+      { name: 'Organic Fertilizers', path: '/products?category=organic&type=fertilizers' },
+      { name: 'Organic Pesticides', path: '/products?category=organic&type=pesticides' },
+      { name: 'Compost', path: '/products?category=organic&type=compost' },
+      { name: 'Bio-stimulants', path: '/products?category=organic&type=biostimulants' },
+      { name: 'Organic Amendments', path: '/products?category=organic&type=amendments' }
+    ]
   },
   {
     name: 'Supplies',
     icon: Package,
     path: '/products?category=supplies',
-    color: 'text-purple-600'
+    color: 'text-purple-600',
+    subcategories: [
+      { name: 'Pots & Containers', path: '/products?category=supplies&type=containers' },
+      { name: 'Soil & Growing Media', path: '/products?category=supplies&type=soil' },
+      { name: 'Plant Protection', path: '/products?category=supplies&type=protection' },
+      { name: 'Garden Accessories', path: '/products?category=supplies&type=accessories' },
+      { name: 'Storage Solutions', path: '/products?category=supplies&type=storage' },
+      { name: 'Safety Equipment', path: '/products?category=supplies&type=safety' }
+    ]
   }
 ];
 
@@ -164,27 +213,41 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Category Menu Bar */}
+      {/* Category Menu Bar with Sub-menus */}
       <div className="bg-gray-50 border-t border-gray-200">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-3 overflow-x-auto">
-            <div className="flex space-x-8 min-w-max">
+          <NavigationMenu className="max-w-none">
+            <NavigationMenuList className="flex space-x-2 py-2">
               {categories.map((category) => (
-                <Link
-                  key={category.name}
-                  to={category.path}
-                  className="flex flex-col items-center space-y-1 group hover:bg-white rounded-lg p-2 transition-colors"
-                >
-                  <div className={`w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-green-50 transition-colors`}>
-                    <category.icon className={`h-6 w-6 ${category.color} group-hover:scale-110 transition-transform`} />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-green-600 transition-colors">
-                    {category.name}
-                  </span>
-                </Link>
+                <NavigationMenuItem key={category.name}>
+                  <NavigationMenuTrigger className="bg-transparent hover:bg-white data-[state=open]:bg-white group">
+                    <div className="flex flex-col items-center space-y-1">
+                      <div className={`w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-green-50 group-data-[state=open]:bg-green-50 transition-colors`}>
+                        <category.icon className={`h-5 w-5 ${category.color} group-hover:scale-110 transition-transform`} />
+                      </div>
+                      <span className="text-xs font-medium text-gray-700 group-hover:text-green-600 group-data-[state=open]:text-green-600 transition-colors">
+                        {category.name}
+                      </span>
+                    </div>
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                      {category.subcategories.map((subcategory) => (
+                        <NavigationMenuLink key={subcategory.name} asChild>
+                          <Link
+                            to={subcategory.path}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none">{subcategory.name}</div>
+                          </Link>
+                        </NavigationMenuLink>
+                      ))}
+                    </div>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
               ))}
-            </div>
-          </div>
+            </NavigationMenuList>
+          </NavigationMenu>
         </div>
       </div>
 
@@ -230,22 +293,35 @@ const Header = () => {
               </Button>
             </Link>
 
-            {/* Mobile Category Menu */}
+            {/* Mobile Category Menu with Expandable Sub-menus */}
             <div className="pt-4 border-t border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {categories.map((category) => (
+              {categories.map((category) => (
+                <div key={category.name} className="mb-3">
                   <Link
-                    key={category.name}
                     to={category.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    <category.icon className={`h-5 w-5 ${category.color}`} />
-                    <span className="text-sm font-medium">{category.name}</span>
+                    <div className="flex items-center space-x-3">
+                      <category.icon className={`h-5 w-5 ${category.color}`} />
+                      <span className="text-sm font-medium">{category.name}</span>
+                    </div>
                   </Link>
-                ))}
-              </div>
+                  <div className="ml-8 mt-1 space-y-1">
+                    {category.subcategories.slice(0, 3).map((subcategory) => (
+                      <Link
+                        key={subcategory.name}
+                        to={subcategory.path}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block text-xs text-gray-600 hover:text-green-600 py-1"
+                      >
+                        {subcategory.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

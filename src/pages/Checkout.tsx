@@ -10,8 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CreditCard, Truck, CheckCircle } from 'lucide-react';
+import UPIPayment from '@/components/UPIPayment';
+import EMIOptions from '@/components/EMIOptions';
+import LocationDetector from '@/components/LocationDetector';
 
 const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +23,7 @@ const Checkout = () => {
   const [orderNumber, setOrderNumber] = useState('');
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
+  const { translations } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -34,6 +39,48 @@ const Checkout = () => {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [selectedPaymentDetails, setSelectedPaymentDetails] = useState({
+    method: '',
+    discount: 0,
+    emiMonths: 0,
+    emiAmount: 0
+  });
+
+  // Calculate charges
+  const deliveryCharges = 0;
+  const platformCharges = 0;
+  const generalDiscount = Math.round(totalPrice * 0.05);
+  const additionalDiscount = selectedPaymentDetails.discount;
+  const totalDiscount = generalDiscount + additionalDiscount;
+  const finalAmount = totalPrice - totalDiscount;
+
+  const handleLocationDetected = (location: any) => {
+    setShippingInfo(prev => ({
+      ...prev,
+      pincode: location.pincode,
+      city: location.city,
+      state: location.state,
+      address: location.area
+    }));
+  };
+
+  const handlePaymentMethodChange = (method: string, discount: number = 0) => {
+    setSelectedPaymentDetails(prev => ({
+      ...prev,
+      method,
+      discount,
+      emiMonths: 0,
+      emiAmount: 0
+    }));
+  };
+
+  const handleEMISelect = (months: number, emiAmount: number) => {
+    setSelectedPaymentDetails(prev => ({
+      ...prev,
+      emiMonths: months,
+      emiAmount
+    }));
+  };
 
   const handlePlaceOrder = async () => {
     setIsLoading(true);
@@ -91,7 +138,7 @@ const Checkout = () => {
             </div>
             <div className="space-y-2">
               <Button onClick={() => navigate('/')} className="w-full">
-                Continue Shopping
+                {translations.continue_shopping}
               </Button>
               <Button variant="outline" onClick={() => navigate('/profile')} className="w-full">
                 Track Order
@@ -109,7 +156,7 @@ const Checkout = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">{translations.checkout}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
@@ -117,12 +164,14 @@ const Checkout = () => {
             {/* Shipping Information */}
             <Card>
               <CardHeader>
-                <CardTitle>1. Shipping Information</CardTitle>
+                <CardTitle>1. {translations.shipping_address}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <LocationDetector onLocationDetected={handleLocationDetected} />
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName">{translations.full_name}</Label>
                     <Input
                       id="fullName"
                       value={shippingInfo.fullName}
@@ -141,7 +190,7 @@ const Checkout = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone">{translations.phone_number}</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -151,7 +200,7 @@ const Checkout = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="pincode">PIN Code</Label>
+                    <Label htmlFor="pincode">{translations.pincode}</Label>
                     <Input
                       id="pincode"
                       value={shippingInfo.pincode}
@@ -162,7 +211,7 @@ const Checkout = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="address">Address</Label>
+                  <Label htmlFor="address">{translations.address}</Label>
                   <Input
                     id="address"
                     value={shippingInfo.address}
@@ -174,7 +223,7 @@ const Checkout = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="city">City</Label>
+                    <Label htmlFor="city">{translations.city}</Label>
                     <Input
                       id="city"
                       value={shippingInfo.city}
@@ -183,7 +232,7 @@ const Checkout = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="state">State</Label>
+                    <Label htmlFor="state">{translations.state}</Label>
                     <Input
                       id="state"
                       value={shippingInfo.state}
@@ -206,40 +255,34 @@ const Checkout = () => {
             {/* Payment Method */}
             <Card>
               <CardHeader>
-                <CardTitle>2. Payment Method</CardTitle>
+                <CardTitle>2. {translations.payment} Method</CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="cod">Cash on Delivery</TabsTrigger>
-                    <TabsTrigger value="online">Online Payment</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="upi">UPI Payment</TabsTrigger>
+                    <TabsTrigger value="emi">EMI</TabsTrigger>
+                    <TabsTrigger value="cod">COD</TabsTrigger>
                   </TabsList>
+                  
+                  <TabsContent value="upi" className="mt-4">
+                    <UPIPayment 
+                      amount={finalAmount} 
+                      onPaymentSelect={handlePaymentMethodChange}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="emi" className="mt-4">
+                    <EMIOptions 
+                      amount={finalAmount} 
+                      onEMISelect={handleEMISelect}
+                    />
+                  </TabsContent>
                   
                   <TabsContent value="cod" className="mt-4">
                     <div className="flex items-center space-x-2 text-green-600">
                       <CreditCard className="h-5 w-5" />
-                      <span>Pay when your order is delivered</span>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="online" className="mt-4 space-y-4">
-                    <div>
-                      <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input id="expiry" placeholder="MM/YY" />
-                      </div>
-                      <div>
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input id="cvv" placeholder="123" />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="cardName">Cardholder Name</Label>
-                      <Input id="cardName" placeholder="Full name" />
+                      <span>{translations.cash_on_delivery}</span>
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -251,7 +294,7 @@ const Checkout = () => {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>3. Order Summary</CardTitle>
+                <CardTitle>3. {translations.order_summary}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {items.map((item) => (
@@ -266,16 +309,30 @@ const Checkout = () => {
                 
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
+                    <span>{translations.subtotal}</span>
                     <span>₹{totalPrice}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span className="text-green-600">Free</span>
+                    <span>{translations.delivery_charges}</span>
+                    <span className="text-green-600">₹{deliveryCharges}</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span>{translations.platform_charges}</span>
+                    <span className="text-green-600">₹{platformCharges}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span>{translations.discount_amount}</span>
+                    <span>-₹{generalDiscount}</span>
+                  </div>
+                  {additionalDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>{translations.upi_discount}</span>
+                      <span>-₹{additionalDiscount}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
-                    <span>₹{totalPrice}</span>
+                    <span>{translations.total}</span>
+                    <span>₹{finalAmount}</span>
                   </div>
                 </div>
                 
@@ -292,7 +349,7 @@ const Checkout = () => {
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Place Order
+                  {translations.place_order}
                 </Button>
               </CardContent>
             </Card>

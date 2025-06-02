@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Languages } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const languages = [
   { code: 'en', name: 'English', nativeName: 'English' },
@@ -21,19 +21,16 @@ const languages = [
 interface LanguageSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onLanguageSelect: (language: string) => void;
 }
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ 
   open, 
-  onOpenChange, 
-  onLanguageSelect 
+  onOpenChange
 }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState('en');
+  const { language, setLanguage } = useLanguage();
 
   const handleLanguageChange = (languageCode: string) => {
-    setSelectedLanguage(languageCode);
-    onLanguageSelect(languageCode);
+    setLanguage(languageCode);
     onOpenChange(false);
   };
 
@@ -53,16 +50,16 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           </p>
           
           <div className="grid grid-cols-1 gap-2">
-            {languages.map((language) => (
+            {languages.map((lang) => (
               <Button
-                key={language.code}
-                variant={selectedLanguage === language.code ? "default" : "outline"}
+                key={lang.code}
+                variant={language === lang.code ? "default" : "outline"}
                 className="justify-start h-auto p-3"
-                onClick={() => handleLanguageChange(language.code)}
+                onClick={() => handleLanguageChange(lang.code)}
               >
                 <div className="text-left">
-                  <div className="font-medium">{language.nativeName}</div>
-                  <div className="text-sm opacity-70">{language.name}</div>
+                  <div className="font-medium">{lang.nativeName}</div>
+                  <div className="text-sm opacity-70">{lang.name}</div>
                 </div>
               </Button>
             ))}

@@ -8,10 +8,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Cart = () => {
   const { items, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
+  const { translations } = useLanguage();
+
+  const deliveryCharges = 0;
+  const platformCharges = 0;
+  const discountAmount = Math.round(totalPrice * 0.05); // 5% general discount
+  const upiDiscount = Math.round(totalPrice * 0.1); // 10% UPI discount
 
   if (items.length === 0) {
     return (
@@ -25,7 +32,7 @@ const Cart = () => {
               Looks like you haven't added any items to your cart yet.
             </p>
             <Link to="/products">
-              <Button>Continue Shopping</Button>
+              <Button>{translations.continue_shopping}</Button>
             </Link>
           </div>
         </div>
@@ -40,7 +47,7 @@ const Cart = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{translations.shopping_cart}</h1>
           <Button variant="outline" onClick={clearCart}>
             Clear Cart
           </Button>
@@ -104,16 +111,28 @@ const Cart = () => {
           <div>
             <Card>
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-4">Order Summary</h3>
+                <h3 className="text-xl font-semibold mb-4">{translations.order_summary}</h3>
                 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-3 mb-4">
                   <div className="flex justify-between">
-                    <span>Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+                    <span>{translations.subtotal} ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
                     <span>₹{totalPrice}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span className="text-green-600">Free</span>
+                    <span>{translations.delivery_charges}</span>
+                    <span className="text-green-600">₹{deliveryCharges}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{translations.platform_charges}</span>
+                    <span className="text-green-600">₹{platformCharges}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span>{translations.discount_amount}</span>
+                    <span>-₹{discountAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-green-600">
+                    <span>{translations.upi_discount}</span>
+                    <span>-₹{upiDiscount}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Tax</span>
@@ -123,22 +142,25 @@ const Cart = () => {
                 
                 <div className="border-t pt-4 mb-6">
                   <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
-                    <span>₹{totalPrice}</span>
+                    <span>{translations.total}</span>
+                    <span>₹{totalPrice - discountAmount}</span>
+                  </div>
+                  <div className="text-sm text-green-600 mt-1">
+                    With UPI: ₹{totalPrice - discountAmount - upiDiscount}
                   </div>
                 </div>
                 
                 {user ? (
                   <Link to="/checkout" className="block">
                     <Button className="w-full mb-4">
-                      Proceed to Checkout
+                      {translations.checkout}
                     </Button>
                   </Link>
                 ) : (
                   <div className="space-y-2">
                     <Link to="/auth" className="block">
                       <Button className="w-full">
-                        Login to Checkout
+                        {translations.login} to {translations.checkout}
                       </Button>
                     </Link>
                     <p className="text-sm text-gray-600 text-center">
@@ -149,7 +171,7 @@ const Cart = () => {
                 
                 <Link to="/products">
                   <Button variant="outline" className="w-full">
-                    Continue Shopping
+                    {translations.continue_shopping}
                   </Button>
                 </Link>
               </CardContent>
@@ -171,6 +193,7 @@ const Cart = () => {
                   <p>Available Coupons:</p>
                   <p className="text-green-600">• SAVE10 - 10% off on orders above ₹1000</p>
                   <p className="text-green-600">• FIRST20 - 20% off for first time buyers</p>
+                  <p className="text-green-600">• UPI10 - Extra 10% off with UPI payment</p>
                 </div>
               </CardContent>
             </Card>

@@ -21,6 +21,24 @@ const translations = {
     'cart': 'Cart',
     'profile': 'Profile',
     
+    // Main Page
+    'welcome_to_agricaptain': 'Welcome to AgriCaptain',
+    'your_farming_partner': 'Your Ultimate Farming Partner',
+    'quality_seeds': 'Quality Seeds for Better Harvest',
+    'organic_fertilizers': 'Organic Fertilizers',
+    'modern_equipment': 'Modern Farm Equipment',
+    'expert_advice': 'Expert Agricultural Advice',
+    'browse_products': 'Browse Products',
+    'get_started': 'Get Started',
+    'featured_products': 'Featured Products',
+    'categories': 'Categories',
+    'special_offers': 'Special Offers',
+    'why_choose_us': 'Why Choose AgriCaptain?',
+    'trusted_by_farmers': 'Trusted by 10,000+ Farmers',
+    'free_delivery': 'Free Delivery All Over India',
+    'quality_guarantee': '100% Quality Guarantee',
+    'expert_support': '24/7 Expert Support',
+    
     // Common
     'search': 'Search',
     'add_to_cart': 'Add to Cart',
@@ -32,6 +50,15 @@ const translations = {
     'checkout': 'Checkout',
     'payment': 'Payment',
     'delivery': 'Delivery',
+    
+    // UPI Payment
+    'upi_payment_confirmation': 'UPI Payment Confirmation',
+    'complete_payment_get_discount': 'Complete UPI payment now and get 10% discount!',
+    'scan_qr_or_pay': 'Scan QR code or use UPI ID to complete payment',
+    'yes_pay_now': 'Yes, Pay Now (10% Off)',
+    'no_regular_payment': 'No, Regular Payment',
+    'payment_completed': 'Payment Completed Successfully!',
+    'payment_failed': 'Payment Failed. Please try again.',
     
     // Cart & Checkout
     'shopping_cart': 'Shopping Cart',
@@ -70,6 +97,24 @@ const translations = {
     'cart': 'కార్ట్',
     'profile': 'ప్రొఫైల్',
     
+    // Main Page
+    'welcome_to_agricaptain': 'అగ్రికాప్టెన్‌కు స్వాగతం',
+    'your_farming_partner': 'మీ అంతిమ వ్యవసాయ భాగస్వామి',
+    'quality_seeds': 'మంచి పంట కోసం నాణ్యమైన విత్తనాలు',
+    'organic_fertilizers': 'సేంద్రీయ ఎరువులు',
+    'modern_equipment': 'ఆధునిక వ్యవసాయ పరికరాలు',
+    'expert_advice': 'నిపుణుల వ్యవసాయ సలహా',
+    'browse_products': 'ఉత్పత్తులను చూడండి',
+    'get_started': 'ప్రారంభించండి',
+    'featured_products': 'ప్రత్యేక ఉత్పత్తులు',
+    'categories': 'వర్గాలు',
+    'special_offers': 'ప్రత్యేక ఆఫర్లు',
+    'why_choose_us': 'అగ్రికాప్టెన్ ఎందుకు ఎంచుకోవాలి?',
+    'trusted_by_farmers': '10,000+ రైతుల నమ్మకం',
+    'free_delivery': 'భారతదేశం అంతటా ఉచిత డెలివరీ',
+    'quality_guarantee': '100% నాణ్యత హామీ',
+    'expert_support': '24/7 నిపుణుల మద్దతు',
+    
     // Common
     'search': 'వెతకండి',
     'add_to_cart': 'కార్ట్‌కు జోడించండి',
@@ -81,6 +126,15 @@ const translations = {
     'checkout': 'చెక్‌అవుట్',
     'payment': 'చెల్లింపు',
     'delivery': 'డెలివరీ',
+    
+    // UPI Payment
+    'upi_payment_confirmation': 'UPI చెల్లింపు నిర్ధారణ',
+    'complete_payment_get_discount': 'ఇప్పుడే UPI చెల్లింపు పూర్తి చేసి 10% తగ్గింపు పొందండి!',
+    'scan_qr_or_pay': 'QR కోడ్ స్కాన్ చేయండి లేదా UPI ID ఉపయోగించి చెల్లింపు పూర్తి చేయండి',
+    'yes_pay_now': 'అవును, ఇప్పుడు చెల్లించండి (10% తగ్గింపు)',
+    'no_regular_payment': 'లేదు, సాధారణ చెల్లింపు',
+    'payment_completed': 'చెల్లింపు విజయవంతంగా పూర్తైంది!',
+    'payment_failed': 'చెల్లింపు విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి.',
     
     // Cart & Checkout
     'shopping_cart': 'షాపింగ్ కార్ట్',
@@ -119,6 +173,24 @@ const translations = {
     'cart': 'कार्ट',
     'profile': 'प्रोफाइल',
     
+    // Main Page
+    'welcome_to_agricaptain': 'एग्रीकैप्टन में आपका स्वागत है',
+    'your_farming_partner': 'आपका अंतिम कृषि साझेदार',
+    'quality_seeds': 'बेहतर फसल के लिए गुणवत्ता वाले बीज',
+    'organic_fertilizers': 'जैविक उर्वरक',
+    'modern_equipment': 'आधुनिक कृषि उपकरण',
+    'expert_advice': 'विशेषज्ञ कृषि सलाह',
+    'browse_products': 'उत्पाद देखें',
+    'get_started': 'शुरू करें',
+    'featured_products': 'विशेष उत्पाद',
+    'categories': 'श्रेणियां',
+    'special_offers': 'विशेष ऑफर',
+    'why_choose_us': 'एग्रीकैप्टन क्यों चुनें?',
+    'trusted_by_farmers': '10,000+ किसानों का भरोसा',
+    'free_delivery': 'पूरे भारत में मुफ्त डिलीवरी',
+    'quality_guarantee': '100% गुणवत्ता की गारंटी',
+    'expert_support': '24/7 विशेषज्ञ सहायता',
+    
     // Common
     'search': 'खोजें',
     'add_to_cart': 'कार्ट में जोड़ें',
@@ -130,6 +202,15 @@ const translations = {
     'checkout': 'चेकआउट',
     'payment': 'भुगतान',
     'delivery': 'डिलीवरी',
+    
+    // UPI Payment
+    'upi_payment_confirmation': 'UPI भुगतान पुष्टि',
+    'complete_payment_get_discount': 'अभी UPI भुगतान पूरा करें और 10% छूट पाएं!',
+    'scan_qr_or_pay': 'QR कोड स्कैन करें या UPI ID का उपयोग करके भुगतान पूरा करें',
+    'yes_pay_now': 'हां, अभी भुगतान करें (10% छूट)',
+    'no_regular_payment': 'नहीं, नियमित भुगतान',
+    'payment_completed': 'भुगतान सफलतापूर्वक पूरा हुआ!',
+    'payment_failed': 'भुगतान विफल। कृपया फिर से कोशिश करें।',
     
     // Cart & Checkout
     'shopping_cart': 'शॉपिंग कार्ट',
@@ -179,6 +260,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const handleSetLanguage = (lang: string) => {
     setLanguage(lang);
     localStorage.setItem('agricaptain_language', lang);
+    // Also set the flag that language has been selected
+    localStorage.setItem('agricaptain_language_selected', 'true');
   };
 
   const currentTranslations = translations[language as keyof typeof translations] || translations.en;

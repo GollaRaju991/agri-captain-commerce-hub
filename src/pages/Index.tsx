@@ -7,304 +7,287 @@ import HeroSlider from '@/components/HeroSlider';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/contexts/LanguageContext';
+import UPIPaymentConfirmation from '@/components/UPIPaymentConfirmation';
 import { 
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import { Truck, Shield, RotateCcw, Phone, Sprout, Beaker, Tractor, Award } from 'lucide-react';
+  Truck, 
+  Shield, 
+  Users, 
+  Clock,
+  Star,
+  ChevronRight,
+  ChevronLeft
+} from 'lucide-react';
 
-const featuredProducts = [
+// Sample products data with more variety
+const sampleProducts = [
   {
-    id: '1',
-    name: 'Hybrid Tomato Seeds',
-    price: 299,
-    originalPrice: 399,
-    image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&h=200&fit=crop',
-    category: 'seeds',
-    rating: 4.5,
-    reviews: 124,
-    discount: 25,
-    inStock: true,
-    description: 'Premium quality hybrid tomato seeds for high-yield farming with excellent disease resistance'
-  },
-  {
-    id: '2',
-    name: 'Organic Compost Fertilizer',
-    price: 599,
-    originalPrice: 799,
-    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop',
-    category: 'fertilizers',
-    rating: 4.8,
-    reviews: 89,
-    discount: 25,
-    inStock: true,
-    description: 'Organic compost fertilizer for sustainable farming and improved soil health'
-  },
-  {
-    id: '3',
-    name: 'Garden Pruning Tool',
-    price: 1299,
-    originalPrice: 1599,
-    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop',
-    category: 'tools',
-    rating: 4.3,
-    reviews: 56,
-    discount: 19,
-    inStock: true,
-    description: 'Professional grade pruning tools for efficient garden maintenance and plant care'
-  },
-  {
-    id: '4',
-    name: 'Drip Irrigation Kit',
-    price: 2499,
-    originalPrice: 2999,
-    image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop',
-    category: 'equipment',
-    rating: 4.7,
-    reviews: 78,
-    discount: 17,
-    inStock: true,
-    description: 'Complete drip irrigation system for water-efficient farming and precise crop hydration'
-  },
-  {
-    id: '5',
-    name: 'Wheat Seeds Premium Quality',
-    price: 450,
-    originalPrice: 550,
-    image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop',
-    category: 'seeds',
-    rating: 4.6,
-    reviews: 203,
-    discount: 18,
-    inStock: true,
-    description: 'High-yielding wheat seeds suitable for various soil types and weather conditions'
-  },
-  {
-    id: '6',
-    name: 'Bio Fertilizer Mix',
-    price: 799,
-    originalPrice: 999,
-    image: 'https://images.unsplash.com/photo-1566909702770-bd3ec25f6b29?w=300&h=200&fit=crop',
-    category: 'fertilizers',
-    rating: 4.4,
-    reviews: 145,
-    discount: 20,
-    inStock: false,
-    description: 'Advanced bio-fertilizer blend for enhanced plant growth and soil enrichment'
-  },
-  {
-    id: '7',
-    name: 'Tractor - Mahindra 475 DI',
-    price: 550000,
-    originalPrice: 580000,
-    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=300&h=200&fit=crop',
-    category: 'equipment',
-    rating: 4.9,
-    reviews: 312,
-    discount: 5,
-    inStock: true,
-    description: 'Powerful 47 HP tractor ideal for farming operations, plowing, and heavy-duty agricultural work'
-  },
-  {
-    id: '8',
-    name: 'Rice Seeds - Basmati',
-    price: 380,
-    originalPrice: 450,
-    image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=200&fit=crop',
-    category: 'seeds',
-    rating: 4.7,
-    reviews: 189,
-    discount: 16,
-    inStock: true,
-    description: 'Premium basmati rice seeds for aromatic long-grain rice cultivation'
-  },
-  {
-    id: '9',
-    name: 'Pesticide Spray - Organic',
+    id: 1,
+    name: 'Premium Tomato Seeds',
     price: 299,
     originalPrice: 350,
-    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=300&h=200&fit=crop',
-    category: 'agriculture',
-    rating: 4.5,
-    reviews: 98,
-    discount: 15,
-    inStock: true,
-    description: 'Organic pesticide spray for natural pest control without harmful chemicals'
-  },
-  {
-    id: '10',
-    name: 'Harvester Machine',
-    price: 1200000,
-    originalPrice: 1350000,
-    image: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300&h=200&fit=crop',
-    category: 'equipment',
-    rating: 4.8,
-    reviews: 67,
-    discount: 11,
-    inStock: true,
-    description: 'Advanced combine harvester for efficient crop harvesting and grain separation'
-  },
-  {
-    id: '11',
-    name: 'Cotton Seeds - Hybrid',
-    price: 520,
-    originalPrice: 620,
-    image: 'https://images.unsplash.com/photo-1609824971439-95bb4b58c5b5?w=300&h=200&fit=crop',
+    image: '/placeholder.svg',
     category: 'seeds',
-    rating: 4.6,
-    reviews: 234,
-    discount: 16,
-    inStock: true,
-    description: 'High-quality hybrid cotton seeds for superior fiber production and disease resistance'
+    rating: 4.5,
+    reviews: 128,
+    description: 'High-yield hybrid tomato seeds perfect for all seasons. Disease resistant variety.',
+    forUse: 'Vegetable farming, home gardening'
   },
   {
-    id: '12',
-    name: 'NPK Fertilizer Complex',
+    id: 2,
+    name: 'Organic Fertilizer NPK',
     price: 899,
     originalPrice: 1099,
-    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop',
+    image: '/placeholder.svg',
     category: 'fertilizers',
+    rating: 4.8,
+    reviews: 256,
+    description: 'Complete organic fertilizer with balanced NPK ratio for healthy plant growth.',
+    forUse: 'All crops, organic farming'
+  },
+  {
+    id: 3,
+    name: 'John Deere Mini Tractor',
+    price: 485000,
+    originalPrice: 520000,
+    image: '/placeholder.svg',
+    category: 'equipment',
+    rating: 4.9,
+    reviews: 45,
+    description: 'Compact tractor ideal for small to medium farms with excellent fuel efficiency.',
+    forUse: 'Field preparation, cultivation, harvesting'
+  },
+  {
+    id: 4,
+    name: 'Bio Pesticide Spray',
+    price: 450,
+    originalPrice: 550,
+    image: '/placeholder.svg',
+    category: 'sprays',
+    rating: 4.3,
+    reviews: 89,
+    description: 'Eco-friendly pesticide made from natural ingredients, safe for organic farming.',
+    forUse: 'Pest control, organic farming'
+  },
+  {
+    id: 5,
+    name: 'Wheat Seeds - HD 2967',
+    price: 180,
+    originalPrice: 220,
+    image: '/placeholder.svg',
+    category: 'seeds',
+    rating: 4.6,
+    reviews: 167,
+    description: 'High-yielding wheat variety suitable for irrigated conditions.',
+    forUse: 'Wheat cultivation, commercial farming'
+  },
+  {
+    id: 6,
+    name: 'Power Weeder Machine',
+    price: 12500,
+    originalPrice: 15000,
+    image: '/placeholder.svg',
+    category: 'equipment',
+    rating: 4.4,
+    reviews: 78,
+    description: 'Efficient weeding machine that reduces manual labor and increases productivity.',
+    forUse: 'Weed control, field maintenance'
+  },
+  {
+    id: 7,
+    name: 'Drip Irrigation Kit',
+    price: 3500,
+    originalPrice: 4200,
+    image: '/placeholder.svg',
+    category: 'equipment',
     rating: 4.7,
-    reviews: 156,
-    discount: 18,
-    inStock: true,
-    description: 'Balanced NPK fertilizer complex for complete plant nutrition and optimal growth'
+    reviews: 134,
+    description: 'Complete drip irrigation system for water-efficient farming.',
+    forUse: 'Water management, precision farming'
+  },
+  {
+    id: 8,
+    name: 'Calcium Nitrate Fertilizer',
+    price: 650,
+    originalPrice: 780,
+    image: '/placeholder.svg',
+    category: 'fertilizers',
+    rating: 4.5,
+    reviews: 92,
+    description: 'Water-soluble calcium fertilizer for stronger plants and better fruit quality.',
+    forUse: 'Fruit crops, vegetable farming'
   }
 ];
 
 const Index = () => {
+  const { translations } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 8;
-  
-  // Pagination logic
-  const totalPages = Math.ceil(featuredProducts.length / productsPerPage);
-  const startIndex = (currentPage - 1) * productsPerPage;
-  const endIndex = startIndex + productsPerPage;
-  const currentProducts = featuredProducts.slice(startIndex, endIndex);
+  const [upiPaymentOpen, setUpiPaymentOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const productsPerPage = 6;
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Calculate pagination
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = sampleProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(sampleProducts.length / productsPerPage);
+
+  const handleBuyNow = (product: any) => {
+    setSelectedProduct(product);
+    setUpiPaymentOpen(true);
   };
+
+  const handleUPIPaymentComplete = (discount: number) => {
+    console.log('UPI Payment completed with discount:', discount);
+    // Here you would normally process the order with discount
+  };
+
+  const handleRegularPayment = () => {
+    console.log('Proceeding with regular payment');
+    // Here you would redirect to regular checkout
+  };
+
+  const categories = [
+    { name: translations.seeds, icon: '🌱', color: 'bg-green-100 text-green-800' },
+    { name: translations.fertilizers, icon: '🧪', color: 'bg-blue-100 text-blue-800' },
+    { name: 'Equipment', icon: '🚜', color: 'bg-orange-100 text-orange-800' },
+    { name: 'Sprays', icon: '💨', color: 'bg-purple-100 text-purple-800' }
+  ];
+
+  const features = [
+    {
+      icon: Truck,
+      title: translations.free_delivery,
+      description: 'Fast delivery across India'
+    },
+    {
+      icon: Shield,
+      title: translations.quality_guarantee,
+      description: 'Authentic products only'
+    },
+    {
+      icon: Users,
+      title: translations.trusted_by_farmers,
+      description: 'Growing community'
+    },
+    {
+      icon: Clock,
+      title: translations.expert_support,
+      description: 'Always here to help'
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       {/* Hero Section */}
-      <HeroSlider />
-      
+      <section className="relative">
+        <HeroSlider />
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <div className="text-center text-white max-w-4xl mx-auto px-4">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+              {translations.welcome_to_agricaptain}
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 opacity-90">
+              {translations.your_farming_partner}
+            </p>
+            <div className="space-x-4">
+              <Link to="/products">
+                <Button size="lg" className="bg-green-600 hover:bg-green-700 text-lg px-8 py-3">
+                  {translations.browse_products}
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-black text-lg px-8 py-3">
+                {translations.get_started}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Categories Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Shop by Category</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">{translations.categories}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <Link to="/products?category=seeds" className="group">
-              <Card className="text-center hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors">
-                    <Sprout className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="font-semibold">Seeds</h3>
-                  <p className="text-sm text-gray-600">Premium Quality Seeds</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Link to="/products?category=fertilizers" className="group">
-              <Card className="text-center hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
-                    <Beaker className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <h3 className="font-semibold">Fertilizers</h3>
-                  <p className="text-sm text-gray-600">Organic & Chemical</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Link to="/products?category=equipment" className="group">
-              <Card className="text-center hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
-                    <Tractor className="h-8 w-8 text-orange-600" />
-                  </div>
-                  <h3 className="font-semibold">Equipment</h3>
-                  <p className="text-sm text-gray-600">Farm Machinery</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Link to="/products?category=brands" className="group">
-              <Card className="text-center hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition-colors">
-                    <Award className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <h3 className="font-semibold">Brands</h3>
-                  <p className="text-sm text-gray-600">Trusted Brands</p>
-                </CardContent>
-              </Card>
-            </Link>
+            {categories.map((category, index) => (
+              <Link key={index} to={`/products?category=${category.name.toLowerCase()}`}>
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl mb-4">{category.icon}</div>
+                    <Badge className={`${category.color} text-sm px-3 py-1`}>
+                      {category.name}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-16">
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
+          <div className="flex justify-between items-center mb-12">
+            <h2 className="text-3xl font-bold">{translations.featured_products}</h2>
             <Link to="/products">
-              <Button variant="outline">View All Products</Button>
+              <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
+                View All <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {currentProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {currentProducts.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                onBuyNow={() => handleBuyNow(product)}
+              />
             ))}
           </div>
 
-          {/* Pagination for Featured Products */}
+          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                  
-                  {[...Array(totalPages)].map((_, index) => {
-                    const page = index + 1;
-                    return (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          onClick={() => handlePageChange(page)}
-                          isActive={currentPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-                  
-                  <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+            <div className="flex justify-center items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="flex items-center"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+              
+              <div className="flex space-x-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                    className={currentPage === page ? "bg-green-600 hover:bg-green-700" : ""}
+                  >
+                    {page}
+                  </Button>
+                ))}
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="flex items-center"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           )}
         </div>
@@ -313,55 +296,56 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose AgriCaptain?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Truck className="h-8 w-8 text-green-600" />
+          <h2 className="text-3xl font-bold text-center mb-12">{translations.why_choose_us}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="text-center group">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors">
+                  <feature.icon className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Free Delivery</h3>
-              <p className="text-gray-600">Free delivery across India within 24 hours</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Quality Assured</h3>
-              <p className="text-gray-600">Premium quality products with guarantees</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <RotateCcw className="h-8 w-8 text-orange-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Easy Returns</h3>
-              <p className="text-gray-600">7-day return policy for your peace of mind</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-16 bg-green-600 text-white">
+      {/* Special Offers Section */}
+      <section className="py-16 bg-gradient-to-r from-green-600 to-green-700 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Need Help Choosing Products?</h2>
-          <p className="text-xl mb-8">Contact our agricultural experts for personalized recommendations</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" variant="secondary">
-              <Phone className="h-5 w-5 mr-2" />
-              Call +91 9876543210
-            </Button>
-            <Link to="/products">
-              <Button size="lg" variant="outline" className="text-green-600 border-white hover:bg-white">
-                Browse Products
-              </Button>
-            </Link>
+          <h2 className="text-3xl font-bold mb-4">{translations.special_offers}</h2>
+          <p className="text-xl mb-8 opacity-90">Get up to 30% off on selected products</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white bg-opacity-20 rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-2">{translations.quality_seeds}</h3>
+              <p className="mb-4">Premium varieties for better yield</p>
+              <Badge className="bg-orange-500 text-white">20% OFF</Badge>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-2">{translations.organic_fertilizers}</h3>
+              <p className="mb-4">Eco-friendly nutrition for crops</p>
+              <Badge className="bg-orange-500 text-white">25% OFF</Badge>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-2">{translations.modern_equipment}</h3>
+              <p className="mb-4">Latest farming technology</p>
+              <Badge className="bg-orange-500 text-white">30% OFF</Badge>
+            </div>
           </div>
         </div>
       </section>
 
       <Footer />
+
+      {/* UPI Payment Confirmation Dialog */}
+      <UPIPaymentConfirmation
+        open={upiPaymentOpen}
+        onOpenChange={setUpiPaymentOpen}
+        amount={selectedProduct?.price || 0}
+        onPaymentComplete={handleUPIPaymentComplete}
+        onRegularPayment={handleRegularPayment}
+      />
     </div>
   );
 };

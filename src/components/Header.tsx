@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import FarmWorkerDialog from './FarmWorkerDialog';
 import RentVehicleDialog from './RentVehicleDialog';
 import LanguageSelector from './LanguageSelector';
@@ -33,6 +34,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { items } = useCart();
   const { user, logout } = useAuth();
+  const { translations } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -52,7 +54,7 @@ const Header = () => {
 
   const menuItems = [
     {
-      name: 'Seeds',
+      name: translations.seeds,
       href: '/products?category=seeds',
       icon: Sprout,
       submenu: [
@@ -64,7 +66,7 @@ const Header = () => {
       ]
     },
     {
-      name: 'Fertilizers',
+      name: translations.fertilizers,
       href: '/products?category=fertilizers',
       icon: Beaker,
       submenu: [
@@ -76,7 +78,7 @@ const Header = () => {
       ]
     },
     {
-      name: 'Agriculture Products',
+      name: translations.agriculture_products,
       href: '/products?category=agriculture',
       icon: Tractor,
       submenu: [
@@ -88,7 +90,7 @@ const Header = () => {
       ]
     },
     {
-      name: 'Brands',
+      name: translations.brands,
       href: '/products?category=brands',
       icon: Award,
       submenu: [
@@ -100,17 +102,17 @@ const Header = () => {
       ]
     },
     {
-      name: 'Farm Worker',
+      name: translations.farm_worker,
       action: () => setFarmWorkerDialogOpen(true),
       icon: Users
     },
     {
-      name: 'Rent Vehicles',
+      name: translations.rent_vehicles,
       action: () => setRentVehicleDialogOpen(true),
       icon: Truck
     },
     {
-      name: 'Loans',
+      name: translations.loans,
       href: '/products?category=loans',
       icon: CreditCard,
       submenu: [
@@ -122,9 +124,9 @@ const Header = () => {
     }
   ];
 
-  // Show language selector on first visit
+  // Show language selector only on first visit
   useEffect(() => {
-    const hasSelectedLanguage = localStorage.getItem('selectedLanguage');
+    const hasSelectedLanguage = localStorage.getItem('agricaptain_language_selected');
     if (!hasSelectedLanguage) {
       setLanguageDialogOpen(true);
     }
@@ -148,7 +150,7 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
               <MapPin className="h-4 w-4 mr-1" />
-              Free Delivery All Over India
+              {translations.free_delivery}
             </span>
             <Button
               variant="ghost"
@@ -169,10 +171,10 @@ const Header = () => {
           <div className="flex items-center justify-between py-4">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-xl">A</span>
               </div>
-              <span className="text-2xl font-bold text-green-600">AgriCaptain</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">AgriCaptain</span>
             </Link>
 
             {/* Search Bar - Hidden on mobile */}
@@ -180,14 +182,14 @@ const Header = () => {
               <form onSubmit={handleSearch} className="flex w-full">
                 <Input
                   type="text"
-                  placeholder="Search for seeds, fertilizers, tools..."
+                  placeholder={`${translations.search} for seeds, fertilizers, tools...`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="rounded-r-none border-r-0 focus:ring-green-500 focus:border-green-500"
                 />
                 <Button 
                   type="submit"
-                  className="rounded-l-none bg-green-600 hover:bg-green-700"
+                  className="rounded-l-none bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
@@ -200,7 +202,7 @@ const Header = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden"
+                className="lg:hidden text-green-600 hover:text-green-700 hover:bg-green-50"
                 onClick={() => {/* Could implement mobile search modal */}}
               >
                 <Search className="h-5 w-5" />
@@ -208,10 +210,10 @@ const Header = () => {
 
               {/* Cart */}
               <Link to="/cart">
-                <Button variant="ghost" size="sm" className="relative">
+                <Button variant="ghost" size="sm" className="relative text-green-600 hover:text-green-700 hover:bg-green-50">
                   <ShoppingCart className="h-5 w-5" />
                   {totalItems > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-green-600 text-xs">
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 text-xs">
                       {totalItems}
                     </Badge>
                   )}
@@ -225,7 +227,7 @@ const Header = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setActiveDropdown(activeDropdown === 'user' ? null : 'user')}
-                    className="flex items-center space-x-1"
+                    className="flex items-center space-x-1 text-green-600 hover:text-green-700 hover:bg-green-50"
                   >
                     <User className="h-5 w-5" />
                     <span className="hidden md:inline">{user.name}</span>
@@ -235,17 +237,17 @@ const Header = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
                       <Link
                         to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
                         onClick={() => setActiveDropdown(null)}
                       >
-                        Profile
+                        {translations.profile}
                       </Link>
                       <button
                         onClick={() => {
                           logout();
                           setActiveDropdown(null);
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
                       >
                         Logout
                       </button>
@@ -254,8 +256,8 @@ const Header = () => {
                 </div>
               ) : (
                 <Link to="/auth">
-                  <Button variant="outline" size="sm">
-                    Login
+                  <Button variant="outline" size="sm" className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
+                    {translations.login}
                   </Button>
                 </Link>
               )}
@@ -264,7 +266,7 @@ const Header = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden"
+                className="lg:hidden text-green-600 hover:text-green-700 hover:bg-green-50"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -274,38 +276,40 @@ const Header = () => {
 
           {/* Navigation Menu */}
           <nav className="hidden lg:block border-t border-gray-200">
-            <div className="flex space-x-1 bg-green-600">
+            <div className="flex bg-gradient-to-r from-green-600 via-green-700 to-green-600 shadow-lg">
               {menuItems.map((item, index) => {
                 const IconComponent = item.icon;
+                const hasSubmenu = item.submenu && (item.name === translations.seeds || item.name === translations.fertilizers || item.name === translations.agriculture_products || item.name === translations.brands || item.name === translations.loans);
+                
                 return (
                   <div
                     key={index}
-                    className="relative group"
-                    onMouseEnter={() => item.submenu && setActiveDropdown(item.name)}
+                    className="relative group flex-1"
+                    onMouseEnter={() => hasSubmenu && setActiveDropdown(item.name)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     {item.href ? (
                       <Link
                         to={item.href}
-                        className="flex items-center space-x-2 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                        className="flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30"
                       >
                         <IconComponent className="h-4 w-4" />
-                        <span>{item.name}</span>
+                        <span className="text-center">{item.name}</span>
                       </Link>
                     ) : (
                       <button
                         onClick={item.action}
-                        className="flex items-center space-x-2 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                        className="w-full flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30"
                       >
                         <IconComponent className="h-4 w-4" />
-                        <span>{item.name}</span>
+                        <span className="text-center">{item.name}</span>
                       </button>
                     )}
                     
                     {/* Submenu */}
-                    {activeDropdown === item.name && item.submenu && (
+                    {activeDropdown === item.name && hasSubmenu && (
                       <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-md shadow-lg py-1 z-50 border">
-                        {item.submenu.map((subItem, subIndex) => (
+                        {item.submenu?.map((subItem, subIndex) => (
                           <a
                             key={subIndex}
                             href="#"
@@ -327,12 +331,12 @@ const Header = () => {
             <form onSubmit={handleSearch} className="flex">
               <Input
                 type="text"
-                placeholder="Search products..."
+                placeholder={`${translations.search} products...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="rounded-r-none border-r-0"
               />
-              <Button type="submit" className="rounded-l-none bg-green-600 hover:bg-green-700">
+              <Button type="submit" className="rounded-l-none bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">
                 <Search className="h-4 w-4" />
               </Button>
             </form>
@@ -341,19 +345,21 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200">
+          <div className="lg:hidden bg-white border-t border-gray-200 shadow-lg">
             <div className="px-4 py-2 space-y-2">
               {menuItems.map((item, index) => {
                 const IconComponent = item.icon;
+                const hasSubmenu = item.submenu && (item.name === translations.seeds || item.name === translations.fertilizers || item.name === translations.agriculture_products || item.name === translations.brands || item.name === translations.loans);
+                
                 return (
                   <div key={index}>
                     {item.href ? (
                       <Link
                         to={item.href}
-                        className="flex items-center space-x-2 py-2 text-gray-700 hover:text-green-600"
+                        className="flex items-center space-x-2 py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <IconComponent className="h-4 w-4" />
+                        <IconComponent className="h-5 w-5" />
                         <span>{item.name}</span>
                       </Link>
                     ) : (
@@ -362,20 +368,20 @@ const Header = () => {
                           item.action?.();
                           setIsMenuOpen(false);
                         }}
-                        className="flex items-center space-x-2 w-full text-left py-2 text-gray-700 hover:text-green-600"
+                        className="flex items-center space-x-2 w-full text-left py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
                       >
-                        <IconComponent className="h-4 w-4" />
+                        <IconComponent className="h-5 w-5" />
                         <span>{item.name}</span>
                       </button>
                     )}
                     
-                    {item.submenu && (
-                      <div className="ml-6 space-y-1">
-                        {item.submenu.map((subItem, subIndex) => (
+                    {hasSubmenu && (
+                      <div className="ml-8 space-y-1">
+                        {item.submenu?.map((subItem, subIndex) => (
                           <a
                             key={subIndex}
                             href="#"
-                            className="block py-1 text-sm text-gray-600 hover:text-green-600"
+                            className="block py-1 px-2 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
                           >
                             {subItem}
                           </a>

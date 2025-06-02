@@ -39,7 +39,6 @@ const Header = () => {
   const [farmWorkerDialogOpen, setFarmWorkerDialogOpen] = useState(false);
   const [rentVehicleDialogOpen, setRentVehicleDialogOpen] = useState(false);
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -128,16 +127,8 @@ const Header = () => {
     const hasSelectedLanguage = localStorage.getItem('selectedLanguage');
     if (!hasSelectedLanguage) {
       setLanguageDialogOpen(true);
-    } else {
-      setCurrentLanguage(hasSelectedLanguage);
     }
   }, []);
-
-  const handleLanguageSelect = (language: string) => {
-    setCurrentLanguage(language);
-    localStorage.setItem('selectedLanguage', language);
-    console.log('Language selected:', language);
-  };
 
   return (
     <>
@@ -411,7 +402,6 @@ const Header = () => {
       <LanguageSelector
         open={languageDialogOpen}
         onOpenChange={setLanguageDialogOpen}
-        onLanguageSelect={handleLanguageSelect}
       />
     </>
   );

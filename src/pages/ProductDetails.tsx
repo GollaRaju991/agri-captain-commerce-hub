@@ -212,7 +212,7 @@ const ProductDetails = () => {
             </div>
 
             <div className="mb-6">
-              <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              <p className="text-gray-700 leading-relaxed">{product.shortDescription}</p>
             </div>
 
             {/* Quantity and Actions */}

@@ -129,9 +129,11 @@ const Cart = () => {
                 </div>
                 
                 {user ? (
-                  <Button className="w-full mb-4">
-                    Proceed to Checkout
-                  </Button>
+                  <Link to="/checkout" className="block">
+                    <Button className="w-full mb-4">
+                      Proceed to Checkout
+                    </Button>
+                  </Link>
                 ) : (
                   <div className="space-y-2">
                     <Link to="/auth" className="block">

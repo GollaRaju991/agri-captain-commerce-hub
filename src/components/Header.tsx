@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,14 @@ import {
   Phone,
   Mail,
   MapPin,
-  Languages
+  Languages,
+  Sprout,
+  Beaker,
+  Tractor,
+  Award,
+  Users,
+  Truck,
+  CreditCard
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,6 +55,7 @@ const Header = () => {
     {
       name: 'Seeds',
       href: '/products?category=seeds',
+      icon: Sprout,
       submenu: [
         'Vegetable Seeds',
         'Flower Seeds', 
@@ -58,6 +67,7 @@ const Header = () => {
     {
       name: 'Fertilizers',
       href: '/products?category=fertilizers',
+      icon: Beaker,
       submenu: [
         'Organic Fertilizers',
         'Chemical Fertilizers',
@@ -69,6 +79,7 @@ const Header = () => {
     {
       name: 'Agriculture Products',
       href: '/products?category=agriculture',
+      icon: Tractor,
       submenu: [
         'Pesticides',
         'Insecticides',
@@ -80,6 +91,7 @@ const Header = () => {
     {
       name: 'Brands',
       href: '/products?category=brands',
+      icon: Award,
       submenu: [
         'Tata Rallis',
         'UPL Limited',
@@ -91,26 +103,17 @@ const Header = () => {
     {
       name: 'Farm Worker',
       action: () => setFarmWorkerDialogOpen(true),
-      submenu: [
-        'Field Workers',
-        'Harvesters',
-        'Planting Specialists',
-        'Equipment Operators'
-      ]
+      icon: Users
     },
     {
       name: 'Rent Vehicles',
       action: () => setRentVehicleDialogOpen(true),
-      submenu: [
-        'Tractors',
-        'Harvesters',
-        'Cultivators',
-        'Trucks'
-      ]
+      icon: Truck
     },
     {
       name: 'Loans',
       href: '/products?category=loans',
+      icon: CreditCard,
       submenu: [
         'Crop Loans',
         'Equipment Loans',
@@ -133,7 +136,6 @@ const Header = () => {
   const handleLanguageSelect = (language: string) => {
     setCurrentLanguage(language);
     localStorage.setItem('selectedLanguage', language);
-    // Here you would typically integrate with an i18n library
     console.log('Language selected:', language);
   };
 
@@ -281,46 +283,51 @@ const Header = () => {
 
           {/* Navigation Menu */}
           <nav className="hidden lg:block border-t border-gray-200">
-            <div className="flex space-x-1">
-              {menuItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="relative group"
-                  onMouseEnter={() => setActiveDropdown(item.name)}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  {item.href ? (
-                    <Link
-                      to={item.href}
-                      className="block px-4 py-3 text-sm font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
-                    >
-                      {item.name}
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={item.action}
-                      className="block px-4 py-3 text-sm font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
-                    >
-                      {item.name}
-                    </button>
-                  )}
-                  
-                  {/* Submenu */}
-                  {activeDropdown === item.name && item.submenu && (
-                    <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-md shadow-lg py-1 z-50 border">
-                      {item.submenu.map((subItem, subIndex) => (
-                        <a
-                          key={subIndex}
-                          href="#"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
-                        >
-                          {subItem}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+            <div className="flex space-x-1 bg-green-600">
+              {menuItems.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <div
+                    key={index}
+                    className="relative group"
+                    onMouseEnter={() => item.submenu && setActiveDropdown(item.name)}
+                    onMouseLeave={() => setActiveDropdown(null)}
+                  >
+                    {item.href ? (
+                      <Link
+                        to={item.href}
+                        className="flex items-center space-x-2 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                      >
+                        <IconComponent className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={item.action}
+                        className="flex items-center space-x-2 px-4 py-3 text-sm font-medium text-white hover:bg-green-700 transition-colors"
+                      >
+                        <IconComponent className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </button>
+                    )}
+                    
+                    {/* Submenu */}
+                    {activeDropdown === item.name && item.submenu && (
+                      <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-md shadow-lg py-1 z-50 border">
+                        {item.submenu.map((subItem, subIndex) => (
+                          <a
+                            key={subIndex}
+                            href="#"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
+                          >
+                            {subItem}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </nav>
 
@@ -345,43 +352,48 @@ const Header = () => {
         {isMenuOpen && (
           <div className="lg:hidden bg-white border-t border-gray-200">
             <div className="px-4 py-2 space-y-2">
-              {menuItems.map((item, index) => (
-                <div key={index}>
-                  {item.href ? (
-                    <Link
-                      to={item.href}
-                      className="block py-2 text-gray-700 hover:text-green-600"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        item.action?.();
-                        setIsMenuOpen(false);
-                      }}
-                      className="block w-full text-left py-2 text-gray-700 hover:text-green-600"
-                    >
-                      {item.name}
-                    </button>
-                  )}
-                  
-                  {item.submenu && (
-                    <div className="ml-4 space-y-1">
-                      {item.submenu.map((subItem, subIndex) => (
-                        <a
-                          key={subIndex}
-                          href="#"
-                          className="block py-1 text-sm text-gray-600 hover:text-green-600"
-                        >
-                          {subItem}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+              {menuItems.map((item, index) => {
+                const IconComponent = item.icon;
+                return (
+                  <div key={index}>
+                    {item.href ? (
+                      <Link
+                        to={item.href}
+                        className="flex items-center space-x-2 py-2 text-gray-700 hover:text-green-600"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <IconComponent className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          item.action?.();
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center space-x-2 w-full text-left py-2 text-gray-700 hover:text-green-600"
+                      >
+                        <IconComponent className="h-4 w-4" />
+                        <span>{item.name}</span>
+                      </button>
+                    )}
+                    
+                    {item.submenu && (
+                      <div className="ml-6 space-y-1">
+                        {item.submenu.map((subItem, subIndex) => (
+                          <a
+                            key={subIndex}
+                            href="#"
+                            className="block py-1 text-sm text-gray-600 hover:text-green-600"
+                          >
+                            {subItem}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

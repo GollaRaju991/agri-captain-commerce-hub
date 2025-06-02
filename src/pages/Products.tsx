@@ -30,11 +30,12 @@ const mockProducts = [
     rating: 4.5,
     reviews: 124,
     discount: 25,
-    inStock: true
+    inStock: true,
+    description: 'Premium quality hybrid tomato seeds for high-yield farming with excellent disease resistance'
   },
   {
     id: '2',
-    name: 'Organic Compost',
+    name: 'Organic Compost Fertilizer',
     price: 599,
     originalPrice: 799,
     image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop',
@@ -42,7 +43,8 @@ const mockProducts = [
     rating: 4.8,
     reviews: 89,
     discount: 25,
-    inStock: true
+    inStock: true,
+    description: 'Organic compost fertilizer for sustainable farming and improved soil health'
   },
   {
     id: '3',
@@ -54,7 +56,8 @@ const mockProducts = [
     rating: 4.3,
     reviews: 56,
     discount: 19,
-    inStock: true
+    inStock: true,
+    description: 'Professional grade pruning tools for efficient garden maintenance and plant care'
   },
   {
     id: '4',
@@ -66,11 +69,12 @@ const mockProducts = [
     rating: 4.7,
     reviews: 78,
     discount: 17,
-    inStock: true
+    inStock: true,
+    description: 'Complete drip irrigation system for water-efficient farming and precise crop hydration'
   },
   {
     id: '5',
-    name: 'Wheat Seeds (Premium)',
+    name: 'Wheat Seeds Premium Quality',
     price: 450,
     originalPrice: 550,
     image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop',
@@ -78,7 +82,8 @@ const mockProducts = [
     rating: 4.6,
     reviews: 203,
     discount: 18,
-    inStock: true
+    inStock: true,
+    description: 'High-yielding wheat seeds suitable for various soil types and weather conditions'
   },
   {
     id: '6',
@@ -90,11 +95,129 @@ const mockProducts = [
     rating: 4.4,
     reviews: 145,
     discount: 20,
-    inStock: false
+    inStock: false,
+    description: 'Advanced bio-fertilizer blend for enhanced plant growth and soil enrichment'
+  },
+  {
+    id: '7',
+    name: 'Tractor - Mahindra 475 DI',
+    price: 550000,
+    originalPrice: 580000,
+    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=300&h=200&fit=crop',
+    category: 'equipment',
+    rating: 4.9,
+    reviews: 312,
+    discount: 5,
+    inStock: true,
+    description: 'Powerful 47 HP tractor ideal for farming operations, plowing, and heavy-duty agricultural work'
+  },
+  {
+    id: '8',
+    name: 'Rice Seeds - Basmati',
+    price: 380,
+    originalPrice: 450,
+    image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=200&fit=crop',
+    category: 'seeds',
+    rating: 4.7,
+    reviews: 189,
+    discount: 16,
+    inStock: true,
+    description: 'Premium basmati rice seeds for aromatic long-grain rice cultivation'
+  },
+  {
+    id: '9',
+    name: 'Pesticide Spray - Organic',
+    price: 299,
+    originalPrice: 350,
+    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=300&h=200&fit=crop',
+    category: 'agriculture',
+    rating: 4.5,
+    reviews: 98,
+    discount: 15,
+    inStock: true,
+    description: 'Organic pesticide spray for natural pest control without harmful chemicals'
+  },
+  {
+    id: '10',
+    name: 'Harvester Machine',
+    price: 1200000,
+    originalPrice: 1350000,
+    image: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300&h=200&fit=crop',
+    category: 'equipment',
+    rating: 4.8,
+    reviews: 67,
+    discount: 11,
+    inStock: true,
+    description: 'Advanced combine harvester for efficient crop harvesting and grain separation'
+  },
+  {
+    id: '11',
+    name: 'Cotton Seeds - Hybrid',
+    price: 520,
+    originalPrice: 620,
+    image: 'https://images.unsplash.com/photo-1609824971439-95bb4b58c5b5?w=300&h=200&fit=crop',
+    category: 'seeds',
+    rating: 4.6,
+    reviews: 234,
+    discount: 16,
+    inStock: true,
+    description: 'High-quality hybrid cotton seeds for superior fiber production and disease resistance'
+  },
+  {
+    id: '12',
+    name: 'NPK Fertilizer Complex',
+    price: 899,
+    originalPrice: 1099,
+    image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop',
+    category: 'fertilizers',
+    rating: 4.7,
+    reviews: 156,
+    discount: 18,
+    inStock: true,
+    description: 'Balanced NPK fertilizer complex for complete plant nutrition and optimal growth'
+  },
+  {
+    id: '13',
+    name: 'Cultivator Equipment',
+    price: 45000,
+    originalPrice: 52000,
+    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=300&h=200&fit=crop',
+    category: 'equipment',
+    rating: 4.4,
+    reviews: 89,
+    discount: 13,
+    inStock: true,
+    description: 'Heavy-duty cultivator for soil preparation, weed control, and field cultivation'
+  },
+  {
+    id: '14',
+    name: 'Sunflower Seeds - Premium',
+    price: 420,
+    originalPrice: 500,
+    image: 'https://images.unsplash.com/photo-1469143342026-2e82d4a855c1?w=300&h=200&fit=crop',
+    category: 'seeds',
+    rating: 4.5,
+    reviews: 145,
+    discount: 16,
+    inStock: true,
+    description: 'Premium sunflower seeds for oil production and ornamental purposes'
+  },
+  {
+    id: '15',
+    name: 'Insecticide Spray',
+    price: 350,
+    originalPrice: 420,
+    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=300&h=200&fit=crop',
+    category: 'agriculture',
+    rating: 4.3,
+    reviews: 112,
+    discount: 17,
+    inStock: true,
+    description: 'Effective insecticide spray for comprehensive pest management and crop protection'
   }
 ];
 
-const categories = ['seeds', 'fertilizers', 'tools', 'equipment'];
+const categories = ['seeds', 'fertilizers', 'tools', 'equipment', 'agriculture'];
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,10 +233,12 @@ const Products = () => {
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = mockProducts;
 
-    // Filter by search query
+    // Enhanced search functionality - search in name, description, and category
     if (searchQuery) {
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -271,8 +396,9 @@ const Products = () => {
                       <SelectItem value="all">All Prices</SelectItem>
                       <SelectItem value="0-500">Under ₹500</SelectItem>
                       <SelectItem value="500-1000">₹500 - ₹1,000</SelectItem>
-                      <SelectItem value="1000-2000">₹1,000 - ₹2,000</SelectItem>
-                      <SelectItem value="2000">Above ₹2,000</SelectItem>
+                      <SelectItem value="1000-50000">₹1,000 - ₹50,000</SelectItem>
+                      <SelectItem value="50000-500000">₹50,000 - ₹5,00,000</SelectItem>
+                      <SelectItem value="500000">Above ₹5,00,000</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

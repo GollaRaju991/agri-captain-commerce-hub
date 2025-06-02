@@ -1,8 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
@@ -10,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { countries, states, districts, divisions, mandals, villages } from '@/data/locationData';
 
 interface FarmWorkerDialogProps {
   open: boolean;
@@ -17,11 +17,48 @@ interface FarmWorkerDialogProps {
 }
 
 const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange }) => {
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [selectedMandal, setSelectedMandal] = useState('');
+  const [selectedVillage, setSelectedVillage] = useState('');
   const [workerType, setWorkerType] = useState('');
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearched, setIsSearched] = useState(false);
+
+  // Reset dependent selections when parent changes
+  useEffect(() => {
+    setSelectedState('');
+    setSelectedDistrict('');
+    setSelectedDivision('');
+    setSelectedMandal('');
+    setSelectedVillage('');
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    setSelectedDistrict('');
+    setSelectedDivision('');
+    setSelectedMandal('');
+    setSelectedVillage('');
+  }, [selectedState]);
+
+  useEffect(() => {
+    setSelectedDivision('');
+    setSelectedMandal('');
+    setSelectedVillage('');
+  }, [selectedDistrict]);
+
+  useEffect(() => {
+    setSelectedMandal('');
+    setSelectedVillage('');
+  }, [selectedDivision]);
+
+  useEffect(() => {
+    setSelectedVillage('');
+  }, [selectedMandal]);
 
   const workerTypes = [
     'Field Worker',
@@ -34,7 +71,31 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
     'Supervisor'
   ];
 
+  const getAvailableStates = () => {
+    return selectedCountry ? states[selectedCountry as keyof typeof states] || [] : [];
+  };
+
+  const getAvailableDistricts = () => {
+    return selectedState ? districts[selectedState as keyof typeof districts] || [] : [];
+  };
+
+  const getAvailableDivisions = () => {
+    return selectedDistrict ? divisions[selectedDistrict as keyof typeof divisions] || [] : [];
+  };
+
+  const getAvailableMandals = () => {
+    return selectedDivision ? mandals[selectedDivision as keyof typeof mandals] || [] : [];
+  };
+
+  const getAvailableVillages = () => {
+    return selectedMandal ? villages[selectedMandal as keyof typeof villages] || [] : [];
+  };
+
   const handleSearch = () => {
+    if (!selectedCountry || !selectedState || !selectedDistrict || !selectedDivision || !workerType || !startDate || !endDate) {
+      return;
+    }
+
     // Simulate search results
     const mockResults = [
       {
@@ -44,7 +105,7 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
         experience: '5 years',
         rating: 4.5,
         rate: '₹500/day',
-        location: 'Punjab',
+        location: `${selectedDistrict}, ${selectedState}`,
         availability: 'Available'
       },
       {
@@ -54,18 +115,8 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
         experience: '8 years',
         rating: 4.8,
         rate: '₹600/day',
-        location: 'Gujarat',
+        location: `${selectedDistrict}, ${selectedState}`,
         availability: 'Available'
-      },
-      {
-        id: 3,
-        name: 'Mohan Singh',
-        type: workerType,
-        experience: '3 years',
-        rating: 4.2,
-        rate: '₹450/day',
-        location: 'Haryana',
-        availability: 'Busy until next week'
       }
     ];
     setSearchResults(mockResults);
@@ -73,12 +124,20 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
   };
 
   const resetForm = () => {
+    setSelectedCountry('');
+    setSelectedState('');
+    setSelectedDistrict('');
+    setSelectedDivision('');
+    setSelectedMandal('');
+    setSelectedVillage('');
     setWorkerType('');
     setStartDate(undefined);
     setEndDate(undefined);
     setSearchResults([]);
     setIsSearched(false);
   };
+
+  const isFormValid = selectedCountry && selectedState && selectedDistrict && selectedDivision && workerType && startDate && endDate;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,10 +147,109 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* Search Form */}
+          {/* Location Selection */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="worker-type">Worker Type</Label>
+              <Label htmlFor="country">Country *</Label>
+              <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  {countries.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="state">State *</Label>
+              <Select value={selectedState} onValueChange={setSelectedState} disabled={!selectedCountry}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select state" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableStates().map((state) => (
+                    <SelectItem key={state.code} value={state.code}>
+                      {state.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="district">District *</Label>
+              <Select value={selectedDistrict} onValueChange={setSelectedDistrict} disabled={!selectedState}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableDistricts().map((district) => (
+                    <SelectItem key={district.code} value={district.code}>
+                      {district.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="division">Division *</Label>
+              <Select value={selectedDivision} onValueChange={setSelectedDivision} disabled={!selectedDistrict}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select division" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableDivisions().map((division) => (
+                    <SelectItem key={division.code} value={division.code}>
+                      {division.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="mandal">Mandal (Optional)</Label>
+              <Select value={selectedMandal} onValueChange={setSelectedMandal} disabled={!selectedDivision}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select mandal" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableMandals().map((mandal) => (
+                    <SelectItem key={mandal.code} value={mandal.code}>
+                      {mandal.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="village">Village (Optional)</Label>
+              <Select value={selectedVillage} onValueChange={setSelectedVillage} disabled={!selectedMandal}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select village" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getAvailableVillages().map((village) => (
+                    <SelectItem key={village.code} value={village.code}>
+                      {village.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Worker Type and Dates */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="worker-type">Worker Type *</Label>
               <Select value={workerType} onValueChange={setWorkerType}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select worker type" />
@@ -107,7 +265,7 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
             </div>
 
             <div>
-              <Label>Start Date</Label>
+              <Label>Start Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -134,7 +292,7 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
             </div>
 
             <div>
-              <Label>End Date</Label>
+              <Label>End Date *</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -162,7 +320,7 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={handleSearch} disabled={!workerType || !startDate || !endDate}>
+            <Button onClick={handleSearch} disabled={!isFormValid}>
               Search Workers
             </Button>
             <Button variant="outline" onClick={resetForm}>

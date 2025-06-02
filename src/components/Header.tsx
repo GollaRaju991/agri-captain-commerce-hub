@@ -1,375 +1,406 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Sprout, Droplets, Package, Tractor, Users, Car, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from '@/components/ui/navigation-menu';
-import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Search, 
+  ShoppingCart, 
+  User, 
+  Menu, 
+  X, 
+  ChevronDown,
+  Phone,
+  Mail,
+  MapPin,
+  Languages
+} from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-import FarmWorkerDialog from '@/components/FarmWorkerDialog';
-import RentVehicleDialog from '@/components/RentVehicleDialog';
-
-const categories = [
-  {
-    name: 'Seeds',
-    icon: Sprout,
-    path: '/products?category=seeds',
-    color: 'text-white',
-    subcategories: [
-      { name: 'Vegetable Seeds', path: '/products?category=seeds&type=vegetable' },
-      { name: 'Fruit Seeds', path: '/products?category=seeds&type=fruit' },
-      { name: 'Flower Seeds', path: '/products?category=seeds&type=flower' },
-      { name: 'Herb Seeds', path: '/products?category=seeds&type=herb' },
-      { name: 'Grain Seeds', path: '/products?category=seeds&type=grain' },
-      { name: 'Hybrid Seeds', path: '/products?category=seeds&type=hybrid' }
-    ]
-  },
-  {
-    name: 'Fertilizers',
-    icon: Droplets,
-    path: '/products?category=fertilizers',
-    color: 'text-white',
-    subcategories: [
-      { name: 'Organic Fertilizers', path: '/products?category=fertilizers&type=organic' },
-      { name: 'Chemical Fertilizers', path: '/products?category=fertilizers&type=chemical' },
-      { name: 'Liquid Fertilizers', path: '/products?category=fertilizers&type=liquid' },
-      { name: 'Granular Fertilizers', path: '/products?category=fertilizers&type=granular' },
-      { name: 'Specialty Fertilizers', path: '/products?category=fertilizers&type=specialty' },
-      { name: 'Micronutrients', path: '/products?category=fertilizers&type=micronutrients' }
-    ]
-  },
-  {
-    name: 'Agriculture Products',
-    icon: Package,
-    path: '/products?category=agriculture-products',
-    color: 'text-white',
-    subcategories: [
-      { name: 'Pesticides', path: '/products?category=agriculture-products&type=pesticides' },
-      { name: 'Herbicides', path: '/products?category=agriculture-products&type=herbicides' },
-      { name: 'Fungicides', path: '/products?category=agriculture-products&type=fungicides' },
-      { name: 'Growth Promoters', path: '/products?category=agriculture-products&type=growth-promoters' },
-      { name: 'Soil Conditioners', path: '/products?category=agriculture-products&type=soil-conditioners' },
-      { name: 'Plant Protection', path: '/products?category=agriculture-products&type=plant-protection' }
-    ]
-  },
-  {
-    name: 'Brands',
-    icon: Package,
-    path: '/products?category=brands',
-    color: 'text-white',
-    subcategories: [
-      { name: 'Premium Brands', path: '/products?category=brands&type=premium' },
-      { name: 'Local Brands', path: '/products?category=brands&type=local' },
-      { name: 'International Brands', path: '/products?category=brands&type=international' },
-      { name: 'Organic Brands', path: '/products?category=brands&type=organic' },
-      { name: 'Budget Brands', path: '/products?category=brands&type=budget' },
-      { name: 'Specialty Brands', path: '/products?category=brands&type=specialty' }
-    ]
-  },
-  {
-    name: 'Farm Worker',
-    icon: Users,
-    path: '#',
-    color: 'text-white',
-    isDialog: true,
-    subcategories: []
-  },
-  {
-    name: 'Rent Vehicles',
-    icon: Car,
-    path: '#',
-    color: 'text-white',
-    isDialog: true,
-    subcategories: []
-  },
-  {
-    name: 'Loans',
-    icon: CreditCard,
-    path: '/products?category=loans',
-    color: 'text-white',
-    subcategories: [
-      { name: 'Crop Loans', path: '/products?category=loans&type=crop' },
-      { name: 'Equipment Loans', path: '/products?category=loans&type=equipment' },
-      { name: 'Land Loans', path: '/products?category=loans&type=land' },
-      { name: 'Micro Finance', path: '/products?category=loans&type=micro-finance' },
-      { name: 'Government Schemes', path: '/products?category=loans&type=government' },
-      { name: 'Personal Loans', path: '/products?category=loans&type=personal' }
-    ]
-  }
-];
+import { useAuth } from '@/contexts/AuthContext';
+import FarmWorkerDialog from './FarmWorkerDialog';
+import RentVehicleDialog from './RentVehicleDialog';
+import LanguageSelector from './LanguageSelector';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { items } = useCart();
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isFarmWorkerOpen, setIsFarmWorkerOpen] = useState(false);
-  const [isRentVehicleOpen, setIsRentVehicleOpen] = useState(false);
-  const { user, logout } = useAuth();
-  const { totalItems } = useCart();
-  const navigate = useNavigate();
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [farmWorkerDialogOpen, setFarmWorkerDialogOpen] = useState(false);
+  const [rentVehicleDialogOpen, setRentVehicleDialogOpen] = useState(false);
+  const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
+
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
     }
   };
 
-  const handleCategoryClick = (category: any) => {
-    if (category.name === 'Farm Worker') {
-      setIsFarmWorkerOpen(true);
-    } else if (category.name === 'Rent Vehicles') {
-      setIsRentVehicleOpen(true);
-    } else if (category.path !== '#') {
-      navigate(category.path);
+  const menuItems = [
+    {
+      name: 'Seeds',
+      href: '/products?category=seeds',
+      submenu: [
+        'Vegetable Seeds',
+        'Flower Seeds', 
+        'Fruit Seeds',
+        'Grain Seeds',
+        'Herb Seeds'
+      ]
+    },
+    {
+      name: 'Fertilizers',
+      href: '/products?category=fertilizers',
+      submenu: [
+        'Organic Fertilizers',
+        'Chemical Fertilizers',
+        'Bio Fertilizers',
+        'Liquid Fertilizers',
+        'Granular Fertilizers'
+      ]
+    },
+    {
+      name: 'Agriculture Products',
+      href: '/products?category=agriculture',
+      submenu: [
+        'Pesticides',
+        'Insecticides',
+        'Fungicides',
+        'Herbicides',
+        'Plant Growth Regulators'
+      ]
+    },
+    {
+      name: 'Brands',
+      href: '/products?category=brands',
+      submenu: [
+        'Tata Rallis',
+        'UPL Limited',
+        'Bayer CropScience',
+        'Syngenta',
+        'BASF'
+      ]
+    },
+    {
+      name: 'Farm Worker',
+      action: () => setFarmWorkerDialogOpen(true),
+      submenu: [
+        'Field Workers',
+        'Harvesters',
+        'Planting Specialists',
+        'Equipment Operators'
+      ]
+    },
+    {
+      name: 'Rent Vehicles',
+      action: () => setRentVehicleDialogOpen(true),
+      submenu: [
+        'Tractors',
+        'Harvesters',
+        'Cultivators',
+        'Trucks'
+      ]
+    },
+    {
+      name: 'Loans',
+      href: '/products?category=loans',
+      submenu: [
+        'Crop Loans',
+        'Equipment Loans',
+        'Land Purchase Loans',
+        'Working Capital Loans'
+      ]
     }
+  ];
+
+  // Show language selector on first visit
+  useEffect(() => {
+    const hasSelectedLanguage = localStorage.getItem('selectedLanguage');
+    if (!hasSelectedLanguage) {
+      setLanguageDialogOpen(true);
+    } else {
+      setCurrentLanguage(hasSelectedLanguage);
+    }
+  }, []);
+
+  const handleLanguageSelect = (language: string) => {
+    setCurrentLanguage(language);
+    localStorage.setItem('selectedLanguage', language);
+    // Here you would typically integrate with an i18n library
+    console.log('Language selected:', language);
   };
 
   return (
     <>
+      {/* Top Header */}
+      <div className="bg-green-800 text-white text-sm py-2">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center">
+              <Phone className="h-4 w-4 mr-1" />
+              +91 9876543210
+            </span>
+            <span className="flex items-center">
+              <Mail className="h-4 w-4 mr-1" />
+              support@agricaptain.com
+            </span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center">
+              <MapPin className="h-4 w-4 mr-1" />
+              Free Delivery All Over India
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLanguageDialogOpen(true)}
+              className="text-white hover:text-white hover:bg-green-700 h-8 px-2"
+            >
+              <Languages className="h-4 w-4 mr-1" />
+              Language
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Header */}
       <header className="bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between py-4">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-xl">A</span>
               </div>
               <span className="text-2xl font-bold text-green-600">AgriCaptain</span>
             </Link>
 
-            {/* Search Bar - Desktop */}
-            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full">
+            {/* Search Bar - Hidden on mobile */}
+            <div className="hidden lg:flex flex-1 max-w-2xl mx-8">
+              <form onSubmit={handleSearch} className="flex w-full">
                 <Input
                   type="text"
-                  placeholder="Search for agricultural products..."
+                  placeholder="Search for seeds, fertilizers, tools..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-4 pr-12 h-10"
+                  className="rounded-r-none border-r-0 focus:ring-green-500 focus:border-green-500"
                 />
-                <Button
+                <Button 
                   type="submit"
-                  size="sm"
-                  className="absolute right-1 top-1 h-8 w-8 p-0"
+                  className="rounded-l-none bg-green-600 hover:bg-green-700"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
-              </div>
-            </form>
+              </form>
+            </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Link to="/products">
-                <Button variant="ghost">Products</Button>
+            {/* User Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Mobile Search Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => {/* Could implement mobile search modal */}}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+
+              {/* Cart */}
+              <Link to="/cart">
+                <Button variant="ghost" size="sm" className="relative">
+                  <ShoppingCart className="h-5 w-5" />
+                  {totalItems > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-green-600 text-xs">
+                      {totalItems}
+                    </Badge>
+                  )}
+                </Button>
               </Link>
-              
+
+              {/* User Menu */}
               {user ? (
-                <div className="flex items-center space-x-2">
-                  <Link to="/profile">
-                    <Button variant="ghost" size="sm">
-                      <User className="h-4 w-4 mr-2" />
-                      {user.name}
-                    </Button>
-                  </Link>
-                  <Button variant="ghost" size="sm" onClick={logout}>
-                    Logout
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setActiveDropdown(activeDropdown === 'user' ? null : 'user')}
+                    className="flex items-center space-x-1"
+                  >
+                    <User className="h-5 w-5" />
+                    <span className="hidden md:inline">{user.name}</span>
+                    <ChevronDown className="h-4 w-4" />
                   </Button>
+                  {activeDropdown === 'user' && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50"
+                        onClick={() => setActiveDropdown(null)}
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        onClick={() => {
+                          logout();
+                          setActiveDropdown(null);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Link to="/auth">
                   <Button variant="outline" size="sm">
-                    <User className="h-4 w-4 mr-2" />
                     Login
                   </Button>
                 </Link>
               )}
 
-              <Link to="/cart" className="relative">
-                <Button variant="ghost" size="sm">
-                  <ShoppingCart className="h-5 w-5" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {totalItems}
-                    </span>
-                  )}
-                </Button>
-              </Link>
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
             </div>
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
           </div>
 
-          {/* Mobile Search */}
-          <div className="md:hidden pb-4">
-            <form onSubmit={handleSearch} className="relative">
+          {/* Navigation Menu */}
+          <nav className="hidden lg:block border-t border-gray-200">
+            <div className="flex space-x-1">
+              {menuItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="relative group"
+                  onMouseEnter={() => setActiveDropdown(item.name)}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                >
+                  {item.href ? (
+                    <Link
+                      to={item.href}
+                      className="block px-4 py-3 text-sm font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={item.action}
+                      className="block px-4 py-3 text-sm font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 transition-colors"
+                    >
+                      {item.name}
+                    </button>
+                  )}
+                  
+                  {/* Submenu */}
+                  {activeDropdown === item.name && item.submenu && (
+                    <div className="absolute top-full left-0 mt-0 w-56 bg-white rounded-md shadow-lg py-1 z-50 border">
+                      {item.submenu.map((subItem, subIndex) => (
+                        <a
+                          key={subIndex}
+                          href="#"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
+                        >
+                          {subItem}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </nav>
+
+          {/* Mobile Search Bar */}
+          <div className="lg:hidden py-4 border-t border-gray-200">
+            <form onSubmit={handleSearch} className="flex">
               <Input
                 type="text"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-4 pr-12"
+                className="rounded-r-none border-r-0"
               />
-              <Button
-                type="submit"
-                size="sm"
-                className="absolute right-1 top-1 h-8 w-8 p-0"
-              >
+              <Button type="submit" className="rounded-l-none bg-green-600 hover:bg-green-700">
                 <Search className="h-4 w-4" />
               </Button>
             </form>
           </div>
         </div>
 
-        {/* Category Menu Bar with Green Background */}
-        <div className="bg-green-600 border-t border-green-700">
-          <div className="container mx-auto px-4">
-            <NavigationMenu className="max-w-none">
-              <NavigationMenuList className="flex space-x-2 py-2">
-                {categories.map((category) => (
-                  <NavigationMenuItem key={category.name}>
-                    {category.subcategories.length > 0 ? (
-                      <>
-                        <NavigationMenuTrigger className="bg-transparent hover:bg-green-500 data-[state=open]:bg-green-500 group text-white">
-                          <div className="flex flex-col items-center space-y-1">
-                            <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center group-hover:bg-green-400 group-data-[state=open]:bg-green-400 transition-colors">
-                              <category.icon className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
-                            </div>
-                            <span className="text-xs font-medium text-white group-hover:text-green-100 group-data-[state=open]:text-green-100 transition-colors">
-                              {category.name}
-                            </span>
-                          </div>
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                          <div className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] bg-white">
-                            {category.subcategories.map((subcategory) => (
-                              <NavigationMenuLink key={subcategory.name} asChild>
-                                <Link
-                                  to={subcategory.path}
-                                  className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-green-50 hover:text-green-600 focus:bg-green-50 focus:text-green-600"
-                                >
-                                  <div className="text-sm font-medium leading-none">{subcategory.name}</div>
-                                </Link>
-                              </NavigationMenuLink>
-                            ))}
-                          </div>
-                        </NavigationMenuContent>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => handleCategoryClick(category)}
-                        className="bg-transparent hover:bg-green-500 data-[state=open]:bg-green-500 group text-white px-3 py-2 rounded-md transition-colors"
-                      >
-                        <div className="flex flex-col items-center space-y-1">
-                          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center group-hover:bg-green-400 transition-colors">
-                            <category.icon className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
-                          </div>
-                          <span className="text-xs font-medium text-white group-hover:text-green-100 transition-colors">
-                            {category.name}
-                          </span>
-                        </div>
-                      </button>
-                    )}
-                  </NavigationMenuItem>
-                ))}
-              </NavigationMenuList>
-            </NavigationMenu>
-          </div>
-        </div>
-
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
-            <div className="container mx-auto px-4 py-4 space-y-2">
-              <Link to="/products" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start">
-                  Products
-                </Button>
-              </Link>
-              
-              {user ? (
-                <>
-                  <Link to="/profile" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start">
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start" 
-                    onClick={() => { logout(); setIsMenuOpen(false); }}
-                  >
-                    Logout
-                  </Button>
-                </>
-              ) : (
-                <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <User className="h-4 w-4 mr-2" />
-                    Login
-                  </Button>
-                </Link>
-              )}
-
-              <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start">
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Cart ({totalItems})
-                </Button>
-              </Link>
-
-              {/* Mobile Category Menu */}
-              <div className="pt-4 border-t border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
-                {categories.map((category) => (
-                  <div key={category.name} className="mb-3">
+          <div className="lg:hidden bg-white border-t border-gray-200">
+            <div className="px-4 py-2 space-y-2">
+              {menuItems.map((item, index) => (
+                <div key={index}>
+                  {item.href ? (
+                    <Link
+                      to={item.href}
+                      className="block py-2 text-gray-700 hover:text-green-600"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
                     <button
                       onClick={() => {
-                        handleCategoryClick(category);
+                        item.action?.();
                         setIsMenuOpen(false);
                       }}
-                      className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 transition-colors w-full text-left"
+                      className="block w-full text-left py-2 text-gray-700 hover:text-green-600"
                     >
-                      <div className="flex items-center space-x-3">
-                        <category.icon className={`h-5 w-5 text-green-600`} />
-                        <span className="text-sm font-medium">{category.name}</span>
-                      </div>
+                      {item.name}
                     </button>
-                    {category.subcategories.length > 0 && (
-                      <div className="ml-8 mt-1 space-y-1">
-                        {category.subcategories.slice(0, 3).map((subcategory) => (
-                          <Link
-                            key={subcategory.name}
-                            to={subcategory.path}
-                            onClick={() => setIsMenuOpen(false)}
-                            className="block text-xs text-gray-600 hover:text-green-600 py-1"
-                          >
-                            {subcategory.name}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  )}
+                  
+                  {item.submenu && (
+                    <div className="ml-4 space-y-1">
+                      {item.submenu.map((subItem, subIndex) => (
+                        <a
+                          key={subIndex}
+                          href="#"
+                          className="block py-1 text-sm text-gray-600 hover:text-green-600"
+                        >
+                          {subItem}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
       </header>
 
       {/* Dialog Components */}
-      <FarmWorkerDialog open={isFarmWorkerOpen} onOpenChange={setIsFarmWorkerOpen} />
-      <RentVehicleDialog open={isRentVehicleOpen} onOpenChange={setIsRentVehicleOpen} />
+      <FarmWorkerDialog 
+        open={farmWorkerDialogOpen} 
+        onOpenChange={setFarmWorkerDialogOpen}
+      />
+      <RentVehicleDialog 
+        open={rentVehicleDialogOpen} 
+        onOpenChange={setRentVehicleDialogOpen}
+      />
+      <LanguageSelector
+        open={languageDialogOpen}
+        onOpenChange={setLanguageDialogOpen}
+        onLanguageSelect={handleLanguageSelect}
+      />
     </>
   );
 };

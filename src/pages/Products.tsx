@@ -8,6 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { Filter, X } from 'lucide-react';
 
 const mockProducts = [
@@ -92,6 +101,8 @@ const Products = () => {
   const [sortBy, setSortBy] = useState('name');
   const [priceRange, setPriceRange] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 8;
 
   const searchQuery = searchParams.get('search') || '';
   const selectedCategory = searchParams.get('category') || '';
@@ -141,16 +152,29 @@ const Products = () => {
     return filtered;
   }, [searchQuery, selectedCategory, priceRange, sortBy]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / productsPerPage);
+  const startIndex = (currentPage - 1) * productsPerPage;
+  const endIndex = startIndex + productsPerPage;
+  const currentProducts = filteredAndSortedProducts.slice(startIndex, endIndex);
+
   const clearFilters = () => {
     setSearchParams({});
     setPriceRange('all');
     setSortBy('name');
+    setCurrentPage(1);
   };
 
   const removeFilter = (type: string) => {
     const newParams = new URLSearchParams(searchParams);
     newParams.delete(type);
     setSearchParams(newParams);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -261,7 +285,7 @@ const Products = () => {
             {/* Sort and Results Count */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
               <p className="text-gray-600 mb-2 sm:mb-0">
-                Showing {filteredAndSortedProducts.length} products
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} products
               </p>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">Sort by:</span>
@@ -281,12 +305,68 @@ const Products = () => {
             </div>
 
             {/* Products Grid */}
-            {filteredAndSortedProducts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredAndSortedProducts.map(product => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+            {currentProducts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                  {currentProducts.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious 
+                            onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+                        
+                        {[...Array(totalPages)].map((_, index) => {
+                          const page = index + 1;
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  onClick={() => handlePageChange(page)}
+                                  isActive={currentPage === page}
+                                  className="cursor-pointer"
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          } else if (
+                            (page === currentPage - 2 && currentPage > 3) ||
+                            (page === currentPage + 2 && currentPage < totalPages - 2)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            );
+                          }
+                          return null;
+                        })}
+                        
+                        <PaginationItem>
+                          <PaginationNext 
+                            onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No products found matching your criteria.</p>

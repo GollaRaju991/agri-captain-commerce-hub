@@ -21,13 +21,13 @@ import {
   Award,
   Users,
   Truck,
-  CreditCard
+  CreditCard,
+  HeadphonesIcon,
+  UserPlus
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import FarmWorkerDialog from './FarmWorkerDialog';
-import RentVehicleDialog from './RentVehicleDialog';
 import LanguageSelector from './LanguageSelector';
 
 const Header = () => {
@@ -38,8 +38,6 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [farmWorkerDialogOpen, setFarmWorkerDialogOpen] = useState(false);
-  const [rentVehicleDialogOpen, setRentVehicleDialogOpen] = useState(false);
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -103,12 +101,12 @@ const Header = () => {
     },
     {
       name: translations.farm_worker,
-      action: () => setFarmWorkerDialogOpen(true),
+      href: '/farm-worker',
       icon: Users
     },
     {
       name: translations.rent_vehicles,
-      action: () => setRentVehicleDialogOpen(true),
+      href: '/vehicle-rent',
       icon: Truck
     },
     {
@@ -121,6 +119,16 @@ const Header = () => {
         'Land Purchase Loans',
         'Working Capital Loans'
       ]
+    },
+    {
+      name: 'Become Seller',
+      href: '/become-seller',
+      icon: UserPlus
+    },
+    {
+      name: 'Customer Service',
+      href: '/customer-service',
+      icon: HeadphonesIcon
     }
   ];
 
@@ -135,16 +143,16 @@ const Header = () => {
   return (
     <>
       {/* Top Header */}
-      <div className="bg-green-800 text-white text-sm py-2">
+      <div className="bg-gradient-to-r from-green-800 to-green-900 text-white text-sm py-2">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <span className="flex items-center">
+            <span className="flex items-center hover:text-green-200 transition-colors">
               <Phone className="h-4 w-4 mr-1" />
-              +91 9876543210
+              9912365550
             </span>
-            <span className="flex items-center">
+            <span className="flex items-center hover:text-green-200 transition-colors">
               <Mail className="h-4 w-4 mr-1" />
-              support@agricaptain.com
+              contactagricaptain@gmail.com
             </span>
           </div>
           <div className="flex items-center space-x-4">
@@ -288,23 +296,13 @@ const Header = () => {
                     onMouseEnter={() => hasSubmenu && setActiveDropdown(item.name)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
-                    {item.href ? (
-                      <Link
-                        to={item.href}
-                        className="flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30"
-                      >
-                        <IconComponent className="h-4 w-4" />
-                        <span className="text-center">{item.name}</span>
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={item.action}
-                        className="w-full flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30"
-                      >
-                        <IconComponent className="h-4 w-4" />
-                        <span className="text-center">{item.name}</span>
-                      </button>
-                    )}
+                    <Link
+                      to={item.href}
+                      className="flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30"
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      <span className="text-center">{item.name}</span>
+                    </Link>
                     
                     {/* Submenu */}
                     {activeDropdown === item.name && hasSubmenu && (
@@ -353,27 +351,14 @@ const Header = () => {
                 
                 return (
                   <div key={index}>
-                    {item.href ? (
-                      <Link
-                        to={item.href}
-                        className="flex items-center space-x-2 py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <IconComponent className="h-5 w-5" />
-                        <span>{item.name}</span>
-                      </Link>
-                    ) : (
-                      <button
-                        onClick={() => {
-                          item.action?.();
-                          setIsMenuOpen(false);
-                        }}
-                        className="flex items-center space-x-2 w-full text-left py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                      >
-                        <IconComponent className="h-5 w-5" />
-                        <span>{item.name}</span>
-                      </button>
-                    )}
+                    <Link
+                      to={item.href}
+                      className="flex items-center space-x-2 py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <IconComponent className="h-5 w-5" />
+                      <span>{item.name}</span>
+                    </Link>
                     
                     {hasSubmenu && (
                       <div className="ml-8 space-y-1">
@@ -396,15 +381,7 @@ const Header = () => {
         )}
       </header>
 
-      {/* Dialog Components */}
-      <FarmWorkerDialog 
-        open={farmWorkerDialogOpen} 
-        onOpenChange={setFarmWorkerDialogOpen}
-      />
-      <RentVehicleDialog 
-        open={rentVehicleDialogOpen} 
-        onOpenChange={setRentVehicleDialogOpen}
-      />
+      {/* Language Selector Dialog */}
       <LanguageSelector
         open={languageDialogOpen}
         onOpenChange={setLanguageDialogOpen}

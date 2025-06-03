@@ -5,332 +5,257 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSlider from '@/components/HeroSlider';
 import ProductCard from '@/components/ProductCard';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useLanguage } from '@/contexts/LanguageContext';
 import UPIPaymentConfirmation from '@/components/UPIPaymentConfirmation';
-import { 
-  Truck, 
-  Shield, 
-  Users, 
-  Clock,
-  Star,
-  ChevronRight,
-  ChevronLeft
-} from 'lucide-react';
-
-// Sample products data with more variety
-const sampleProducts = [
-  {
-    id: 1,
-    name: 'Premium Tomato Seeds',
-    price: 299,
-    originalPrice: 350,
-    image: '/placeholder.svg',
-    category: 'seeds',
-    rating: 4.5,
-    reviews: 128,
-    description: 'High-yield hybrid tomato seeds perfect for all seasons. Disease resistant variety.',
-    forUse: 'Vegetable farming, home gardening'
-  },
-  {
-    id: 2,
-    name: 'Organic Fertilizer NPK',
-    price: 899,
-    originalPrice: 1099,
-    image: '/placeholder.svg',
-    category: 'fertilizers',
-    rating: 4.8,
-    reviews: 256,
-    description: 'Complete organic fertilizer with balanced NPK ratio for healthy plant growth.',
-    forUse: 'All crops, organic farming'
-  },
-  {
-    id: 3,
-    name: 'John Deere Mini Tractor',
-    price: 485000,
-    originalPrice: 520000,
-    image: '/placeholder.svg',
-    category: 'equipment',
-    rating: 4.9,
-    reviews: 45,
-    description: 'Compact tractor ideal for small to medium farms with excellent fuel efficiency.',
-    forUse: 'Field preparation, cultivation, harvesting'
-  },
-  {
-    id: 4,
-    name: 'Bio Pesticide Spray',
-    price: 450,
-    originalPrice: 550,
-    image: '/placeholder.svg',
-    category: 'sprays',
-    rating: 4.3,
-    reviews: 89,
-    description: 'Eco-friendly pesticide made from natural ingredients, safe for organic farming.',
-    forUse: 'Pest control, organic farming'
-  },
-  {
-    id: 5,
-    name: 'Wheat Seeds - HD 2967',
-    price: 180,
-    originalPrice: 220,
-    image: '/placeholder.svg',
-    category: 'seeds',
-    rating: 4.6,
-    reviews: 167,
-    description: 'High-yielding wheat variety suitable for irrigated conditions.',
-    forUse: 'Wheat cultivation, commercial farming'
-  },
-  {
-    id: 6,
-    name: 'Power Weeder Machine',
-    price: 12500,
-    originalPrice: 15000,
-    image: '/placeholder.svg',
-    category: 'equipment',
-    rating: 4.4,
-    reviews: 78,
-    description: 'Efficient weeding machine that reduces manual labor and increases productivity.',
-    forUse: 'Weed control, field maintenance'
-  },
-  {
-    id: 7,
-    name: 'Drip Irrigation Kit',
-    price: 3500,
-    originalPrice: 4200,
-    image: '/placeholder.svg',
-    category: 'equipment',
-    rating: 4.7,
-    reviews: 134,
-    description: 'Complete drip irrigation system for water-efficient farming.',
-    forUse: 'Water management, precision farming'
-  },
-  {
-    id: 8,
-    name: 'Calcium Nitrate Fertilizer',
-    price: 650,
-    originalPrice: 780,
-    image: '/placeholder.svg',
-    category: 'fertilizers',
-    rating: 4.5,
-    reviews: 92,
-    description: 'Water-soluble calcium fertilizer for stronger plants and better fruit quality.',
-    forUse: 'Fruit crops, vegetable farming'
-  }
-];
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Truck, Shield, Headphones, Users, Leaf, TrendingUp, Star, Gift } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Index = () => {
   const { translations } = useLanguage();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [upiPaymentOpen, setUpiPaymentOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const productsPerPage = 6;
+  const [showUPIConfirmation, setShowUPIConfirmation] = useState(false);
 
-  // Calculate pagination
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = sampleProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  const totalPages = Math.ceil(sampleProducts.length / productsPerPage);
-
-  const handleBuyNow = (product: any) => {
-    setSelectedProduct(product);
-    setUpiPaymentOpen(true);
-  };
-
-  const handleUPIPaymentComplete = (discount: number) => {
-    console.log('UPI Payment completed with discount:', discount);
-    // Here you would normally process the order with discount
-  };
-
-  const handleRegularPayment = () => {
-    console.log('Proceeding with regular payment');
-    // Here you would redirect to regular checkout
-  };
+  const featuredProducts = [
+    {
+      id: 1,
+      name: translations.hybrid_tomato_seeds || 'Hybrid Tomato Seeds',
+      price: 299,
+      originalPrice: 399,
+      image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&h=200&fit=crop',
+      category: 'seeds',
+      rating: 4.5,
+      reviews: 124,
+      description: 'Premium quality hybrid tomato seeds for high-yield farming',
+      forUse: 'Vegetable farming and kitchen gardens'
+    },
+    {
+      id: 2,
+      name: translations.organic_fertilizer || 'Organic Compost Fertilizer',
+      price: 599,
+      originalPrice: 799,
+      image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop',
+      category: 'fertilizers',
+      rating: 4.8,
+      reviews: 89,
+      description: 'Organic compost fertilizer for sustainable farming',
+      forUse: 'All crops and soil improvement'
+    },
+    {
+      id: 3,
+      name: translations.garden_tools || 'Garden Pruning Tool',
+      price: 1299,
+      originalPrice: 1599,
+      image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=200&fit=crop',
+      category: 'tools',
+      rating: 4.3,
+      reviews: 56,
+      description: 'Professional grade pruning tools for garden maintenance',
+      forUse: 'Tree pruning and garden maintenance'
+    },
+    {
+      id: 4,
+      name: translations.irrigation_kit || 'Drip Irrigation Kit',
+      price: 2499,
+      originalPrice: 2999,
+      image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop',
+      category: 'equipment',
+      rating: 4.7,
+      reviews: 78,
+      description: 'Complete drip irrigation system for water-efficient farming',
+      forUse: 'Water-efficient crop irrigation'
+    }
+  ];
 
   const categories = [
-    { name: translations.seeds, icon: '🌱', color: 'bg-green-100 text-green-800' },
-    { name: translations.fertilizers, icon: '🧪', color: 'bg-blue-100 text-blue-800' },
-    { name: 'Equipment', icon: '🚜', color: 'bg-orange-100 text-orange-800' },
-    { name: 'Sprays', icon: '💨', color: 'bg-purple-100 text-purple-800' }
+    { name: translations.seeds, icon: Leaf, href: '/products?category=seeds', color: 'bg-green-500' },
+    { name: translations.fertilizers, icon: TrendingUp, href: '/products?category=fertilizers', color: 'bg-blue-500' },
+    { name: translations.agriculture_products, icon: Shield, href: '/products?category=agriculture', color: 'bg-purple-500' },
+    { name: 'Equipment', icon: Truck, href: '/products?category=equipment', color: 'bg-orange-500' }
   ];
 
   const features = [
     {
       icon: Truck,
       title: translations.free_delivery,
-      description: 'Fast delivery across India'
+      description: translations.free_delivery_desc || 'Free delivery within 24 hours for all orders'
     },
     {
       icon: Shield,
       title: translations.quality_guarantee,
-      description: 'Authentic products only'
+      description: translations.quality_guarantee_desc || '100% authentic products with quality guarantee'
+    },
+    {
+      icon: Headphones,
+      title: translations.customer_support,
+      description: translations.customer_support_desc || '24/7 customer support for all your needs'
     },
     {
       icon: Users,
-      title: translations.trusted_by_farmers,
-      description: 'Growing community'
-    },
-    {
-      icon: Clock,
-      title: translations.expert_support,
-      description: 'Always here to help'
+      title: translations.expert_guidance,
+      description: translations.expert_guidance_desc || 'Expert guidance from agriculture professionals'
     }
   ];
 
+  const handleBuyNow = (product: any) => {
+    setShowUPIConfirmation(true);
+  };
+
+  const handleUPIPaymentComplete = (discount: number) => {
+    setShowUPIConfirmation(false);
+    // Handle successful payment with discount
+  };
+
+  const handleRegularPayment = () => {
+    setShowUPIConfirmation(false);
+    // Handle regular payment flow
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <Header />
       
       {/* Hero Section */}
-      <section className="relative">
-        <HeroSlider />
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <div className="text-center text-white max-w-4xl mx-auto px-4">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              {translations.welcome_to_agricaptain}
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">
-              {translations.your_farming_partner}
-            </p>
-            <div className="space-x-4">
-              <Link to="/products">
-                <Button size="lg" className="bg-green-600 hover:bg-green-700 text-lg px-8 py-3">
-                  {translations.browse_products}
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-black text-lg px-8 py-3">
-                {translations.get_started}
-              </Button>
-            </div>
+      <HeroSlider />
+
+      {/* Referral Program Banner */}
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-4">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex items-center justify-center space-x-2">
+            <Gift className="h-6 w-6" />
+            <span className="text-lg font-semibold">
+              Refer Friends & Earn ₹25 for Each Referral! 
+            </span>
           </div>
+          <p className="text-sm mt-1">
+            50 referrals = ₹1000 directly to your PhonePe/UPI wallet!
+          </p>
         </div>
-      </section>
+      </div>
 
       {/* Categories Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">{translations.categories}</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            {translations.shop_by_category}
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
-              <Link key={index} to={`/products?category=${category.name.toLowerCase()}`}>
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-4xl mb-4">{category.icon}</div>
-                    <Badge className={`${category.color} text-sm px-3 py-1`}>
-                      {category.name}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+            {categories.map((category, index) => {
+              const IconComponent = category.icon;
+              return (
+                <Link
+                  key={index}
+                  to={category.href}
+                  className="group"
+                >
+                  <Card className="text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-gradient-to-br from-white to-gray-50">
+                    <CardContent className="p-8">
+                      <div className={`${category.color} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                        <IconComponent className="h-8 w-8 text-white" />
+                      </div>
+                      <h3 className="font-semibold text-lg group-hover:text-green-600 transition-colors">
+                        {category.name}
+                      </h3>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Featured Products Section */}
+      {/* Featured Products */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl font-bold">{translations.featured_products}</h2>
+            <h2 className="text-3xl font-bold text-gray-900">
+              {translations.featured_products}
+            </h2>
             <Link to="/products">
               <Button variant="outline" className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
-                View All <ChevronRight className="ml-2 h-4 w-4" />
+                {translations.view_all}
               </Button>
             </Link>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {currentProducts.map((product) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.map((product) => (
               <ProductCard 
                 key={product.id} 
-                product={product} 
-                onBuyNow={() => handleBuyNow(product)}
+                product={product}
+                onBuyNow={handleBuyNow}
               />
             ))}
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="flex items-center"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </Button>
-              
-              <div className="flex space-x-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={currentPage === page ? "bg-green-600 hover:bg-green-700" : ""}
-                  >
-                    {page}
-                  </Button>
-                ))}
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="flex items-center"
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-          )}
         </div>
       </section>
 
       {/* Features Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">{translations.why_choose_us}</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+            {translations.why_choose_us}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="text-center group">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors">
-                  <feature.icon className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <Card key={index} className="text-center border-0 bg-gradient-to-br from-green-50 to-green-100 hover:shadow-lg transition-shadow duration-300">
+                  <CardContent className="p-6">
+                    <div className="bg-gradient-to-r from-green-600 to-green-700 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                      <IconComponent className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900">{feature.title}</h3>
+                    <p className="text-gray-600 text-sm">{feature.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Special Offers Section */}
-      <section className="py-16 bg-gradient-to-r from-green-600 to-green-700 text-white">
+      {/* Social Media Sharing Section */}
+      <section className="py-12 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">{translations.special_offers}</h2>
-          <p className="text-xl mb-8 opacity-90">Get up to 30% off on selected products</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white bg-opacity-20 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-2">{translations.quality_seeds}</h3>
-              <p className="mb-4">Premium varieties for better yield</p>
-              <Badge className="bg-orange-500 text-white">20% OFF</Badge>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-2">{translations.organic_fertilizers}</h3>
-              <p className="mb-4">Eco-friendly nutrition for crops</p>
-              <Badge className="bg-orange-500 text-white">25% OFF</Badge>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-lg p-6">
-              <h3 className="text-xl font-semibold mb-2">{translations.modern_equipment}</h3>
-              <p className="mb-4">Latest farming technology</p>
-              <Badge className="bg-orange-500 text-white">30% OFF</Badge>
+          <h2 className="text-2xl font-bold mb-6">Share AgriCaptain with Your Network</h2>
+          <div className="flex justify-center space-x-4">
+            <Button variant="outline" className="bg-blue-600 border-blue-400 text-white hover:bg-blue-700">
+              Facebook
+            </Button>
+            <Button variant="outline" className="bg-green-600 border-green-400 text-white hover:bg-green-700">
+              WhatsApp
+            </Button>
+            <Button variant="outline" className="bg-pink-600 border-pink-400 text-white hover:bg-pink-700">
+              Instagram
+            </Button>
+            <Button variant="outline" className="bg-blue-400 border-blue-300 text-white hover:bg-blue-500">
+              Twitter
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Information */}
+      <section className="py-12 bg-green-50">
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-lg p-8 shadow-lg">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Contact Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Phone</h4>
+                <p className="text-gray-600">9912365550</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Email</h4>
+                <p className="text-gray-600">contactagricaptain@gmail.com</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-lg mb-2">Address</h4>
+                <p className="text-gray-600">
+                  Nanakramguda Rd, Financial District, Serilingampalle (M), Hyderabad, Telangana 500032
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -338,11 +263,10 @@ const Index = () => {
 
       <Footer />
 
-      {/* UPI Payment Confirmation Dialog */}
       <UPIPaymentConfirmation
-        open={upiPaymentOpen}
-        onOpenChange={setUpiPaymentOpen}
-        amount={selectedProduct?.price || 0}
+        open={showUPIConfirmation}
+        onOpenChange={setShowUPIConfirmation}
+        amount={2499}
         onPaymentComplete={handleUPIPaymentComplete}
         onRegularPayment={handleRegularPayment}
       />

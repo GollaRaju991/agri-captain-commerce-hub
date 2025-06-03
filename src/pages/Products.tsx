@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -21,7 +20,7 @@ import { Filter, X } from 'lucide-react';
 
 const mockProducts = [
   {
-    id: '1',
+    id: 1,
     name: 'Hybrid Tomato Seeds',
     price: 299,
     originalPrice: 399,
@@ -35,7 +34,7 @@ const mockProducts = [
     forUse: 'Vegetable farming and kitchen gardens'
   },
   {
-    id: '2',
+    id: 2,
     name: 'Organic Compost Fertilizer',
     price: 599,
     originalPrice: 799,
@@ -49,7 +48,7 @@ const mockProducts = [
     forUse: 'All crops and soil improvement'
   },
   {
-    id: '3',
+    id: 3,
     name: 'Garden Pruning Tool',
     price: 1299,
     originalPrice: 1599,
@@ -63,7 +62,7 @@ const mockProducts = [
     forUse: 'Tree pruning and garden maintenance'
   },
   {
-    id: '4',
+    id: 4,
     name: 'Drip Irrigation Kit',
     price: 2499,
     originalPrice: 2999,
@@ -77,7 +76,7 @@ const mockProducts = [
     forUse: 'Water-efficient crop irrigation'
   },
   {
-    id: '5',
+    id: 5,
     name: 'Wheat Seeds Premium Quality',
     price: 450,
     originalPrice: 550,
@@ -91,7 +90,7 @@ const mockProducts = [
     forUse: 'Commercial wheat farming'
   },
   {
-    id: '6',
+    id: 6,
     name: 'Bio Fertilizer Mix',
     price: 799,
     originalPrice: 999,
@@ -105,7 +104,7 @@ const mockProducts = [
     forUse: 'Organic farming and soil enhancement'
   },
   {
-    id: '7',
+    id: 7,
     name: 'Tractor - Mahindra 475 DI',
     price: 550000,
     originalPrice: 580000,
@@ -119,7 +118,7 @@ const mockProducts = [
     forUse: 'Large-scale farming and heavy agricultural work'
   },
   {
-    id: '8',
+    id: 8,
     name: 'Rice Seeds - Basmati',
     price: 380,
     originalPrice: 450,
@@ -133,7 +132,7 @@ const mockProducts = [
     forUse: 'Rice cultivation and paddy farming'
   },
   {
-    id: '9',
+    id: 9,
     name: 'Pesticide Spray - Organic',
     price: 299,
     originalPrice: 350,
@@ -147,7 +146,7 @@ const mockProducts = [
     forUse: 'Pest control for organic farming'
   },
   {
-    id: '10',
+    id: 10,
     name: 'Harvester Machine',
     price: 1200000,
     originalPrice: 1350000,
@@ -161,7 +160,7 @@ const mockProducts = [
     forUse: 'Large-scale crop harvesting'
   },
   {
-    id: '11',
+    id: 11,
     name: 'Cotton Seeds - Hybrid',
     price: 520,
     originalPrice: 620,
@@ -175,7 +174,7 @@ const mockProducts = [
     forUse: 'Cotton farming and fiber production'
   },
   {
-    id: '12',
+    id: 12,
     name: 'NPK Fertilizer Complex',
     price: 899,
     originalPrice: 1099,
@@ -189,7 +188,7 @@ const mockProducts = [
     forUse: 'All crops requiring balanced nutrition'
   },
   {
-    id: '13',
+    id: 13,
     name: 'Cultivator Equipment',
     price: 45000,
     originalPrice: 52000,
@@ -203,7 +202,7 @@ const mockProducts = [
     forUse: 'Soil preparation and field cultivation'
   },
   {
-    id: '14',
+    id: 14,
     name: 'Sunflower Seeds - Premium',
     price: 420,
     originalPrice: 500,
@@ -217,7 +216,7 @@ const mockProducts = [
     forUse: 'Oil production and ornamental farming'
   },
   {
-    id: '15',
+    id: 15,
     name: 'Insecticide Spray',
     price: 350,
     originalPrice: 420,

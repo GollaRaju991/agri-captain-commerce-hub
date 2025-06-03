@@ -12,8 +12,9 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard, Truck, CheckCircle } from 'lucide-react';
+import { Loader2, CreditCard, Truck, CheckCircle, Smartphone, QrCode } from 'lucide-react';
 import UPIPayment from '@/components/UPIPayment';
+import UPIPaymentConfirmation from '@/components/UPIPaymentConfirmation';
 import EMIOptions from '@/components/EMIOptions';
 import LocationDetector from '@/components/LocationDetector';
 
@@ -21,6 +22,9 @@ const Checkout = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
+  const [showUPIConfirmation, setShowUPIConfirmation] = useState(false);
+  const [upiId, setUpiId] = useState('');
+  const [showUPIPayment, setShowUPIPayment] = useState(false);
   const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const { translations } = useLanguage();
@@ -82,7 +86,30 @@ const Checkout = () => {
     }));
   };
 
+  const handleUPIPaymentComplete = (discount: number) => {
+    setSelectedPaymentDetails(prev => ({
+      ...prev,
+      discount
+    }));
+    setShowUPIConfirmation(false);
+    handlePlaceOrder();
+  };
+
+  const handleRegularPayment = () => {
+    setSelectedPaymentDetails(prev => ({
+      ...prev,
+      discount: 0
+    }));
+    setShowUPIConfirmation(false);
+  };
+
   const handlePlaceOrder = async () => {
+    // Check if UPI payment was selected and not completed
+    if (paymentMethod === 'upi' && selectedPaymentDetails.discount === 0) {
+      setShowUPIConfirmation(true);
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -107,6 +134,26 @@ const Checkout = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleUPIPayment = () => {
+    if (!upiId.trim()) {
+      toast({
+        title: "UPI ID Required",
+        description: "Please enter your UPI ID to proceed.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    // Simulate UPI payment processing
+    setTimeout(() => {
+      const discount = Math.round(finalAmount * 0.1);
+      handleUPIPaymentComplete(discount);
+      setIsLoading(false);
+    }, 3000);
   };
 
   if (!user) {
@@ -262,14 +309,62 @@ const Checkout = () => {
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="upi">UPI Payment</TabsTrigger>
                     <TabsTrigger value="emi">EMI</TabsTrigger>
-                    <TabsTrigger value="cod">COD</TabsTrigger>
+                    <TabsTrigger value="cod">{translations.cash_on_delivery}</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="upi" className="mt-4">
-                    <UPIPayment 
-                      amount={finalAmount} 
-                      onPaymentSelect={handlePaymentMethodChange}
-                    />
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2 text-green-600 mb-4">
+                        <Smartphone className="h-5 w-5" />
+                        <span className="font-medium">Get 10% discount with UPI payment!</span>
+                      </div>
+                      
+                      {showUPIPayment ? (
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="upiId">Enter UPI ID</Label>
+                            <Input
+                              id="upiId"
+                              placeholder="yourname@paytm / yourname@phonepe"
+                              value={upiId}
+                              onChange={(e) => setUpiId(e.target.value)}
+                            />
+                          </div>
+                          
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex items-center justify-center space-x-2 mb-2">
+                              <QrCode className="h-5 w-5" />
+                              <span className="font-medium">Scan QR Code or Pay to UPI ID</span>
+                            </div>
+                            <div className="text-center">
+                              <div className="bg-white p-4 rounded border-2 border-dashed border-blue-300 mx-auto w-fit mb-3">
+                                <div className="w-32 h-32 bg-blue-100 flex items-center justify-center text-6xl">
+                                  📱
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-600">UPI ID: agricaptain@paytm</p>
+                              <p className="text-lg font-bold text-green-600">₹{finalAmount - Math.round(finalAmount * 0.1)}</p>
+                            </div>
+                          </div>
+                          
+                          <Button 
+                            onClick={handleUPIPayment}
+                            className="w-full"
+                            disabled={isLoading}
+                          >
+                            {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Complete UPI Payment
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          onClick={() => setShowUPIPayment(true)}
+                          className="w-full"
+                        >
+                          Pay with UPI (10% OFF)
+                        </Button>
+                      )}
+                    </div>
                   </TabsContent>
                   
                   <TabsContent value="emi" className="mt-4">
@@ -284,6 +379,9 @@ const Checkout = () => {
                       <CreditCard className="h-5 w-5" />
                       <span>{translations.cash_on_delivery}</span>
                     </div>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Pay cash when your order is delivered to your doorstep.
+                    </p>
                   </TabsContent>
                 </Tabs>
               </CardContent>
@@ -356,6 +454,14 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      <UPIPaymentConfirmation
+        open={showUPIConfirmation}
+        onOpenChange={setShowUPIConfirmation}
+        amount={finalAmount}
+        onPaymentComplete={handleUPIPaymentComplete}
+        onRegularPayment={handleRegularPayment}
+      />
 
       <Footer />
     </div>

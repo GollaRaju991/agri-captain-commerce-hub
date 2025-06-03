@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, Gift } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -40,7 +40,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Customer Service */}
+          {/* Customer Service & Referral */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Customer Service</h3>
             <ul className="space-y-2">
@@ -48,7 +48,12 @@ const Footer = () => {
               <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Track Your Order</a></li>
               <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Returns & Refunds</a></li>
               <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Shipping Info</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-green-400 transition-colors">Contact Us</a></li>
+              <li>
+                <a href="#" className="text-gray-400 hover:text-green-400 transition-colors flex items-center">
+                  <Gift className="h-4 w-4 mr-1" />
+                  Refer & Earn ₹25
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -58,17 +63,16 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-green-400" />
-                <span className="text-gray-400">+91 1800-123-4567</span>
+                <span className="text-gray-400">9912365550</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-green-400" />
-                <span className="text-gray-400">support@agricaptain.com</span>
+                <span className="text-gray-400">contactagricaptain@gmail.com</span>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-green-400 mt-1" />
                 <span className="text-gray-400">
-                  123 Agriculture Street,<br />
-                  Farm City, FC 12345
+                  Nanakramguda Rd, Financial District, Serilingampalle (M), Hyderabad, Telangana 500032
                 </span>
               </div>
             </div>

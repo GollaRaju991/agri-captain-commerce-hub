@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -24,6 +25,8 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
   const [selectedMandal, setSelectedMandal] = useState('');
   const [selectedVillage, setSelectedVillage] = useState('');
   const [workerType, setWorkerType] = useState('');
+  const [workerCategory, setWorkerCategory] = useState(''); // Single or Group
+  const [numberOfWorkers, setNumberOfWorkers] = useState('');
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -60,6 +63,11 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
     setSelectedVillage('');
   }, [selectedMandal]);
 
+  // Reset number of workers when category changes
+  useEffect(() => {
+    setNumberOfWorkers('');
+  }, [workerCategory]);
+
   const workerTypes = [
     'Field Worker',
     'Harvester',
@@ -70,6 +78,8 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
     'Equipment Operator',
     'Supervisor'
   ];
+
+  const workerCategories = ['Single', 'Group'];
 
   const getAvailableStates = () => {
     return selectedCountry ? states[selectedCountry as keyof typeof states] || [] : [];
@@ -92,7 +102,11 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
   };
 
   const handleSearch = () => {
-    if (!selectedCountry || !selectedState || !selectedDistrict || !selectedDivision || !workerType || !startDate || !endDate) {
+    if (!selectedCountry || !selectedState || !selectedDistrict || !selectedDivision || !workerType || !workerCategory || !startDate || !endDate) {
+      return;
+    }
+
+    if (workerCategory === 'Group' && !numberOfWorkers) {
       return;
     }
 
@@ -106,7 +120,8 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
         rating: 4.5,
         rate: '₹500/day',
         location: `${selectedDistrict}, ${selectedState}`,
-        availability: 'Available'
+        availability: 'Available',
+        category: workerCategory
       },
       {
         id: 2,
@@ -116,7 +131,8 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
         rating: 4.8,
         rate: '₹600/day',
         location: `${selectedDistrict}, ${selectedState}`,
-        availability: 'Available'
+        availability: 'Available',
+        category: workerCategory
       }
     ];
     setSearchResults(mockResults);
@@ -131,13 +147,15 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
     setSelectedMandal('');
     setSelectedVillage('');
     setWorkerType('');
+    setWorkerCategory('');
+    setNumberOfWorkers('');
     setStartDate(undefined);
     setEndDate(undefined);
     setSearchResults([]);
     setIsSearched(false);
   };
 
-  const isFormValid = selectedCountry && selectedState && selectedDistrict && selectedDivision && workerType && startDate && endDate;
+  const isFormValid = selectedCountry && selectedState && selectedDistrict && selectedDivision && workerType && workerCategory && startDate && endDate && (workerCategory === 'Single' || numberOfWorkers);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -246,8 +264,8 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
             </div>
           </div>
 
-          {/* Worker Type and Dates */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Worker Type and Category */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <Label htmlFor="worker-type">Worker Type *</Label>
               <Select value={workerType} onValueChange={setWorkerType}>
@@ -263,6 +281,37 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
                 </SelectContent>
               </Select>
             </div>
+
+            <div>
+              <Label htmlFor="worker-category">Category *</Label>
+              <Select value={workerCategory} onValueChange={setWorkerCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Single or Group" />
+                </SelectTrigger>
+                <SelectContent>
+                  {workerCategories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {workerCategory === 'Group' && (
+              <div>
+                <Label htmlFor="number-of-workers">Number of Workers *</Label>
+                <Input
+                  id="number-of-workers"
+                  type="number"
+                  placeholder="Enter number"
+                  value={numberOfWorkers}
+                  onChange={(e) => setNumberOfWorkers(e.target.value)}
+                  min="2"
+                  max="50"
+                />
+              </div>
+            )}
 
             <div>
               <Label>Start Date *</Label>
@@ -290,7 +339,10 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
                 </PopoverContent>
               </Popover>
             </div>
+          </div>
 
+          {/* End Date */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <Label>End Date *</Label>
               <Popover>
@@ -338,7 +390,10 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-semibold">{worker.name}</h4>
-                        <p className="text-sm text-gray-600">{worker.type}</p>
+                        <p className="text-sm text-gray-600">{worker.type} - {worker.category}</p>
+                        {workerCategory === 'Group' && (
+                          <p className="text-sm text-blue-600">Available for {numberOfWorkers} workers</p>
+                        )}
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-green-600">{worker.rate}</p>

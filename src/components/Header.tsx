@@ -11,9 +11,6 @@ import {
   Menu, 
   X, 
   ChevronDown,
-  Phone,
-  Mail,
-  MapPin,
   Languages,
   Sprout,
   Beaker,
@@ -22,13 +19,14 @@ import {
   Users,
   Truck,
   CreditCard,
-  HeadphonesIcon,
   UserPlus
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
+import FarmWorkerDialog from './FarmWorkerDialog';
+import RentVehicleDialog from './RentVehicleDialog';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -39,6 +37,8 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
+  const [farmWorkerDialogOpen, setFarmWorkerDialogOpen] = useState(false);
+  const [vehicleRentDialogOpen, setVehicleRentDialogOpen] = useState(false);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -101,13 +101,13 @@ const Header = () => {
     },
     {
       name: translations.farm_worker,
-      href: '/farm-worker',
-      icon: Users
+      icon: Users,
+      action: () => setFarmWorkerDialogOpen(true)
     },
     {
       name: translations.rent_vehicles,
-      href: '/vehicle-rent',
-      icon: Truck
+      icon: Truck,
+      action: () => setVehicleRentDialogOpen(true)
     },
     {
       name: translations.loans,
@@ -119,20 +119,9 @@ const Header = () => {
         'Land Purchase Loans',
         'Working Capital Loans'
       ]
-    },
-    {
-      name: 'Become Seller',
-      href: '/become-seller',
-      icon: UserPlus
-    },
-    {
-      name: 'Customer Service',
-      href: '/customer-service',
-      icon: HeadphonesIcon
     }
   ];
 
-  // Show language selector only on first visit
   useEffect(() => {
     const hasSelectedLanguage = localStorage.getItem('agricaptain_language_selected');
     if (!hasSelectedLanguage) {
@@ -142,37 +131,6 @@ const Header = () => {
 
   return (
     <>
-      {/* Top Header */}
-      <div className="bg-gradient-to-r from-green-800 to-green-900 text-white text-sm py-2">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center hover:text-green-200 transition-colors">
-              <Phone className="h-4 w-4 mr-1" />
-              9912365550
-            </span>
-            <span className="flex items-center hover:text-green-200 transition-colors">
-              <Mail className="h-4 w-4 mr-1" />
-              contactagricaptain@gmail.com
-            </span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="flex items-center">
-              <MapPin className="h-4 w-4 mr-1" />
-              {translations.free_delivery}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLanguageDialogOpen(true)}
-              className="text-white hover:text-white hover:bg-green-700 h-8 px-2"
-            >
-              <Languages className="h-4 w-4 mr-1" />
-              Language
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Main Header */}
       <header className="bg-white shadow-md sticky top-0 z-50">
         <div className="container mx-auto px-4">
@@ -215,6 +173,25 @@ const Header = () => {
               >
                 <Search className="h-5 w-5" />
               </Button>
+
+              {/* Language Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setLanguageDialogOpen(true)}
+                className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
+              >
+                <Languages className="h-4 w-4 mr-1" />
+                Language
+              </Button>
+
+              {/* Become Seller */}
+              <Link to="/become-seller">
+                <Button variant="outline" size="sm" className="border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white">
+                  <UserPlus className="h-4 w-4 mr-1" />
+                  Become Seller
+                </Button>
+              </Link>
 
               {/* Cart */}
               <Link to="/cart">
@@ -296,13 +273,23 @@ const Header = () => {
                     onMouseEnter={() => hasSubmenu && setActiveDropdown(item.name)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
-                    <Link
-                      to={item.href}
-                      className="flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30"
-                    >
-                      <IconComponent className="h-4 w-4" />
-                      <span className="text-center">{item.name}</span>
-                    </Link>
+                    {item.href ? (
+                      <Link
+                        to={item.href}
+                        className="flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30"
+                      >
+                        <IconComponent className="h-4 w-4" />
+                        <span className="text-center">{item.name}</span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={item.action}
+                        className="flex items-center justify-center space-x-2 px-3 py-4 text-sm font-medium text-white hover:bg-white hover:bg-opacity-20 transition-all duration-200 border-r border-green-500 border-opacity-30 w-full"
+                      >
+                        <IconComponent className="h-4 w-4" />
+                        <span className="text-center">{item.name}</span>
+                      </button>
+                    )}
                     
                     {/* Submenu */}
                     {activeDropdown === item.name && hasSubmenu && (
@@ -351,14 +338,27 @@ const Header = () => {
                 
                 return (
                   <div key={index}>
-                    <Link
-                      to={item.href}
-                      className="flex items-center space-x-2 py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <IconComponent className="h-5 w-5" />
-                      <span>{item.name}</span>
-                    </Link>
+                    {item.href ? (
+                      <Link
+                        to={item.href}
+                        className="flex items-center space-x-2 py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <IconComponent className="h-5 w-5" />
+                        <span>{item.name}</span>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          item.action?.();
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center space-x-2 py-3 px-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors w-full text-left"
+                      >
+                        <IconComponent className="h-5 w-5" />
+                        <span>{item.name}</span>
+                      </button>
+                    )}
                     
                     {hasSubmenu && (
                       <div className="ml-8 space-y-1">
@@ -385,6 +385,18 @@ const Header = () => {
       <LanguageSelector
         open={languageDialogOpen}
         onOpenChange={setLanguageDialogOpen}
+      />
+
+      {/* Farm Worker Dialog */}
+      <FarmWorkerDialog
+        open={farmWorkerDialogOpen}
+        onOpenChange={setFarmWorkerDialogOpen}
+      />
+
+      {/* Vehicle Rent Dialog */}
+      <RentVehicleDialog
+        open={vehicleRentDialogOpen}
+        onOpenChange={setVehicleRentDialogOpen}
       />
     </>
   );

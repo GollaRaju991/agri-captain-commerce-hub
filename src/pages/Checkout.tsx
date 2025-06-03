@@ -7,191 +7,97 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { CreditCard, Smartphone, Building, Truck, Gift, Percent } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CreditCard, Truck, CheckCircle, Smartphone, QrCode } from 'lucide-react';
-import UPIPayment from '@/components/UPIPayment';
 import UPIPaymentConfirmation from '@/components/UPIPaymentConfirmation';
-import EMIOptions from '@/components/EMIOptions';
-import LocationDetector from '@/components/LocationDetector';
 
 const Checkout = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [orderPlaced, setOrderPlaced] = useState(false);
-  const [orderNumber, setOrderNumber] = useState('');
-  const [showUPIConfirmation, setShowUPIConfirmation] = useState(false);
-  const [upiId, setUpiId] = useState('');
-  const [showUPIPayment, setShowUPIPayment] = useState(false);
-  const { items, totalPrice, clearCart } = useCart();
-  const { user } = useAuth();
-  const { translations } = useLanguage();
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { items, total, clearCart } = useCart();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [upiId, setUpiId] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [nameOnCard, setNameOnCard] = useState('');
+  const [showUPIConfirmation, setShowUPIConfirmation] = useState(false);
+  const [discountApplied, setDiscountApplied] = useState(false);
 
-  const [shippingInfo, setShippingInfo] = useState({
-    fullName: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    landmark: ''
-  });
+  const deliveryFee = 50;
+  const discount = discountApplied ? Math.round(total * 0.1) : 0;
+  const finalTotal = total + deliveryFee - discount;
 
-  const [paymentMethod, setPaymentMethod] = useState('cod');
-  const [selectedPaymentDetails, setSelectedPaymentDetails] = useState({
-    method: '',
-    discount: 0,
-    emiMonths: 0,
-    emiAmount: 0
-  });
-
-  // Calculate charges
-  const deliveryCharges = 0;
-  const platformCharges = 0;
-  const generalDiscount = Math.round(totalPrice * 0.05);
-  const additionalDiscount = selectedPaymentDetails.discount;
-  const totalDiscount = generalDiscount + additionalDiscount;
-  const finalAmount = totalPrice - totalDiscount;
-
-  const handleLocationDetected = (location: any) => {
-    setShippingInfo(prev => ({
-      ...prev,
-      pincode: location.pincode,
-      city: location.city,
-      state: location.state,
-      address: location.area
-    }));
-  };
-
-  const handlePaymentMethodChange = (method: string, discount: number = 0) => {
-    setSelectedPaymentDetails(prev => ({
-      ...prev,
-      method,
-      discount,
-      emiMonths: 0,
-      emiAmount: 0
-    }));
-  };
-
-  const handleEMISelect = (months: number, emiAmount: number) => {
-    setSelectedPaymentDetails(prev => ({
-      ...prev,
-      emiMonths: months,
-      emiAmount
-    }));
-  };
-
-  const handleUPIPaymentComplete = (discount: number) => {
-    setSelectedPaymentDetails(prev => ({
-      ...prev,
-      discount
-    }));
+  const handleUPIConfirmation = (confirmed: boolean) => {
     setShowUPIConfirmation(false);
-    handlePlaceOrder();
+    if (confirmed) {
+      setDiscountApplied(true);
+      setPaymentMethod('upi');
+    }
   };
 
-  const handleRegularPayment = () => {
-    setSelectedPaymentDetails(prev => ({
-      ...prev,
-      discount: 0
-    }));
-    setShowUPIConfirmation(false);
-  };
-
-  const handlePlaceOrder = async () => {
-    // Check if UPI payment was selected and not completed
-    if (paymentMethod === 'upi' && selectedPaymentDetails.discount === 0) {
-      setShowUPIConfirmation(true);
+  const handlePayment = () => {
+    if (!user) {
+      toast({
+        title: "Please login",
+        description: "You need to be logged in to place an order",
+        variant: "destructive",
+      });
+      navigate('/auth');
       return;
     }
 
-    setIsLoading(true);
-    
-    try {
-      // Simulate order processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const orderNum = 'AGR' + Date.now();
-      setOrderNumber(orderNum);
-      setOrderPlaced(true);
-      clearCart();
-      
+    if (!paymentMethod) {
       toast({
-        title: "Order Placed Successfully!",
-        description: `Your order ${orderNum} will be delivered within 24 hours.`
-      });
-    } catch (error) {
-      toast({
-        title: "Order Failed",
-        description: "Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUPIPayment = () => {
-    if (!upiId.trim()) {
-      toast({
-        title: "UPI ID Required",
-        description: "Please enter your UPI ID to proceed.",
-        variant: "destructive"
+        title: "Select payment method",
+        description: "Please select a payment method to continue",
+        variant: "destructive",
       });
       return;
     }
-    
-    setIsLoading(true);
-    
-    // Simulate UPI payment processing
-    setTimeout(() => {
-      const discount = Math.round(finalAmount * 0.1);
-      handleUPIPaymentComplete(discount);
-      setIsLoading(false);
-    }, 3000);
+
+    // Validate payment method specific fields
+    if (paymentMethod === 'upi' && !upiId) {
+      toast({
+        title: "Enter UPI ID",
+        description: "Please enter your UPI ID",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if ((paymentMethod === 'credit' || paymentMethod === 'debit') && (!cardNumber || !expiryDate || !cvv || !nameOnCard)) {
+      toast({
+        title: "Complete card details",
+        description: "Please fill in all card details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simulate payment processing
+    toast({
+      title: "Order placed successfully!",
+      description: `Your order has been placed using ${paymentMethod.toUpperCase()}`,
+    });
+
+    clearCart();
+    navigate('/profile');
   };
 
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
-
-  if (items.length === 0 && !orderPlaced) {
-    navigate('/cart');
-    return null;
-  }
-
-  if (orderPlaced) {
+  if (items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center max-w-md mx-auto">
-            <CheckCircle className="h-24 w-24 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Order Confirmed!</h2>
-            <p className="text-gray-600 mb-4">
-              Your order <strong>{orderNumber}</strong> has been placed successfully.
-            </p>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <div className="flex items-center justify-center space-x-2 text-green-700">
-                <Truck className="h-5 w-5" />
-                <span className="font-semibold">Delivery within 24 hours</span>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Button onClick={() => navigate('/')} className="w-full">
-                {translations.continue_shopping}
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/profile')} className="w-full">
-                Track Order
-              </Button>
-            </div>
-          </div>
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
+          <p className="text-gray-600 mb-8">Add some products to continue</p>
+          <Button onClick={() => navigate('/products')}>Continue Shopping</Button>
         </div>
         <Footer />
       </div>
@@ -203,251 +109,261 @@ const Checkout = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">{translations.checkout}</h1>
+        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Checkout Form */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Shipping Information */}
+          {/* Order Summary */}
+          <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>1. {translations.shipping_address}</CardTitle>
+                <CardTitle>Order Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <LocationDetector onLocationDetected={handleLocationDetected} />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="fullName">{translations.full_name}</Label>
-                    <Input
-                      id="fullName"
-                      value={shippingInfo.fullName}
-                      onChange={(e) => setShippingInfo({...shippingInfo, fullName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={shippingInfo.email}
-                      onChange={(e) => setShippingInfo({...shippingInfo, email: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">{translations.phone_number}</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={shippingInfo.phone}
-                      onChange={(e) => setShippingInfo({...shippingInfo, phone: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="pincode">{translations.pincode}</Label>
-                    <Input
-                      id="pincode"
-                      value={shippingInfo.pincode}
-                      onChange={(e) => setShippingInfo({...shippingInfo, pincode: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label htmlFor="address">{translations.address}</Label>
-                  <Input
-                    id="address"
-                    value={shippingInfo.address}
-                    onChange={(e) => setShippingInfo({...shippingInfo, address: e.target.value})}
-                    placeholder="House No, Street, Area"
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">{translations.city}</Label>
-                    <Input
-                      id="city"
-                      value={shippingInfo.city}
-                      onChange={(e) => setShippingInfo({...shippingInfo, city: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">{translations.state}</Label>
-                    <Input
-                      id="state"
-                      value={shippingInfo.state}
-                      onChange={(e) => setShippingInfo({...shippingInfo, state: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="landmark">Landmark (Optional)</Label>
-                    <Input
-                      id="landmark"
-                      value={shippingInfo.landmark}
-                      onChange={(e) => setShippingInfo({...shippingInfo, landmark: e.target.value})}
-                    />
-                  </div>
+              <CardContent>
+                <div className="space-y-4">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center py-2 border-b">
+                      <div>
+                        <h3 className="font-medium">{item.name}</h3>
+                        <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
+                      </div>
+                      <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Payment Method */}
-            <Card>
+            {/* Payment Methods */}
+            <Card className="mt-6">
               <CardHeader>
-                <CardTitle>2. {translations.payment} Method</CardTitle>
+                <CardTitle>Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
-                <Tabs value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="upi">UPI Payment</TabsTrigger>
-                    <TabsTrigger value="emi">EMI</TabsTrigger>
-                    <TabsTrigger value="cod">{translations.cash_on_delivery}</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="upi" className="mt-4">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2 text-green-600 mb-4">
-                        <Smartphone className="h-5 w-5" />
-                        <span className="font-medium">Get 10% discount with UPI payment!</span>
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                  {/* UPI Payment */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="upi" id="upi" />
+                      <Label htmlFor="upi" className="flex items-center space-x-2 cursor-pointer">
+                        <Smartphone className="h-5 w-5 text-blue-600" />
+                        <span>UPI Payment</span>
+                        {discountApplied && (
+                          <span className="text-green-600 text-sm font-medium flex items-center">
+                            <Percent className="h-4 w-4 mr-1" />
+                            10% Discount Applied
+                          </span>
+                        )}
+                      </Label>
+                    </div>
+                    {paymentMethod === 'upi' && (
+                      <div className="ml-6 space-y-2">
+                        <Label htmlFor="upi-id">UPI ID</Label>
+                        <Input
+                          id="upi-id"
+                          placeholder="Enter your UPI ID (e.g., name@paytm)"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                        />
+                        <p className="text-sm text-gray-600">Supports PhonePe, Google Pay, Paytm, and other UPI apps</p>
                       </div>
-                      
-                      {showUPIPayment ? (
-                        <div className="space-y-4">
+                    )}
+                  </div>
+
+                  {/* Credit Card */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="credit" id="credit" />
+                      <Label htmlFor="credit" className="flex items-center space-x-2 cursor-pointer">
+                        <CreditCard className="h-5 w-5 text-green-600" />
+                        <span>Credit Card</span>
+                      </Label>
+                    </div>
+                    {paymentMethod === 'credit' && (
+                      <div className="ml-6 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="upiId">Enter UPI ID</Label>
+                            <Label htmlFor="card-name">Name on Card</Label>
                             <Input
-                              id="upiId"
-                              placeholder="yourname@paytm / yourname@phonepe"
-                              value={upiId}
-                              onChange={(e) => setUpiId(e.target.value)}
+                              id="card-name"
+                              placeholder="Full Name"
+                              value={nameOnCard}
+                              onChange={(e) => setNameOnCard(e.target.value)}
                             />
                           </div>
-                          
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div className="flex items-center justify-center space-x-2 mb-2">
-                              <QrCode className="h-5 w-5" />
-                              <span className="font-medium">Scan QR Code or Pay to UPI ID</span>
-                            </div>
-                            <div className="text-center">
-                              <div className="bg-white p-4 rounded border-2 border-dashed border-blue-300 mx-auto w-fit mb-3">
-                                <div className="w-32 h-32 bg-blue-100 flex items-center justify-center text-6xl">
-                                  📱
-                                </div>
-                              </div>
-                              <p className="text-sm text-gray-600">UPI ID: agricaptain@paytm</p>
-                              <p className="text-lg font-bold text-green-600">₹{finalAmount - Math.round(finalAmount * 0.1)}</p>
-                            </div>
+                          <div>
+                            <Label htmlFor="card-number">Card Number</Label>
+                            <Input
+                              id="card-number"
+                              placeholder="1234 5678 9012 3456"
+                              value={cardNumber}
+                              onChange={(e) => setCardNumber(e.target.value)}
+                            />
                           </div>
-                          
-                          <Button 
-                            onClick={handleUPIPayment}
-                            className="w-full"
-                            disabled={isLoading}
-                          >
-                            {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Complete UPI Payment
-                          </Button>
+                          <div>
+                            <Label htmlFor="expiry">Expiry Date</Label>
+                            <Input
+                              id="expiry"
+                              placeholder="MM/YY"
+                              value={expiryDate}
+                              onChange={(e) => setExpiryDate(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="cvv">CVV</Label>
+                            <Input
+                              id="cvv"
+                              placeholder="123"
+                              value={cvv}
+                              onChange={(e) => setCvv(e.target.value)}
+                            />
+                          </div>
                         </div>
-                      ) : (
-                        <Button 
-                          onClick={() => setShowUPIPayment(true)}
-                          className="w-full"
-                        >
-                          Pay with UPI (10% OFF)
-                        </Button>
-                      )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Debit Card */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="debit" id="debit" />
+                      <Label htmlFor="debit" className="flex items-center space-x-2 cursor-pointer">
+                        <CreditCard className="h-5 w-5 text-purple-600" />
+                        <span>Debit Card</span>
+                      </Label>
                     </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="emi" className="mt-4">
-                    <EMIOptions 
-                      amount={finalAmount} 
-                      onEMISelect={handleEMISelect}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="cod" className="mt-4">
-                    <div className="flex items-center space-x-2 text-green-600">
-                      <CreditCard className="h-5 w-5" />
-                      <span>{translations.cash_on_delivery}</span>
+                    {paymentMethod === 'debit' && (
+                      <div className="ml-6 space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="debit-name">Name on Card</Label>
+                            <Input
+                              id="debit-name"
+                              placeholder="Full Name"
+                              value={nameOnCard}
+                              onChange={(e) => setNameOnCard(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="debit-number">Card Number</Label>
+                            <Input
+                              id="debit-number"
+                              placeholder="1234 5678 9012 3456"
+                              value={cardNumber}
+                              onChange={(e) => setCardNumber(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="debit-expiry">Expiry Date</Label>
+                            <Input
+                              id="debit-expiry"
+                              placeholder="MM/YY"
+                              value={expiryDate}
+                              onChange={(e) => setExpiryDate(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="debit-cvv">CVV</Label>
+                            <Input
+                              id="debit-cvv"
+                              placeholder="123"
+                              value={cvv}
+                              onChange={(e) => setCvv(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* EMI */}
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="emi" id="emi" />
+                    <Label htmlFor="emi" className="flex items-center space-x-2 cursor-pointer">
+                      <CreditCard className="h-5 w-5 text-orange-600" />
+                      <span>EMI (Easy Monthly Installments)</span>
+                    </Label>
+                  </div>
+
+                  {/* Net Banking */}
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="netbanking" id="netbanking" />
+                    <Label htmlFor="netbanking" className="flex items-center space-x-2 cursor-pointer">
+                      <Building className="h-5 w-5 text-blue-700" />
+                      <span>Net Banking</span>
+                    </Label>
+                  </div>
+
+                  {/* Cash on Delivery */}
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="cod" id="cod" />
+                      <Label htmlFor="cod" className="flex items-center space-x-2 cursor-pointer">
+                        <Truck className="h-5 w-5 text-yellow-600" />
+                        <span>Cash on Delivery</span>
+                      </Label>
                     </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                      Pay cash when your order is delivered to your doorstep.
+                    <p className="ml-6 text-sm text-orange-600">
+                      💡 Complete payment before delivery and get 10% discount!
                     </p>
-                  </TabsContent>
-                </Tabs>
+                  </div>
+                </RadioGroup>
+
+                {/* UPI Discount Offer */}
+                {!discountApplied && paymentMethod !== 'upi' && (
+                  <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Gift className="h-5 w-5 text-green-600" />
+                      <span className="font-medium text-green-800">Special UPI Offer!</span>
+                    </div>
+                    <p className="text-sm text-green-700 mb-3">
+                      Pay with UPI and get 10% instant discount on your order
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowUPIConfirmation(true)}
+                      className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
+                    >
+                      Get 10% Discount
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Order Summary */}
+          {/* Payment Summary */}
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>3. {translations.order_summary}</CardTitle>
+                <CardTitle>Payment Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                    </div>
-                    <p className="font-semibold">₹{item.price * item.quantity}</p>
-                  </div>
-                ))}
-                
-                <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between">
-                    <span>{translations.subtotal}</span>
-                    <span>₹{totalPrice}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{translations.delivery_charges}</span>
-                    <span className="text-green-600">₹{deliveryCharges}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>{translations.platform_charges}</span>
-                    <span className="text-green-600">₹{platformCharges}</span>
-                  </div>
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Delivery Fee</span>
+                  <span>₹{deliveryFee.toFixed(2)}</span>
+                </div>
+                {discountApplied && (
                   <div className="flex justify-between text-green-600">
-                    <span>{translations.discount_amount}</span>
-                    <span>-₹{generalDiscount}</span>
+                    <span>UPI Discount (10%)</span>
+                    <span>-₹{discount.toFixed(2)}</span>
                   </div>
-                  {additionalDiscount > 0 && (
-                    <div className="flex justify-between text-green-600">
-                      <span>{translations.upi_discount}</span>
-                      <span>-₹{additionalDiscount}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>{translations.total}</span>
-                    <span>₹{finalAmount}</span>
-                  </div>
+                )}
+                <Separator />
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
-                
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <div className="flex items-center space-x-2 text-green-700">
-                    <Truck className="h-4 w-4" />
-                    <span className="text-sm font-medium">Free delivery within 24 hours</span>
-                  </div>
-                </div>
-                
                 <Button 
-                  onClick={handlePlaceOrder} 
-                  className="w-full" 
-                  disabled={isLoading}
+                  onClick={handlePayment} 
+                  className="w-full mt-6"
+                  disabled={!paymentMethod}
                 >
-                  {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {translations.place_order}
+                  Place Order
                 </Button>
               </CardContent>
             </Card>
@@ -455,15 +371,15 @@ const Checkout = () => {
         </div>
       </div>
 
+      <Footer />
+
+      {/* UPI Payment Confirmation Dialog */}
       <UPIPaymentConfirmation
         open={showUPIConfirmation}
         onOpenChange={setShowUPIConfirmation}
-        amount={finalAmount}
-        onPaymentComplete={handleUPIPaymentComplete}
-        onRegularPayment={handleRegularPayment}
+        onConfirm={handleUPIConfirmation}
+        discount={Math.round(total * 0.1)}
       />
-
-      <Footer />
     </div>
   );
 };

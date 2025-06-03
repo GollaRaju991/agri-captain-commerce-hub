@@ -31,7 +31,8 @@ const mockProducts = [
     reviews: 124,
     discount: 25,
     inStock: true,
-    description: 'Premium quality hybrid tomato seeds for high-yield farming with excellent disease resistance'
+    description: 'Premium quality hybrid tomato seeds for high-yield farming with excellent disease resistance',
+    forUse: 'Vegetable farming and kitchen gardens'
   },
   {
     id: '2',
@@ -44,7 +45,8 @@ const mockProducts = [
     reviews: 89,
     discount: 25,
     inStock: true,
-    description: 'Organic compost fertilizer for sustainable farming and improved soil health'
+    description: 'Organic compost fertilizer for sustainable farming and improved soil health',
+    forUse: 'All crops and soil improvement'
   },
   {
     id: '3',
@@ -57,7 +59,8 @@ const mockProducts = [
     reviews: 56,
     discount: 19,
     inStock: true,
-    description: 'Professional grade pruning tools for efficient garden maintenance and plant care'
+    description: 'Professional grade pruning tools for efficient garden maintenance and plant care',
+    forUse: 'Tree pruning and garden maintenance'
   },
   {
     id: '4',
@@ -70,7 +73,8 @@ const mockProducts = [
     reviews: 78,
     discount: 17,
     inStock: true,
-    description: 'Complete drip irrigation system for water-efficient farming and precise crop hydration'
+    description: 'Complete drip irrigation system for water-efficient farming and precise crop hydration',
+    forUse: 'Water-efficient crop irrigation'
   },
   {
     id: '5',
@@ -83,7 +87,8 @@ const mockProducts = [
     reviews: 203,
     discount: 18,
     inStock: true,
-    description: 'High-yielding wheat seeds suitable for various soil types and weather conditions'
+    description: 'High-yielding wheat seeds suitable for various soil types and weather conditions',
+    forUse: 'Commercial wheat farming'
   },
   {
     id: '6',
@@ -96,7 +101,8 @@ const mockProducts = [
     reviews: 145,
     discount: 20,
     inStock: false,
-    description: 'Advanced bio-fertilizer blend for enhanced plant growth and soil enrichment'
+    description: 'Advanced bio-fertilizer blend for enhanced plant growth and soil enrichment',
+    forUse: 'Organic farming and soil enhancement'
   },
   {
     id: '7',
@@ -109,7 +115,8 @@ const mockProducts = [
     reviews: 312,
     discount: 5,
     inStock: true,
-    description: 'Powerful 47 HP tractor ideal for farming operations, plowing, and heavy-duty agricultural work'
+    description: 'Powerful 47 HP tractor ideal for farming operations, plowing, and heavy-duty agricultural work',
+    forUse: 'Large-scale farming and heavy agricultural work'
   },
   {
     id: '8',
@@ -122,7 +129,8 @@ const mockProducts = [
     reviews: 189,
     discount: 16,
     inStock: true,
-    description: 'Premium basmati rice seeds for aromatic long-grain rice cultivation'
+    description: 'Premium basmati rice seeds for aromatic long-grain rice cultivation',
+    forUse: 'Rice cultivation and paddy farming'
   },
   {
     id: '9',
@@ -135,7 +143,8 @@ const mockProducts = [
     reviews: 98,
     discount: 15,
     inStock: true,
-    description: 'Organic pesticide spray for natural pest control without harmful chemicals'
+    description: 'Organic pesticide spray for natural pest control without harmful chemicals',
+    forUse: 'Pest control for organic farming'
   },
   {
     id: '10',
@@ -148,7 +157,8 @@ const mockProducts = [
     reviews: 67,
     discount: 11,
     inStock: true,
-    description: 'Advanced combine harvester for efficient crop harvesting and grain separation'
+    description: 'Advanced combine harvester for efficient crop harvesting and grain separation',
+    forUse: 'Large-scale crop harvesting'
   },
   {
     id: '11',
@@ -161,7 +171,8 @@ const mockProducts = [
     reviews: 234,
     discount: 16,
     inStock: true,
-    description: 'High-quality hybrid cotton seeds for superior fiber production and disease resistance'
+    description: 'High-quality hybrid cotton seeds for superior fiber production and disease resistance',
+    forUse: 'Cotton farming and fiber production'
   },
   {
     id: '12',
@@ -174,7 +185,8 @@ const mockProducts = [
     reviews: 156,
     discount: 18,
     inStock: true,
-    description: 'Balanced NPK fertilizer complex for complete plant nutrition and optimal growth'
+    description: 'Balanced NPK fertilizer complex for complete plant nutrition and optimal growth',
+    forUse: 'All crops requiring balanced nutrition'
   },
   {
     id: '13',
@@ -187,7 +199,8 @@ const mockProducts = [
     reviews: 89,
     discount: 13,
     inStock: true,
-    description: 'Heavy-duty cultivator for soil preparation, weed control, and field cultivation'
+    description: 'Heavy-duty cultivator for soil preparation, weed control, and field cultivation',
+    forUse: 'Soil preparation and field cultivation'
   },
   {
     id: '14',
@@ -200,7 +213,8 @@ const mockProducts = [
     reviews: 145,
     discount: 16,
     inStock: true,
-    description: 'Premium sunflower seeds for oil production and ornamental purposes'
+    description: 'Premium sunflower seeds for oil production and ornamental purposes',
+    forUse: 'Oil production and ornamental farming'
   },
   {
     id: '15',
@@ -213,7 +227,8 @@ const mockProducts = [
     reviews: 112,
     discount: 17,
     inStock: true,
-    description: 'Effective insecticide spray for comprehensive pest management and crop protection'
+    description: 'Effective insecticide spray for comprehensive pest management and crop protection',
+    forUse: 'Insect control and crop protection'
   }
 ];
 

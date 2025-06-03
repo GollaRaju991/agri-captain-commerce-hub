@@ -28,19 +28,19 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onBuyNow }) => {
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
   const { translations } = useLanguage();
   const { toast } = useToast();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem({
-      id: product.id,
+    addToCart({
+      id: product.id.toString(),
       name: product.name,
       price: product.price,
       image: product.image,
-      quantity: 1
+      category: product.category
     });
     toast({
       title: "Added to cart",

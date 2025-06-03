@@ -1,19 +1,16 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 
+/* Mobile-optimized styles */
 .logo {
-  height: 6em;
-  padding: 1.5em;
+  height: 4em;
+  padding: 1em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -33,10 +30,26 @@
   }
 }
 
+/* Remove default styles that might cause layout issues */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
 .card {
-  padding: 2em;
+  padding: 1em;
 }
 
 .read-the-docs {
   color: #888;
+}
+
+/* Ensure proper mobile touch targets */
+@media (max-width: 768px) {
+  button, .button, a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }

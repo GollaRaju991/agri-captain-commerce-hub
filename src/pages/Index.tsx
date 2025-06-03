@@ -79,25 +79,27 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <Header />
       
       {/* Hero Section */}
-      <HeroSlider />
+      <div className="w-full">
+        <HeroSlider />
+      </div>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section className="py-8 md:py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <IconComponent className="h-8 w-8 text-green-600" />
+                <div key={index} className="text-center p-4">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <IconComponent className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
+                  <h3 className="text-base md:text-lg font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-sm md:text-base text-gray-600">{feature.description}</p>
                 </div>
               );
             })}
@@ -106,38 +108,38 @@ const Index = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-8 md:py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">{translations.featured_products || "Featured Products"}</h2>
-            <p className="text-gray-600">{translations.discover_products || "Discover our top-quality agricultural products"}</p>
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">{translations.featured_products || "Featured Products"}</h2>
+            <p className="text-sm md:text-base text-gray-600">{translations.discover_products || "Discover our top-quality agricultural products"}</p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((product) => (
               <Card key={product.id} className="hover:shadow-lg transition-shadow">
                 <div className="relative">
                   <img 
                     src={product.image} 
                     alt={product.name}
-                    className="w-full h-48 object-cover rounded-t-lg"
+                    className="w-full h-40 md:h-48 object-cover rounded-t-lg"
                   />
-                  <Badge className="absolute top-2 left-2 bg-red-500">
+                  <Badge className="absolute top-2 left-2 bg-red-500 text-xs">
                     {product.discount}% OFF
                   </Badge>
                 </div>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold mb-2">{product.name}</h3>
+                <CardContent className="p-3 md:p-4">
+                  <h3 className="font-semibold text-sm md:text-base mb-2 line-clamp-2">{product.name}</h3>
                   <div className="flex items-center mb-2">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="ml-1 text-sm">{product.rating}</span>
+                    <Star className="h-3 w-3 md:h-4 md:w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="ml-1 text-xs md:text-sm">{product.rating}</span>
                   </div>
                   <div className="flex items-center space-x-2 mb-3">
-                    <span className="text-lg font-bold text-green-600">₹{product.price}</span>
-                    <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
+                    <span className="text-base md:text-lg font-bold text-green-600">₹{product.price}</span>
+                    <span className="text-xs md:text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
                   </div>
                   <Link to={`/product/${product.id}`}>
-                    <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">
+                    <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs md:text-sm py-2 md:py-3">
                       {translations.view_details || "View Details"}
                     </Button>
                   </Link>
@@ -146,9 +148,9 @@ const Index = () => {
             ))}
           </div>
           
-          <div className="text-center mt-12">
+          <div className="text-center mt-8 md:mt-12">
             <Link to="/products">
-              <Button size="lg" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">
+              <Button size="lg" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-6 md:px-8 py-3 md:py-4">
                 {translations.view_all_products || "View All Products"}
               </Button>
             </Link>
@@ -157,14 +159,14 @@ const Index = () => {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16 bg-white">
+      <section className="py-8 md:py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">{translations.shop_by_category || "Shop by Category"}</h2>
-            <p className="text-gray-600">{translations.browse_categories || "Browse our wide range of agricultural categories"}</p>
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">{translations.shop_by_category || "Shop by Category"}</h2>
+            <p className="text-sm md:text-base text-gray-600">{translations.browse_categories || "Browse our wide range of agricultural categories"}</p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {[
               { name: translations.seeds || "Seeds", image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=200&h=200&fit=crop", category: "seeds" },
               { name: translations.fertilizers || "Fertilizers", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200&h=200&fit=crop", category: "fertilizers" },
@@ -172,14 +174,14 @@ const Index = () => {
               { name: translations.brands || "Premium Brands", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200&h=200&fit=crop", category: "brands" }
             ].map((category, index) => (
               <Link key={index} to={`/products?category=${category.category}`}>
-                <Card className="text-center hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="p-6">
+                <Card className="text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
+                  <CardContent className="p-4 md:p-6">
                     <img 
                       src={category.image} 
                       alt={category.name}
-                      className="w-20 h-20 object-cover rounded-full mx-auto mb-4"
+                      className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-full mx-auto mb-3 md:mb-4"
                     />
-                    <h3 className="font-semibold">{category.name}</h3>
+                    <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
                   </CardContent>
                 </Card>
               </Link>
@@ -189,22 +191,23 @@ const Index = () => {
       </section>
 
       {/* Social Media Sharing Section */}
-      <section className="py-16 bg-green-50">
+      <section className="py-8 md:py-16 bg-green-50">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Share AgriCaptain with Friends</h2>
-          <p className="text-gray-600 mb-8">Help us grow the farming community by sharing our app</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">Share AgriCaptain with Friends</h2>
+          <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">Help us grow the farming community by sharing our app</p>
           
-          <div className="flex justify-center space-x-4 flex-wrap gap-4">
+          <div className="flex justify-center flex-wrap gap-3 md:gap-4">
             {socialMediaLinks.map((social, index) => (
               <a
                 key={index}
                 href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${social.color} text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2`}
+                className={`${social.color} text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2 text-sm md:text-base`}
               >
-                <Share2 className="h-4 w-4" />
-                <span>Share on {social.name}</span>
+                <Share2 className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Share on</span>
+                <span>{social.name}</span>
               </a>
             ))}
           </div>

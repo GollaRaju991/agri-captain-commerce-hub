@@ -42,7 +42,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       name: product.name,
       price: product.price,
       image: product.image,
-      quantity: 1,
+      category: product.category,
     });
 
     toast({

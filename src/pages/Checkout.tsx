@@ -17,7 +17,7 @@ import UPIPaymentConfirmation from '@/components/UPIPaymentConfirmation';
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { items, total, clearCart } = useCart();
+  const { items, totalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -30,15 +30,26 @@ const Checkout = () => {
   const [discountApplied, setDiscountApplied] = useState(false);
 
   const deliveryFee = 50;
-  const discount = discountApplied ? Math.round(total * 0.1) : 0;
-  const finalTotal = total + deliveryFee - discount;
+  const discount = discountApplied ? Math.round(totalPrice * 0.1) : 0;
+  const finalTotal = totalPrice + deliveryFee - discount;
 
-  const handleUPIConfirmation = (confirmed: boolean) => {
+  const handleUPIPaymentComplete = (appliedDiscount: number) => {
     setShowUPIConfirmation(false);
-    if (confirmed) {
-      setDiscountApplied(true);
-      setPaymentMethod('upi');
-    }
+    setDiscountApplied(true);
+    setPaymentMethod('upi');
+    
+    toast({
+      title: "Payment Completed!",
+      description: `You saved ₹${appliedDiscount} with UPI payment!`,
+    });
+    
+    clearCart();
+    navigate('/profile');
+  };
+
+  const handleRegularPayment = () => {
+    setShowUPIConfirmation(false);
+    // Continue with regular checkout process
   };
 
   const handlePayment = () => {
@@ -341,7 +352,7 @@ const Checkout = () => {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{total.toFixed(2)}</span>
+                  <span>₹{totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Delivery Fee</span>
@@ -377,8 +388,9 @@ const Checkout = () => {
       <UPIPaymentConfirmation
         open={showUPIConfirmation}
         onOpenChange={setShowUPIConfirmation}
-        onConfirm={handleUPIConfirmation}
-        discount={Math.round(total * 0.1)}
+        amount={totalPrice}
+        onPaymentComplete={handleUPIPaymentComplete}
+        onRegularPayment={handleRegularPayment}
       />
     </div>
   );

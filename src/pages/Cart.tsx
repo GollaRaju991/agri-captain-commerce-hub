@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -152,17 +151,21 @@ const Cart = () => {
                 
                 {user ? (
                   <Link to="/checkout" className="block">
-                    <Button className="w-full mb-4">
+                    <Button className="w-full mb-4" onClick={() => window.scrollTo(0, 0)}>
                       {translations.checkout}
                     </Button>
                   </Link>
                 ) : (
                   <div className="space-y-2">
-                    <Link to="/auth" className="block">
-                      <Button className="w-full">
-                        {translations.login} to {translations.checkout}
-                      </Button>
-                    </Link>
+                    <Button 
+                      className="w-full"
+                      onClick={() => {
+                        localStorage.setItem('returnTo', '/checkout');
+                        navigate('/auth');
+                      }}
+                    >
+                      Login to {translations.checkout}
+                    </Button>
                     <p className="text-sm text-gray-600 text-center">
                       Please login to proceed with your order
                     </p>

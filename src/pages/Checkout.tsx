@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AddressManager from '@/components/AddressManager';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,9 +12,20 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { CreditCard, Smartphone, Building, Truck, Gift, Percent, Shield } from 'lucide-react';
+import { CreditCard, Smartphone, Building, Truck, Gift, Percent, Shield, Tag } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import UPIPaymentConfirmation from '@/components/UPIPaymentConfirmation';
+
+interface Address {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  type: 'home' | 'work';
+  isDefault: boolean;
+}
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -21,34 +33,47 @@ const Checkout = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [upiId, setUpiId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
   const [nameOnCard, setNameOnCard] = useState('');
-  const [showUPIConfirmation, setShowUPIConfirmation] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [discountApplied, setDiscountApplied] = useState(false);
 
-  const deliveryFee = 50;
+  const deliveryFee = 0;
+  const platformFee = 0;
+  const handlingFee = 0;
   const discount = discountApplied ? Math.round(totalPrice * 0.1) : 0;
-  const finalTotal = totalPrice + deliveryFee - discount;
+  const couponDiscount = appliedCoupon ? 50 : 0;
+  const finalTotal = Math.max(0, totalPrice + deliveryFee + platformFee + handlingFee - discount - couponDiscount);
 
-  const handleUPIPaymentComplete = (appliedDiscount: number) => {
-    setShowUPIConfirmation(false);
-    setDiscountApplied(true);
-    setPaymentMethod('upi');
-    
-    toast({
-      title: "Payment Completed!",
-      description: `You saved ₹${appliedDiscount} with UPI payment!`,
-    });
-    
-    clearCart();
-    navigate('/profile');
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const handleAddressSelect = (address: Address) => {
+    setSelectedAddress(address);
   };
 
-  const handleRegularPayment = () => {
-    setShowUPIConfirmation(false);
+  const handleCouponApply = () => {
+    const validCoupons = ['SAVE10', 'FIRST20', 'UPI10', 'WELCOME50'];
+    if (validCoupons.includes(couponCode.toUpperCase())) {
+      setAppliedCoupon(couponCode.toUpperCase());
+      toast({
+        title: "Coupon Applied!",
+        description: `You saved ₹${couponCode.toUpperCase() === 'WELCOME50' ? 50 : 20} with coupon ${couponCode.toUpperCase()}`,
+      });
+    } else {
+      toast({
+        title: "Invalid Coupon",
+        description: "Please enter a valid coupon code",
+        variant: "destructive",
+      });
+    }
   };
 
   const handlePayment = () => {
@@ -58,7 +83,16 @@ const Checkout = () => {
         description: "You need to be logged in to place an order",
         variant: "destructive",
       });
-      navigate('/auth');
+      navigate('/auth', { state: { returnTo: '/checkout' } });
+      return;
+    }
+
+    if (!selectedAddress) {
+      toast({
+        title: "Add delivery address",
+        description: "Please add or select a delivery address",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -81,7 +115,7 @@ const Checkout = () => {
       return;
     }
 
-    if ((paymentMethod === 'credit' || paymentMethod === 'debit') && (!cardNumber || !expiryDate || !cvv || !nameOnCard)) {
+    if ((paymentMethod === 'card') && (!cardNumber || !expiryDate || !cvv || !nameOnCard)) {
       toast({
         title: "Complete card details",
         description: "Please fill in all card details",
@@ -90,6 +124,28 @@ const Checkout = () => {
       return;
     }
 
+    // Create order details
+    const orderDetails = {
+      orderNumber: '#AG' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+      date: new Date().toLocaleDateString('en-IN', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      }),
+      items: items.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      shippingAddress: selectedAddress,
+      paymentSummary: {
+        subtotal: totalPrice,
+        delivery: deliveryFee,
+        discount: discount + couponDiscount,
+        total: finalTotal
+      }
+    };
+
     // Simulate payment processing
     toast({
       title: "Order placed successfully!",
@@ -97,7 +153,7 @@ const Checkout = () => {
     });
 
     clearCart();
-    navigate('/profile');
+    navigate('/order-confirmation', { state: { orderDetails } });
   };
 
   if (items.length === 0) {
@@ -128,11 +184,25 @@ const Checkout = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Payment Methods */}
-          <div className="lg:col-span-2">
+          {/* Left Column - Address and Payment */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Address Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Choose Payment Method</CardTitle>
+                <CardTitle className="text-lg">1. Delivery Address</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AddressManager 
+                  onAddressSelect={handleAddressSelect}
+                  selectedAddressId={selectedAddress?.id}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Payment Methods */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">2. Choose Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
                 <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
@@ -148,28 +218,14 @@ const Checkout = () => {
                             <p className="text-sm text-gray-600">Pay by any UPI app</p>
                           </div>
                         </div>
-                        {discountApplied && (
-                          <span className="text-green-600 text-sm font-medium flex items-center">
-                            <Percent className="h-4 w-4 mr-1" />
-                            10% Discount Applied
-                          </span>
-                        )}
+                        <span className="text-green-600 text-sm font-medium flex items-center">
+                          <Percent className="h-4 w-4 mr-1" />
+                          10% Off
+                        </span>
                       </div>
                     </div>
                     {paymentMethod === 'upi' && (
                       <div className="mt-4 pl-8">
-                        <div className="flex items-center space-x-2 mb-3">
-                          <input
-                            type="radio"
-                            id="add-new-upi"
-                            name="upi-option"
-                            defaultChecked
-                            className="text-blue-600"
-                          />
-                          <Label htmlFor="add-new-upi" className="text-sm font-medium cursor-pointer">
-                            Add new UPI ID
-                          </Label>
-                        </div>
                         <div className="flex space-x-2">
                           <Input
                             placeholder="Enter your UPI ID"
@@ -190,14 +246,12 @@ const Checkout = () => {
                   <div className="border rounded-lg p-4">
                     <div className="flex items-center space-x-3">
                       <RadioGroupItem value="card" id="card" />
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center space-x-3">
-                          <CreditCard className="h-6 w-6 text-green-600" />
-                          <div>
-                            <Label htmlFor="card" className="text-base font-medium cursor-pointer">Credit / Debit / ATM Card</Label>
-                            <p className="text-sm text-gray-600">Add and secure cards as per RBI guidelines</p>
-                            <p className="text-sm text-green-600">5% Unlimited Cashback on AgriCaptain Axis Bank Credit Card</p>
-                          </div>
+                      <div className="flex items-center space-x-3">
+                        <CreditCard className="h-6 w-6 text-green-600" />
+                        <div>
+                          <Label htmlFor="card" className="text-base font-medium cursor-pointer">Credit / Debit / ATM Card</Label>
+                          <p className="text-sm text-gray-600">Add and secure cards as per RBI guidelines</p>
+                          <p className="text-sm text-green-600">5% Unlimited Cashback on AgriCaptain Axis Bank Credit Card</p>
                         </div>
                       </div>
                     </div>
@@ -249,7 +303,8 @@ const Checkout = () => {
                         <CreditCard className="h-6 w-6 text-orange-600" />
                         <div>
                           <Label htmlFor="emi" className="text-base font-medium cursor-pointer">EMI</Label>
-                          <p className="text-sm text-gray-600">Get Debit and Cardless EMIs on HDFC Bank</p>
+                          <p className="text-sm text-gray-600">Get Debit and Cardless EMIs on HDFC Bank, SBI, ICICI Bank</p>
+                          <p className="text-sm text-blue-600">Starting from ₹833/month</p>
                         </div>
                       </div>
                     </div>
@@ -263,6 +318,7 @@ const Checkout = () => {
                         <Building className="h-6 w-6 text-blue-700" />
                         <div>
                           <Label htmlFor="netbanking" className="text-base font-medium cursor-pointer">Net Banking</Label>
+                          <p className="text-sm text-gray-600">All major banks supported</p>
                         </div>
                       </div>
                     </div>
@@ -284,33 +340,53 @@ const Checkout = () => {
                     </div>
                   </div>
                 </RadioGroup>
-
-                {/* UPI Discount Offer */}
-                {!discountApplied && paymentMethod !== 'upi' && (
-                  <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Gift className="h-5 w-5 text-green-600" />
-                      <span className="font-medium text-green-800">Special UPI Offer!</span>
-                    </div>
-                    <p className="text-sm text-green-700 mb-3">
-                      Pay with UPI and get 10% instant discount on your order
-                    </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowUPIConfirmation(true)}
-                      className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
-                    >
-                      Get 10% Discount
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Payment Summary */}
-          <div>
+          {/* Right Column - Order Summary */}
+          <div className="space-y-4">
+            {/* Coupon Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <Tag className="h-5 w-5 mr-2 text-green-600" />
+                  Coupons & Offers
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Enter coupon code"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button variant="outline" onClick={handleCouponApply}>Apply</Button>
+                  </div>
+                  
+                  {appliedCoupon && (
+                    <div className="bg-green-50 border border-green-200 rounded p-3">
+                      <p className="text-green-800 text-sm font-medium">✓ {appliedCoupon} applied</p>
+                      <p className="text-green-600 text-xs">You saved ₹{couponDiscount}</p>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2 text-sm">
+                    <p className="font-medium">Available Coupons:</p>
+                    <div className="space-y-1 text-gray-600">
+                      <p>• SAVE10 - ₹20 off on orders above ₹500</p>
+                      <p>• FIRST20 - ₹50 off for first time buyers</p>
+                      <p>• WELCOME50 - ₹50 off (Limited time)</p>
+                      <p>• UPI10 - Extra 10% off with UPI payment</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Price Details */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
@@ -323,14 +399,28 @@ const Checkout = () => {
                   <span>Total MRP</span>
                   <span>₹{totalPrice.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-green-600">
                   <span>Delivery Charges</span>
-                  <span className="text-green-600">₹{deliveryFee.toFixed(2)}</span>
+                  <span>Free</span>
                 </div>
-                {discountApplied && (
+                <div className="flex justify-between text-green-600">
+                  <span>Platform Fee</span>
+                  <span>Free</span>
+                </div>
+                <div className="flex justify-between text-green-600">
+                  <span>Handling Charges</span>
+                  <span>Free</span>
+                </div>
+                {paymentMethod === 'upi' && (
                   <div className="flex justify-between text-green-600">
                     <span>UPI Discount (10%)</span>
                     <span>-₹{discount.toFixed(2)}</span>
+                  </div>
+                )}
+                {appliedCoupon && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Coupon Discount</span>
+                    <span>-₹{couponDiscount.toFixed(2)}</span>
                   </div>
                 )}
                 <Separator />
@@ -344,13 +434,13 @@ const Checkout = () => {
                   <Button 
                     onClick={handlePayment} 
                     className="w-full h-12 text-base font-medium bg-orange-500 hover:bg-orange-600 text-white"
-                    disabled={!paymentMethod}
+                    disabled={!paymentMethod || !selectedAddress}
                   >
                     PAY ₹{finalTotal.toFixed(0)}
                   </Button>
-                  {!paymentMethod && (
+                  {(!paymentMethod || !selectedAddress) && (
                     <p className="text-xs text-gray-500 mt-2 text-center">
-                      Please select a payment method
+                      {!selectedAddress ? 'Please select delivery address' : 'Please select payment method'}
                     </p>
                   )}
                 </div>
@@ -358,7 +448,7 @@ const Checkout = () => {
             </Card>
 
             {/* 5% Cashback Offer */}
-            <Card className="mt-4 bg-green-50 border-green-200">
+            <Card className="bg-green-50 border-green-200">
               <CardContent className="p-4">
                 <div className="text-center">
                   <p className="text-green-800 font-medium text-sm">5% Cashback</p>
@@ -371,15 +461,6 @@ const Checkout = () => {
       </div>
 
       <Footer />
-
-      {/* UPI Payment Confirmation Dialog */}
-      <UPIPaymentConfirmation
-        open={showUPIConfirmation}
-        onOpenChange={setShowUPIConfirmation}
-        amount={totalPrice}
-        onPaymentComplete={handleUPIPaymentComplete}
-        onRegularPayment={handleRegularPayment}
-      />
     </div>
   );
 };

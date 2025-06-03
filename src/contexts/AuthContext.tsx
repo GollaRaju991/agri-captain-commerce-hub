@@ -50,6 +50,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setUser(mockUser);
     localStorage.setItem('agricaptain_user', JSON.stringify(mockUser));
+    
+    // Handle return URL after login
+    const returnTo = localStorage.getItem('returnTo');
+    if (returnTo) {
+      localStorage.removeItem('returnTo');
+      window.location.href = returnTo;
+    }
+    
     return true;
   };
 
@@ -67,6 +75,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setUser(mockUser);
       localStorage.setItem('agricaptain_user', JSON.stringify(mockUser));
+      
+      // Handle return URL after login
+      const returnTo = localStorage.getItem('returnTo');
+      if (returnTo) {
+        localStorage.removeItem('returnTo');
+        window.location.href = returnTo;
+      }
+      
       return true;
     }
     return false;
@@ -85,6 +101,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     setUser(mockUser);
     localStorage.setItem('agricaptain_user', JSON.stringify(mockUser));
+    
+    // Handle return URL after signup
+    const returnTo = localStorage.getItem('returnTo');
+    if (returnTo) {
+      localStorage.removeItem('returnTo');
+      window.location.href = returnTo;
+    }
+    
     return true;
   };
 

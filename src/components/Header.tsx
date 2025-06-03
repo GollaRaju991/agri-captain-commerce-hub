@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -278,16 +277,6 @@ const Header = () => {
                   </Button>
                   {activeDropdown === 'login' && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-50 border">
-                      <div className="px-4 py-3 border-b">
-                        <p className="text-sm text-gray-600">New customer?</p>
-                        <Link 
-                          to="/auth" 
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                          onClick={() => setActiveDropdown(null)}
-                        >
-                          Sign Up
-                        </Link>
-                      </div>
                       {userMenuItems.map((item, index) => {
                         const IconComponent = item.icon;
                         return (

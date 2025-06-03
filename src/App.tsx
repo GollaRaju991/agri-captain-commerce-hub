@@ -16,6 +16,8 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import FarmWorker from "./pages/FarmWorker";
 import VehicleRent from "./pages/VehicleRent";
+import BecomeSeller from "./pages/BecomeSeller";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,8 @@ const App = () => (
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/farm-worker" element={<FarmWorker />} />
                   <Route path="/vehicle-rent" element={<VehicleRent />} />
+                  <Route path="/become-seller" element={<BecomeSeller />} />
+                  <Route path="/order-confirmation" element={<OrderConfirmation />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, ShoppingCart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
   const { translations } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,6 +50,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       title: translations.added_to_cart || "Added to Cart",
       description: `${product.name} has been added to your cart`,
     });
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Add to cart first
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      category: product.category,
+    });
+
+    // Navigate to cart page
+    navigate('/cart');
   };
 
   return (
@@ -109,6 +127,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {translations.add_to_cart || "Add to Cart"}
             </Button>
             <Button
+              onClick={handleBuyNow}
               variant="outline"
               className="flex-1 border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
               size="sm"

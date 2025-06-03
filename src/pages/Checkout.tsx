@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { CreditCard, Smartphone, Building, Truck, Gift, Percent } from 'lucide-react';
+import { CreditCard, Smartphone, Building, Truck, Gift, Percent, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import UPIPaymentConfirmation from '@/components/UPIPaymentConfirmation';
 
@@ -49,7 +49,6 @@ const Checkout = () => {
 
   const handleRegularPayment = () => {
     setShowUPIConfirmation(false);
-    // Continue with regular checkout process
   };
 
   const handlePayment = () => {
@@ -120,163 +119,119 @@ const Checkout = () => {
       <Header />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Complete Payment</h1>
+          <div className="flex items-center text-green-600">
+            <Shield className="h-5 w-5 mr-2" />
+            <span className="text-sm font-medium">100% Secure</span>
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Order Summary */}
+          {/* Payment Methods */}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
+                <CardTitle className="text-lg">Choose Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center py-2 border-b">
-                      <div>
-                        <h3 className="font-medium">{item.name}</h3>
-                        <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
-                      </div>
-                      <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Payment Methods */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Payment Method</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
                   {/* UPI Payment */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
                       <RadioGroupItem value="upi" id="upi" />
-                      <Label htmlFor="upi" className="flex items-center space-x-2 cursor-pointer">
-                        <Smartphone className="h-5 w-5 text-blue-600" />
-                        <span>UPI Payment</span>
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center space-x-3">
+                          <Smartphone className="h-6 w-6 text-blue-600" />
+                          <div>
+                            <Label htmlFor="upi" className="text-base font-medium cursor-pointer">UPI</Label>
+                            <p className="text-sm text-gray-600">Pay by any UPI app</p>
+                          </div>
+                        </div>
                         {discountApplied && (
                           <span className="text-green-600 text-sm font-medium flex items-center">
                             <Percent className="h-4 w-4 mr-1" />
                             10% Discount Applied
                           </span>
                         )}
-                      </Label>
+                      </div>
                     </div>
                     {paymentMethod === 'upi' && (
-                      <div className="ml-6 space-y-2">
-                        <Label htmlFor="upi-id">UPI ID</Label>
-                        <Input
-                          id="upi-id"
-                          placeholder="Enter your UPI ID (e.g., name@paytm)"
-                          value={upiId}
-                          onChange={(e) => setUpiId(e.target.value)}
-                        />
-                        <p className="text-sm text-gray-600">Supports PhonePe, Google Pay, Paytm, and other UPI apps</p>
+                      <div className="mt-4 pl-8">
+                        <div className="flex items-center space-x-2 mb-3">
+                          <input
+                            type="radio"
+                            id="add-new-upi"
+                            name="upi-option"
+                            defaultChecked
+                            className="text-blue-600"
+                          />
+                          <Label htmlFor="add-new-upi" className="text-sm font-medium cursor-pointer">
+                            Add new UPI ID
+                          </Label>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Input
+                            placeholder="Enter your UPI ID"
+                            value={upiId}
+                            onChange={(e) => setUpiId(e.target.value)}
+                            className="flex-1"
+                          />
+                          <Button variant="outline" size="sm">Verify</Button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">
+                          You need to have a registered account with any UPI app like Paytm, Google Pay, PhonePe
+                        </p>
                       </div>
                     )}
                   </div>
 
-                  {/* Credit Card */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="credit" id="credit" />
-                      <Label htmlFor="credit" className="flex items-center space-x-2 cursor-pointer">
-                        <CreditCard className="h-5 w-5 text-green-600" />
-                        <span>Credit Card</span>
-                      </Label>
-                    </div>
-                    {paymentMethod === 'credit' && (
-                      <div className="ml-6 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                  {/* Credit/Debit Card */}
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="card" id="card" />
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center space-x-3">
+                          <CreditCard className="h-6 w-6 text-green-600" />
                           <div>
-                            <Label htmlFor="card-name">Name on Card</Label>
-                            <Input
-                              id="card-name"
-                              placeholder="Full Name"
-                              value={nameOnCard}
-                              onChange={(e) => setNameOnCard(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="card-number">Card Number</Label>
-                            <Input
-                              id="card-number"
-                              placeholder="1234 5678 9012 3456"
-                              value={cardNumber}
-                              onChange={(e) => setCardNumber(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="expiry">Expiry Date</Label>
-                            <Input
-                              id="expiry"
-                              placeholder="MM/YY"
-                              value={expiryDate}
-                              onChange={(e) => setExpiryDate(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="cvv">CVV</Label>
-                            <Input
-                              id="cvv"
-                              placeholder="123"
-                              value={cvv}
-                              onChange={(e) => setCvv(e.target.value)}
-                            />
+                            <Label htmlFor="card" className="text-base font-medium cursor-pointer">Credit / Debit / ATM Card</Label>
+                            <p className="text-sm text-gray-600">Add and secure cards as per RBI guidelines</p>
+                            <p className="text-sm text-green-600">5% Unlimited Cashback on AgriCaptain Axis Bank Credit Card</p>
                           </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Debit Card */}
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="debit" id="debit" />
-                      <Label htmlFor="debit" className="flex items-center space-x-2 cursor-pointer">
-                        <CreditCard className="h-5 w-5 text-purple-600" />
-                        <span>Debit Card</span>
-                      </Label>
                     </div>
-                    {paymentMethod === 'debit' && (
-                      <div className="ml-6 space-y-4">
+                    {paymentMethod === 'card' && (
+                      <div className="mt-4 pl-8 space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label htmlFor="debit-name">Name on Card</Label>
+                            <Label className="text-sm">Card Number</Label>
                             <Input
-                              id="debit-name"
-                              placeholder="Full Name"
-                              value={nameOnCard}
-                              onChange={(e) => setNameOnCard(e.target.value)}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="debit-number">Card Number</Label>
-                            <Input
-                              id="debit-number"
-                              placeholder="1234 5678 9012 3456"
+                              placeholder="Enter Card Number"
                               value={cardNumber}
                               onChange={(e) => setCardNumber(e.target.value)}
                             />
                           </div>
                           <div>
-                            <Label htmlFor="debit-expiry">Expiry Date</Label>
+                            <Label className="text-sm">Name on Card</Label>
                             <Input
-                              id="debit-expiry"
+                              placeholder="Enter Name on Card"
+                              value={nameOnCard}
+                              onChange={(e) => setNameOnCard(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-sm">Valid Thru</Label>
+                            <Input
                               placeholder="MM/YY"
                               value={expiryDate}
                               onChange={(e) => setExpiryDate(e.target.value)}
                             />
                           </div>
                           <div>
-                            <Label htmlFor="debit-cvv">CVV</Label>
+                            <Label className="text-sm">CVV</Label>
                             <Input
-                              id="debit-cvv"
-                              placeholder="123"
+                              placeholder="CVV"
                               value={cvv}
                               onChange={(e) => setCvv(e.target.value)}
                             />
@@ -287,35 +242,46 @@ const Checkout = () => {
                   </div>
 
                   {/* EMI */}
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="emi" id="emi" />
-                    <Label htmlFor="emi" className="flex items-center space-x-2 cursor-pointer">
-                      <CreditCard className="h-5 w-5 text-orange-600" />
-                      <span>EMI (Easy Monthly Installments)</span>
-                    </Label>
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="emi" id="emi" />
+                      <div className="flex items-center space-x-3">
+                        <CreditCard className="h-6 w-6 text-orange-600" />
+                        <div>
+                          <Label htmlFor="emi" className="text-base font-medium cursor-pointer">EMI</Label>
+                          <p className="text-sm text-gray-600">Get Debit and Cardless EMIs on HDFC Bank</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Net Banking */}
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="netbanking" id="netbanking" />
-                    <Label htmlFor="netbanking" className="flex items-center space-x-2 cursor-pointer">
-                      <Building className="h-5 w-5 text-blue-700" />
-                      <span>Net Banking</span>
-                    </Label>
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value="netbanking" id="netbanking" />
+                      <div className="flex items-center space-x-3">
+                        <Building className="h-6 w-6 text-blue-700" />
+                        <div>
+                          <Label htmlFor="netbanking" className="text-base font-medium cursor-pointer">Net Banking</Label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Cash on Delivery */}
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-center space-x-3">
                       <RadioGroupItem value="cod" id="cod" />
-                      <Label htmlFor="cod" className="flex items-center space-x-2 cursor-pointer">
-                        <Truck className="h-5 w-5 text-yellow-600" />
-                        <span>Cash on Delivery</span>
-                      </Label>
+                      <div className="flex items-center space-x-3">
+                        <Truck className="h-6 w-6 text-yellow-600" />
+                        <div>
+                          <Label htmlFor="cod" className="text-base font-medium cursor-pointer">Cash on Delivery</Label>
+                          <p className="text-sm text-orange-600">
+                            💡 Complete payment before delivery and get 10% discount!
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <p className="ml-6 text-sm text-orange-600">
-                      💡 Complete payment before delivery and get 10% discount!
-                    </p>
                   </div>
                 </RadioGroup>
 
@@ -347,16 +313,19 @@ const Checkout = () => {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Payment Summary</CardTitle>
+                <CardTitle className="flex justify-between items-center">
+                  <span>Price Details</span>
+                  <span className="text-sm font-normal">({items.length} item{items.length > 1 ? 's' : ''})</span>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
-                  <span>Subtotal</span>
+                  <span>Total MRP</span>
                   <span>₹{totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Delivery Fee</span>
-                  <span>₹{deliveryFee.toFixed(2)}</span>
+                  <span>Delivery Charges</span>
+                  <span className="text-green-600">₹{deliveryFee.toFixed(2)}</span>
                 </div>
                 {discountApplied && (
                   <div className="flex justify-between text-green-600">
@@ -366,16 +335,35 @@ const Checkout = () => {
                 )}
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
-                  <span>Total</span>
+                  <span>Total Amount</span>
                   <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
-                <Button 
-                  onClick={handlePayment} 
-                  className="w-full mt-6"
-                  disabled={!paymentMethod}
-                >
-                  Place Order
-                </Button>
+                
+                {/* Flipkart-style Pay Button */}
+                <div className="mt-6">
+                  <Button 
+                    onClick={handlePayment} 
+                    className="w-full h-12 text-base font-medium bg-orange-500 hover:bg-orange-600 text-white"
+                    disabled={!paymentMethod}
+                  >
+                    PAY ₹{finalTotal.toFixed(0)}
+                  </Button>
+                  {!paymentMethod && (
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      Please select a payment method
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 5% Cashback Offer */}
+            <Card className="mt-4 bg-green-50 border-green-200">
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-green-800 font-medium text-sm">5% Cashback</p>
+                  <p className="text-green-700 text-xs">Claim now with payment offers</p>
+                </div>
               </CardContent>
             </Card>
           </div>

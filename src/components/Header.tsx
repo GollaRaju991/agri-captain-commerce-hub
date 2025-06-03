@@ -19,7 +19,11 @@ import {
   Users,
   Truck,
   CreditCard,
-  UserPlus
+  UserPlus,
+  Package,
+  Heart,
+  Gift,
+  Bell
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -129,6 +133,15 @@ const Header = () => {
     }
   }, []);
 
+  const userMenuItems = [
+    { name: 'My Profile', icon: User, href: '/profile' },
+    { name: 'Orders', icon: Package, href: '/orders' },
+    { name: 'Wishlist', icon: Heart, href: '/wishlist' },
+    { name: 'Coupons', icon: Gift, href: '/coupons' },
+    { name: 'Gift Cards', icon: CreditCard, href: '/gift-cards' },
+    { name: 'Notifications', icon: Bell, href: '/notifications' }
+  ];
+
   return (
     <>
       {/* Main Header */}
@@ -219,32 +232,88 @@ const Header = () => {
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                   {activeDropdown === 'user' && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border">
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        {translations.profile}
-                      </Link>
-                      <button
-                        onClick={() => {
-                          logout();
-                          setActiveDropdown(null);
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
-                      >
-                        Logout
-                      </button>
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-50 border">
+                      <div className="px-4 py-2 border-b">
+                        <p className="text-sm font-medium text-gray-900">Hello {user.name}</p>
+                      </div>
+                      {userMenuItems.map((item, index) => {
+                        const IconComponent = item.icon;
+                        return (
+                          <Link
+                            key={index}
+                            to={item.href}
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
+                            onClick={() => setActiveDropdown(null)}
+                          >
+                            <IconComponent className="h-4 w-4 mr-3" />
+                            {item.name}
+                          </Link>
+                        );
+                      })}
+                      <div className="border-t mt-1 pt-1">
+                        <button
+                          onClick={() => {
+                            logout();
+                            setActiveDropdown(null);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
+                        >
+                          Logout
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <Link to="/auth">
-                  <Button variant="outline" size="sm" className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white">
-                    {translations.login}
+                <div className="relative">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveDropdown(activeDropdown === 'login' ? null : 'login')}
+                    className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white flex items-center space-x-1"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{translations.login}</span>
+                    <ChevronDown className="h-4 w-4" />
                   </Button>
-                </Link>
+                  {activeDropdown === 'login' && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-50 border">
+                      <div className="px-4 py-3 border-b">
+                        <p className="text-sm text-gray-600">New customer?</p>
+                        <Link 
+                          to="/auth" 
+                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Sign Up
+                        </Link>
+                      </div>
+                      {userMenuItems.map((item, index) => {
+                        const IconComponent = item.icon;
+                        return (
+                          <Link
+                            key={index}
+                            to="/auth"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
+                            onClick={() => setActiveDropdown(null)}
+                          >
+                            <IconComponent className="h-4 w-4 mr-3" />
+                            {item.name}
+                          </Link>
+                        );
+                      })}
+                      <div className="border-t mt-1 pt-1">
+                        <Link
+                          to="/auth"
+                          className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 font-medium"
+                          onClick={() => setActiveDropdown(null)}
+                        >
+                          Login
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
 
               {/* Mobile Menu Button */}

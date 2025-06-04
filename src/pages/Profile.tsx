@@ -2,6 +2,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import EditProfile from '@/components/EditProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -57,7 +58,7 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Sidebar */}
           <div className="space-y-6">
@@ -68,7 +69,7 @@ const Profile = () => {
                   <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <User className="h-10 w-10 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{user.name || 'AgriCaptain User'}</h2>
                   <p className="text-gray-600">AgriCaptain Member</p>
                 </div>
               </CardContent>
@@ -99,9 +100,7 @@ const Profile = () => {
                   <MapPin className="h-5 w-5 text-gray-400" />
                   <span className="text-sm">Address not set</span>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-4">
-                  Edit Profile
-                </Button>
+                <EditProfile />
               </CardContent>
             </Card>
 
@@ -136,7 +135,7 @@ const Profile = () => {
             <Card>
               <CardContent className="p-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Welcome back, {user.name}!
+                  Welcome back, {user.name || 'AgriCaptain User'}!
                 </h1>
                 <p className="text-gray-600">
                   Manage your orders, track deliveries, and update your profile information.

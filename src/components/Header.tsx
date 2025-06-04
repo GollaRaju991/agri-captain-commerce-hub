@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -144,19 +145,19 @@ const Header = () => {
   return (
     <>
       {/* Main Header */}
-      <header className="bg-white shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-4">
+      <header className="bg-white shadow-md sticky top-0 z-50 w-full">
+        <div className="max-w-full mx-auto px-2 sm:px-4">
           <div className="flex items-center justify-between py-4">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">A</span>
+            <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-lg sm:text-xl">A</span>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">AgriCaptain</span>
+              <span className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">AgriCaptain</span>
             </Link>
 
             {/* Search Bar - Hidden on mobile */}
-            <div className="hidden lg:flex flex-1 max-w-2xl mx-8">
+            <div className="hidden lg:flex flex-1 max-w-2xl mx-4 xl:mx-8">
               <form onSubmit={handleSearch} className="flex w-full">
                 <Input
                   type="text"
@@ -175,12 +176,12 @@ const Header = () => {
             </div>
 
             {/* User Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-1 sm:space-x-4">
               {/* Mobile Search Button */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden text-green-600 hover:text-green-700 hover:bg-green-50"
+                className="lg:hidden text-green-600 hover:text-green-700 hover:bg-green-50 p-2"
                 onClick={() => {/* Could implement mobile search modal */}}
               >
                 <Search className="h-5 w-5" />
@@ -191,23 +192,24 @@ const Header = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setLanguageDialogOpen(true)}
-                className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2"
+                className="text-green-600 hover:text-green-700 hover:bg-green-50 h-8 px-2 hidden sm:flex"
               >
                 <Languages className="h-4 w-4 mr-1" />
-                Language
+                <span className="hidden md:inline">Language</span>
               </Button>
 
               {/* Become Seller */}
               <Link to="/become-seller">
-                <Button variant="outline" size="sm" className="border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white">
+                <Button variant="outline" size="sm" className="border-orange-500 text-orange-600 hover:bg-orange-500 hover:text-white text-xs sm:text-sm px-2 sm:px-4">
                   <UserPlus className="h-4 w-4 mr-1" />
-                  Become Seller
+                  <span className="hidden sm:inline">Become Seller</span>
+                  <span className="sm:hidden">Seller</span>
                 </Button>
               </Link>
 
               {/* Cart */}
               <Link to="/cart">
-                <Button variant="ghost" size="sm" className="relative text-green-600 hover:text-green-700 hover:bg-green-50">
+                <Button variant="ghost" size="sm" className="relative text-green-600 hover:text-green-700 hover:bg-green-50 p-2">
                   <ShoppingCart className="h-5 w-5" />
                   {totalItems > 0 && (
                     <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-500 text-xs">
@@ -224,16 +226,16 @@ const Header = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setActiveDropdown(activeDropdown === 'user' ? null : 'user')}
-                    className="flex items-center space-x-1 text-green-600 hover:text-green-700 hover:bg-green-50"
+                    className="flex items-center space-x-1 text-green-600 hover:text-green-700 hover:bg-green-50 px-2"
                   >
                     <User className="h-5 w-5" />
-                    <span className="hidden md:inline">{user.name}</span>
+                    <span className="hidden md:inline truncate max-w-24">AgriCaptain User</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                   {activeDropdown === 'user' && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2 z-50 border">
                       <div className="px-4 py-2 border-b">
-                        <p className="text-sm font-medium text-gray-900">Hello {user.name}</p>
+                        <p className="text-sm font-medium text-gray-900">Hello {user.name || 'AgriCaptain User'}</p>
                       </div>
                       {userMenuItems.map((item, index) => {
                         const IconComponent = item.icon;
@@ -269,10 +271,10 @@ const Header = () => {
                     variant="outline"
                     size="sm"
                     onClick={() => setActiveDropdown(activeDropdown === 'login' ? null : 'login')}
-                    className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white flex items-center space-x-1"
+                    className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white flex items-center space-x-1 px-2"
                   >
                     <User className="h-4 w-4" />
-                    <span>{translations.login}</span>
+                    <span className="hidden sm:inline">{translations.login}</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                   {activeDropdown === 'login' && (
@@ -309,7 +311,7 @@ const Header = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden text-green-600 hover:text-green-700 hover:bg-green-50"
+                className="lg:hidden text-green-600 hover:text-green-700 hover:bg-green-50 p-2"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

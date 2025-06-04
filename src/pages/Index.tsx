@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -6,7 +5,7 @@ import HeroSlider from '@/components/HeroSlider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Truck, Shield, Headphones, Users, Share2 } from 'lucide-react';
+import { Star, Truck, Shield, Headphones, Users, Share2, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -269,7 +268,7 @@ const Index = () => {
 
       {/* Features Section */}
       <section className="py-8 md:py-16 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
@@ -289,7 +288,7 @@ const Index = () => {
 
       {/* Featured Products */}
       <section className="py-8 md:py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">{translations.featured_products || "Featured Products"}</h2>
             <p className="text-sm md:text-base text-gray-600">{translations.discover_products || "Discover our top-quality agricultural products"}</p>
@@ -318,11 +317,16 @@ const Index = () => {
                     <span className="text-base md:text-lg font-bold text-green-600">₹{product.price}</span>
                     <span className="text-xs md:text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
                   </div>
-                  <Link to={`/product/${product.id}`}>
-                    <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs md:text-sm py-2 md:py-3">
-                      {translations.view_details || "View Details"}
-                    </Button>
-                  </Link>
+                  <div className="flex space-x-2">
+                    <Link to={`/product/${product.id}`} className="flex-1">
+                      <Button 
+                        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs md:text-sm py-2 md:py-3"
+                        onClick={() => window.scrollTo(0, 0)}
+                      >
+                        {translations.view_details || "View Details"}
+                      </Button>
+                    </Link>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -330,7 +334,11 @@ const Index = () => {
           
           <div className="text-center mt-8 md:mt-12">
             <Link to="/products">
-              <Button size="lg" className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-6 md:px-8 py-3 md:py-4">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 px-6 md:px-8 py-3 md:py-4"
+                onClick={() => window.scrollTo(0, 0)}
+              >
                 {translations.view_all_products || "View All Products"}
               </Button>
             </Link>
@@ -340,7 +348,7 @@ const Index = () => {
 
       {/* Categories Section */}
       <section className="py-8 md:py-16 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">{translations.shop_by_category || "Shop by Category"}</h2>
             <p className="text-sm md:text-base text-gray-600">{translations.browse_categories || "Browse our wide range of agricultural categories"}</p>
@@ -370,27 +378,32 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Social Media Sharing Section */}
-      <section className="py-8 md:py-16 bg-green-50">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">Share AgriCaptain with Friends</h2>
-          <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">Help us grow the farming community by sharing our app</p>
-          
-          <div className="flex justify-center flex-wrap gap-3 md:gap-4">
-            {socialMediaLinks.map((social, index) => (
-              <a
-                key={index}
-                href={social.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${social.color} text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:opacity-90 transition-opacity flex items-center space-x-2 text-sm md:text-base`}
-              >
-                <Share2 className="h-3 w-3 md:h-4 md:w-4" />
-                <span className="hidden sm:inline">Share on</span>
-                <span>{social.name}</span>
-              </a>
-            ))}
-          </div>
+      {/* Refer Friends Section - Smaller width */}
+      <section className="py-6 md:py-8 bg-green-50">
+        <div className="max-w-4xl mx-auto px-4">
+          <Card className="bg-gradient-to-r from-green-600 to-green-700 text-white border-0">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <Gift className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold">Refer Friends & Earn ₹25</h3>
+                    <p className="text-sm text-green-100">Get ₹25 for each successful referral. 50 referrals = ₹1000 directly to your UPI!</p>
+                  </div>
+                </div>
+                <div className="flex space-x-3">
+                  <Button variant="secondary" className="bg-white text-green-700 hover:bg-gray-100">
+                    Refer Now
+                  </Button>
+                  <Button variant="outline" className="border-white text-white hover:bg-white hover:text-green-700">
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 

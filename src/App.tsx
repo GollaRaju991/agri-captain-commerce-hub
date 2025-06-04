@@ -14,6 +14,9 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import Orders from "./pages/Orders";
+import Coupons from "./pages/Coupons";
+import Notifications from "./pages/Notifications";
 import FarmWorker from "./pages/FarmWorker";
 import VehicleRent from "./pages/VehicleRent";
 import BecomeSeller from "./pages/BecomeSeller";
@@ -40,6 +43,9 @@ const App = () => (
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/coupons" element={<Coupons />} />
+                  <Route path="/notifications" element={<Notifications />} />
                   <Route path="/farm-worker" element={<FarmWorker />} />
                   <Route path="/vehicle-rent" element={<VehicleRent />} />
                   <Route path="/become-seller" element={<BecomeSeller />} />

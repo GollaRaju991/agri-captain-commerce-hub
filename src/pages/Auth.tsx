@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,14 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Phone, Mail } from 'lucide-react';
+import { Loader2, Phone, Mail, Eye, EyeOff } from 'lucide-react';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const { login, loginWithOTP, signup, sendOTP } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { login, loginWithOTP, signup, sendOTP, user, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -26,6 +35,7 @@ const Auth = () => {
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     phone: ''
   });
 
@@ -39,18 +49,24 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const success = await login(loginForm.email, loginForm.password);
-      if (success) {
+      const result = await login(loginForm.email, loginForm.password);
+      if (result.success) {
         toast({
           title: "Login Successful",
           description: "Welcome back to AgriCaptain!"
         });
         navigate('/');
+      } else {
+        toast({
+          title: "Login Failed",
+          description: result.error || "Please check your credentials and try again.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       toast({
         title: "Login Failed",
-        description: "Please check your credentials and try again.",
+        description: "An unexpected error occurred.",
         variant: "destructive"
       });
     } finally {
@@ -60,21 +76,36 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (signupForm.password !== signupForm.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      const success = await signup(signupForm.name, signupForm.email, signupForm.password, signupForm.phone);
-      if (success) {
+      const result = await signup(signupForm.name, signupForm.email, signupForm.password, signupForm.phone);
+      if (result.success) {
         toast({
           title: "Account Created",
-          description: "Welcome to AgriCaptain!"
+          description: "Please check your email to verify your account"
         });
-        navigate('/');
+      } else {
+        toast({
+          title: "Signup Failed",
+          description: result.error || "Please try again.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       toast({
         title: "Signup Failed",
-        description: "Please try again.",
+        description: "An unexpected error occurred.",
         variant: "destructive"
       });
     } finally {
@@ -87,18 +118,24 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const success = await sendOTP(otpForm.phone);
-      if (success) {
+      const result = await sendOTP(otpForm.phone);
+      if (result.success) {
         setOtpSent(true);
         toast({
           title: "OTP Sent",
           description: "Please check your phone for the verification code."
         });
+      } else {
+        toast({
+          title: "Failed to Send OTP",
+          description: result.error || "Please try again.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       toast({
         title: "Failed to Send OTP",
-        description: "Please try again.",
+        description: "An unexpected error occurred.",
         variant: "destructive"
       });
     } finally {
@@ -111,8 +148,8 @@ const Auth = () => {
     setIsLoading(true);
     
     try {
-      const success = await loginWithOTP(otpForm.phone, otpForm.otp);
-      if (success) {
+      const result = await loginWithOTP(otpForm.phone, otpForm.otp);
+      if (result.success) {
         toast({
           title: "Login Successful",
           description: "Welcome to AgriCaptain!"
@@ -120,21 +157,29 @@ const Auth = () => {
         navigate('/');
       } else {
         toast({
-          title: "Invalid OTP",
-          description: "Please check the OTP and try again.",
+          title: "Login Failed",
+          description: result.error || "Invalid OTP. Please try again.",
           variant: "destructive"
         });
       }
     } catch (error) {
       toast({
         title: "Login Failed",
-        description: "Please try again.",
+        description: "An unexpected error occurred.",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -171,24 +216,37 @@ const Auth = () => {
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
                       id="email"
                       type="email"
                       value={loginForm.email}
                       onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
                       required
+                      autoComplete="email"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={loginForm.password}
-                      onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                      required
-                    />
+                    <Label htmlFor="password">Password *</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={loginForm.password}
+                        onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                        required
+                        autoComplete="current-password"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -201,7 +259,7 @@ const Auth = () => {
                 {!otpSent ? (
                   <form onSubmit={handleSendOTP} className="space-y-4">
                     <div>
-                      <Label htmlFor="phone">Phone Number</Label>
+                      <Label htmlFor="phone">Phone Number *</Label>
                       <Input
                         id="phone"
                         type="tel"
@@ -219,7 +277,7 @@ const Auth = () => {
                 ) : (
                   <form onSubmit={handleOTPLogin} className="space-y-4">
                     <div>
-                      <Label htmlFor="otp">Enter OTP</Label>
+                      <Label htmlFor="otp">Enter OTP *</Label>
                       <Input
                         id="otp"
                         type="text"
@@ -227,9 +285,10 @@ const Auth = () => {
                         value={otpForm.otp}
                         onChange={(e) => setOtpForm({...otpForm, otp: e.target.value})}
                         required
+                        maxLength={6}
                       />
                       <p className="text-sm text-gray-600 mt-1">
-                        OTP sent to {otpForm.phone} (Demo: 123456)
+                        OTP sent to {otpForm.phone}
                       </p>
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
@@ -251,23 +310,25 @@ const Auth = () => {
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div>
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">Full Name *</Label>
                     <Input
                       id="name"
                       type="text"
                       value={signupForm.name}
                       onChange={(e) => setSignupForm({...signupForm, name: e.target.value})}
                       required
+                      autoComplete="name"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
                       id="email"
                       type="email"
                       value={signupForm.email}
                       onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
                       required
+                      autoComplete="email"
                     />
                   </div>
                   <div>
@@ -278,17 +339,53 @@ const Auth = () => {
                       placeholder="+91 9876543210"
                       value={signupForm.phone}
                       onChange={(e) => setSignupForm({...signupForm, phone: e.target.value})}
+                      autoComplete="tel"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={signupForm.password}
-                      onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
-                      required
-                    />
+                    <Label htmlFor="password">Password * (min 8 characters)</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={signupForm.password}
+                        onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
+                        required
+                        minLength={8}
+                        autoComplete="new-password"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={signupForm.confirmPassword}
+                        onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
+                        required
+                        autoComplete="new-password"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

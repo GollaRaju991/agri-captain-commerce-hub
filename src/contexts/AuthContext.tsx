@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
 
-interface User {
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
+
+interface UserProfile {
   id: string;
   name: string;
   email: string;
@@ -11,13 +14,15 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  loginWithOTP: (phone: string, otp: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
-  logout: () => void;
-  sendOTP: (phone: string) => Promise<boolean>;
-  updateUser: (userData: Partial<User>) => void;
+  user: UserProfile | null;
+  session: Session | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithOTP: (phone: string, otp: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (name: string, email: string, password: string, phone?: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  sendOTP: (phone: string) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (userData: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,113 +36,251 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('agricaptain_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          // Fetch user profile from secure database
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile) {
+            setUser({
+              id: profile.id,
+              name: profile.name,
+              email: session.user.email || '',
+              phone: profile.phone,
+              address: profile.address,
+              panCard: profile.pan_card,
+              aadharCard: profile.aadhar_card
+            });
+          }
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
-      localStorage.setItem('agricaptain_user', JSON.stringify(updatedUser));
-    }
-  };
-
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: '1',
-      name: 'John Farmer',
-      email,
-      phone: '+91 9876543210'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('agricaptain_user', JSON.stringify(mockUser));
-    
-    // Handle return URL after login
-    const returnTo = localStorage.getItem('returnTo');
-    if (returnTo) {
-      localStorage.removeItem('returnTo');
-      window.location.href = returnTo;
+  const validateInput = (email?: string, password?: string, name?: string, phone?: string) => {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return 'Please enter a valid email address';
     }
     
-    return true;
+    if (password && password.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    
+    if (name && name.trim().length < 2) {
+      return 'Name must be at least 2 characters long';
+    }
+    
+    if (phone && !/^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))) {
+      return 'Please enter a valid phone number';
+    }
+    
+    return null;
   };
 
-  const loginWithOTP = async (phone: string, otp: string): Promise<boolean> => {
-    // Simulate OTP verification
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (otp === '123456') {
-      const mockUser: User = {
-        id: '2',
-        name: 'AgriCaptain User',
-        email: '',
-        phone
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('agricaptain_user', JSON.stringify(mockUser));
-      
-      // Handle return URL after login
-      const returnTo = localStorage.getItem('returnTo');
-      if (returnTo) {
-        localStorage.removeItem('returnTo');
-        window.location.href = returnTo;
+  const validatePAN = (pan: string) => {
+    return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
+  };
+
+  const validateAadhar = (aadhar: string) => {
+    return /^\d{12}$/.test(aadhar.replace(/\s/g, ''));
+  };
+
+  const updateUser = async (userData: Partial<UserProfile>): Promise<{ success: boolean; error?: string }> => {
+    if (!session?.user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      // Validate inputs
+      const validationError = validateInput(undefined, undefined, userData.name, userData.phone);
+      if (validationError) {
+        return { success: false, error: validationError };
       }
-      
-      return true;
+
+      // Validate PAN card if provided
+      if (userData.panCard && !validatePAN(userData.panCard)) {
+        return { success: false, error: 'Invalid PAN card format. Please use format: ABCDE1234F' };
+      }
+
+      // Validate Aadhar card if provided
+      if (userData.aadharCard && !validateAadhar(userData.aadharCard)) {
+        return { success: false, error: 'Invalid Aadhar card format. Please enter 12 digits' };
+      }
+
+      // Update profile in secure database
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: userData.name,
+          phone: userData.phone,
+          address: userData.address,
+          pan_card: userData.panCard,
+          aadhar_card: userData.aadharCard
+        })
+        .eq('id', session.user.id);
+
+      if (error) {
+        console.error('Profile update error:', error);
+        return { success: false, error: 'Failed to update profile' };
+      }
+
+      // Update local state
+      setUser(prev => prev ? { ...prev, ...userData } : null);
+      return { success: true };
+    } catch (error) {
+      console.error('Update user error:', error);
+      return { success: false, error: 'An unexpected error occurred' };
     }
-    return false;
   };
 
-  const signup = async (name: string, email: string, password: string, phone?: string): Promise<boolean> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: '3',
-      name,
-      email,
-      phone
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('agricaptain_user', JSON.stringify(mockUser));
-    
-    // Handle return URL after signup
-    const returnTo = localStorage.getItem('returnTo');
-    if (returnTo) {
-      localStorage.removeItem('returnTo');
-      window.location.href = returnTo;
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const validationError = validateInput(email, password);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password
+      });
+
+      if (error) {
+        console.error('Login error:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: 'An unexpected error occurred' };
     }
-    
-    return true;
   };
 
-  const sendOTP = async (phone: string): Promise<boolean> => {
-    // Simulate sending OTP
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log(`OTP sent to ${phone}: 123456`);
-    return true;
+  const signup = async (name: string, email: string, password: string, phone?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const validationError = validateInput(email, password, name, phone);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            name: name.trim(),
+            phone: phone?.trim()
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Signup error:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Signup error:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('agricaptain_user');
+  const loginWithOTP = async (phone: string, otp: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const validationError = validateInput(undefined, undefined, undefined, phone);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
+
+      if (!/^\d{6}$/.test(otp)) {
+        return { success: false, error: 'OTP must be 6 digits' };
+      }
+
+      const { error } = await supabase.auth.verifyOtp({
+        phone: phone.trim(),
+        token: otp,
+        type: 'sms'
+      });
+
+      if (error) {
+        console.error('OTP verification error:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('OTP login error:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  };
+
+  const sendOTP = async (phone: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const validationError = validateInput(undefined, undefined, undefined, phone);
+      if (validationError) {
+        return { success: false, error: validationError };
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: phone.trim()
+      });
+
+      if (error) {
+        console.error('Send OTP error:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Send OTP error:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   return (
     <AuthContext.Provider value={{
       user,
+      session,
+      loading,
       login,
       loginWithOTP,
       signup,

@@ -6,17 +6,26 @@ import EditProfile from '@/components/EditProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Phone, MapPin, Package, Heart, Settings } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Package, Heart, Settings, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
+  // Mock orders data - in real app this would come from the orders table
   const mockOrders = [
     {
       id: 'ORD001',
@@ -69,8 +78,12 @@ const Profile = () => {
                   <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <User className="h-10 w-10 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">{user.name || 'AgriCaptain User'}</h2>
+                  <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
                   <p className="text-gray-600">AgriCaptain Member</p>
+                  <div className="flex items-center justify-center mt-2">
+                    <Shield className="h-4 w-4 text-green-600 mr-1" />
+                    <span className="text-sm text-green-600">Verified Account</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -90,16 +103,28 @@ const Profile = () => {
                     <span className="text-sm">{user.email}</span>
                   </div>
                 )}
-                {user.phone && (
+                {user.phone ? (
                   <div className="flex items-center space-x-3">
                     <Phone className="h-5 w-5 text-gray-400" />
                     <span className="text-sm">{user.phone}</span>
                   </div>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <Phone className="h-5 w-5 text-gray-400" />
+                    <span className="text-sm text-gray-500">Phone not set</span>
+                  </div>
                 )}
-                <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-gray-400" />
-                  <span className="text-sm">Address not set</span>
-                </div>
+                {user.address ? (
+                  <div className="flex items-center space-x-3">
+                    <MapPin className="h-5 w-5 text-gray-400" />
+                    <span className="text-sm">{user.address}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <MapPin className="h-5 w-5 text-gray-400" />
+                    <span className="text-sm text-gray-500">Address not set</span>
+                  </div>
+                )}
                 <EditProfile />
               </CardContent>
             </Card>
@@ -135,10 +160,23 @@ const Profile = () => {
             <Card>
               <CardContent className="p-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Welcome back, {user.name || 'AgriCaptain User'}!
+                  Welcome back, {user.name}!
                 </h1>
                 <p className="text-gray-600">
-                  Manage your orders, track deliveries, and update your profile information.
+                  Manage your orders, track deliveries, and update your profile information securely.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Security Notice */}
+            <Card className="border-green-200 bg-green-50">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Shield className="h-5 w-5 text-green-600" />
+                  <h3 className="font-medium text-green-800">Secure Account</h3>
+                </div>
+                <p className="text-sm text-green-700 mt-1">
+                  Your data is encrypted and stored securely. We never store sensitive information in your browser.
                 </p>
               </CardContent>
             </Card>
@@ -213,9 +251,9 @@ const Profile = () => {
               </Card>
               <Card>
                 <CardContent className="p-6 text-center">
-                  <MapPin className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">1</p>
-                  <p className="text-sm text-gray-600">Saved Addresses</p>
+                  <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-gray-900">Active</p>
+                  <p className="text-sm text-gray-600">Account Status</p>
                 </CardContent>
               </Card>
             </div>

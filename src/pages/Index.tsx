@@ -67,7 +67,187 @@ const Index = () => {
       image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
       rating: 4.6,
       discount: 22
-    }
+    },
+    {
+    id: "5",
+    name: "Premium Tomato Seeds",
+    price: 299,
+    originalPrice: 399,
+    image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "6",
+    name: "Organic NPK Fertilizer",
+    price: 799,
+    originalPrice: 999,
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "7",
+    name: "Garden Tools Set",
+    price: 1299,
+    originalPrice: 1699,
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "8",
+    name: "Drip Irrigation Kit",
+    price: 2499,
+    originalPrice: 3199,
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "9",
+    name: "Organic Compost",
+    price: 499,
+    originalPrice: 659,
+    image: "https://images.unsplash.com/photo-1582281298051-3c3b1f3f1c8d?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "10",
+    name: "Hybrid Corn Seeds",
+    price: 349,
+    originalPrice: 459,
+    image: "https://images.unsplash.com/photo-1602524204894-5e4b2d6d5f6e?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "11",
+    name: "Electric Sprayer",
+    price: 2199,
+    originalPrice: 2899,
+    image: "https://images.unsplash.com/photo-1581090700227-2e8d6f1f6f3e?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "12",
+    name: "Soil pH Tester",
+    price: 799,
+    originalPrice: 1059,
+    image: "https://images.unsplash.com/photo-1593642634367-d91a135587b5?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "13",
+    name: "Organic Pesticide",
+    price: 599,
+    originalPrice: 789,
+    image: "https://images.unsplash.com/photo-1581093588401-ecf9c1c3d3c3?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "14",
+    name: "Greenhouse Kit",
+    price: 4999,
+    originalPrice: 6599,
+    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+    {
+    id: "15",
+    name: "Premium Tomato Seeds",
+    price: 299,
+    originalPrice: 399,
+    image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "16",
+    name: "Organic NPK Fertilizer",
+    price: 799,
+    originalPrice: 999,
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "17",
+    name: "Garden Tools Set",
+    price: 1299,
+    originalPrice: 1699,
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "18",
+    name: "Drip Irrigation Kit",
+    price: 2499,
+    originalPrice: 3199,
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "19",
+    name: "Organic Compost",
+    price: 499,
+    originalPrice: 659,
+    image: "https://images.unsplash.com/photo-1582281298051-3c3b1f3f1c8d?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "20",
+    name: "Hybrid Corn Seeds",
+    price: 349,
+    originalPrice: 459,
+    image: "https://images.unsplash.com/photo-1602524204894-5e4b2d6d5f6e?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "21",
+    name: "Electric Sprayer",
+    price: 2199,
+    originalPrice: 2899,
+    image: "https://images.unsplash.com/photo-1581090700227-2e8d6f1f6f3e?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "22",
+    name: "Soil pH Tester",
+    price: 799,
+    originalPrice: 1059,
+    image: "https://images.unsplash.com/photo-1593642634367-d91a135587b5?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "23",
+    name: "Organic Pesticide",
+    price: 599,
+    originalPrice: 789,
+    image: "https://images.unsplash.com/photo-1581093588401-ecf9c1c3d3c3?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  },
+  {
+    id: "24",
+    name: "Greenhouse Kit",
+    price: 4999,
+    originalPrice: 6599,
+    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=300&h=300&fit=crop",
+    rating: 4.3,
+    discount: 24
+  }
   ];
 
   const socialMediaLinks = [

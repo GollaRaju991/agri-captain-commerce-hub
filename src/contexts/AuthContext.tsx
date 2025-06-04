@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -6,6 +5,9 @@ interface User {
   name: string;
   email: string;
   phone?: string;
+  address?: string;
+  panCard?: string;
+  aadharCard?: string;
 }
 
 interface AuthContextType {
@@ -15,6 +17,7 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string, phone?: string) => Promise<boolean>;
   logout: () => void;
   sendOTP: (phone: string) => Promise<boolean>;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +39,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(JSON.parse(savedUser));
     }
   }, []);
+
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem('agricaptain_user', JSON.stringify(updatedUser));
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     // Simulate API call
@@ -68,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (otp === '123456') {
       const mockUser: User = {
         id: '2',
-        name: 'Mobile User',
+        name: 'AgriCaptain User',
         email: '',
         phone
       };
@@ -131,7 +142,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loginWithOTP,
       signup,
       logout,
-      sendOTP
+      sendOTP,
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>

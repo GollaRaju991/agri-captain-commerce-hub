@@ -16,9 +16,9 @@ const EditProfile = () => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
-    address: '',
-    panCard: '',
-    aadharCard: ''
+    address: user?.address || '',
+    panCard: user?.panCard || '',
+    aadharCard: user?.aadharCard || ''
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -40,13 +40,13 @@ const EditProfile = () => {
     }
 
     // Update user profile
-    if (updateUser) {
-      updateUser({
-        ...user,
-        name: formData.name,
-        phone: formData.phone,
-      });
-    }
+    updateUser({
+      name: formData.name,
+      phone: formData.phone,
+      address: formData.address,
+      panCard: formData.panCard,
+      aadharCard: formData.aadharCard,
+    });
 
     toast({
       title: "Profile Updated",

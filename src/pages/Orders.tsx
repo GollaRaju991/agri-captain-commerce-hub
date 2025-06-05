@@ -9,6 +9,7 @@ import { Package, Truck, CheckCircle, Clock, Eye, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 interface Order {
   id: string;
@@ -16,8 +17,12 @@ interface Order {
   created_at: string;
   total_amount: number;
   status: string;
-  items: any[];
+  items: Json;
   payment_status: string;
+  user_id: string;
+  updated_at: string;
+  shipping_address: Json;
+  payment_method: string;
 }
 
 const Orders = () => {
@@ -36,6 +41,7 @@ const Orders = () => {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
+        .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -90,6 +96,13 @@ const Orders = () => {
     }
   };
 
+  const getItemsCount = (items: Json): number => {
+    if (Array.isArray(items)) {
+      return items.length;
+    }
+    return 0;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -130,7 +143,7 @@ const Orders = () => {
                       <div>
                         <p className="font-medium">Items Ordered:</p>
                         <div className="text-sm text-gray-600">
-                          {order.items?.length || 0} item(s)
+                          {getItemsCount(order.items)} item(s)
                         </div>
                       </div>
                       <div className="text-right">

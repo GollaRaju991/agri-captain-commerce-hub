@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Smartphone, Download, QrCode, Android } from 'lucide-react';
+import { Smartphone, Download, QrCode, Tablet } from 'lucide-react';
 
 const MobileAppDownload = () => {
   const handleDownloadInstructions = () => {
@@ -25,7 +25,7 @@ const MobileAppDownload = () => {
         
         <div className="space-y-3">
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-            <Android className="h-5 w-5 text-green-600" />
+            <Tablet className="h-5 w-5 text-green-600" />
             <div>
               <p className="font-medium">Android</p>
               <p className="text-sm text-gray-600">Available for Android 7.0+</p>

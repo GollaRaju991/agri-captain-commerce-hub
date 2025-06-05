@@ -34,13 +34,13 @@ const Profile = () => {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isAddressManagerOpen, setIsAddressManagerOpen] = useState(false);
   const [profile, setProfile] = useState<{
-    full_name: string | null;
+    name: string | null;
     avatar_url: string | null;
-    phone_number: string | null;
+    phone: string | null;
   }>({
-    full_name: null,
+    name: null,
     avatar_url: null,
-    phone_number: null,
+    phone: null,
   });
 
   // Scroll to top when component mounts
@@ -56,7 +56,7 @@ const Profile = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url, phone_number')
+        .select('name, avatar_url, phone')
         .eq('id', user?.id)
         .single();
 
@@ -64,9 +64,9 @@ const Profile = () => {
         console.error('Error fetching profile:', error);
       } else {
         setProfile({
-          full_name: data?.full_name || null,
+          name: data?.name || null,
           avatar_url: data?.avatar_url || null,
-          phone_number: data?.phone_number || null,
+          phone: data?.phone || null,
         });
       }
     } catch (error) {
@@ -93,21 +93,19 @@ const Profile = () => {
     await signOut();
   };
 
+  const handleAddressSelect = (address: any) => {
+    console.log('Selected address:', address);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <EditProfile
-        isOpen={isEditProfileOpen}
-        onClose={() => setIsEditProfileOpen(false)}
-        initialFullName={profile.full_name}
-        initialPhoneNumber={profile.phone_number}
-        onProfileUpdate={fetchProfile}
-      />
+      <EditProfile />
 
       <AddressManager
-        isOpen={isAddressManagerOpen}
-        onClose={() => setIsAddressManagerOpen(false)}
+        onAddressSelect={handleAddressSelect}
+        selectedAddressId=""
       />
       
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -119,12 +117,12 @@ const Profile = () => {
                 {profile.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="rounded-full" />
                 ) : (
-                  <AvatarFallback>{profile.full_name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
+                  <AvatarFallback>{profile.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
                 )}
               </Avatar>
               <div className="ml-4">
-                <CardTitle className="text-lg font-semibold">{profile.full_name || 'No Name'}</CardTitle>
-                <p className="text-sm text-gray-500">User ID: {user.id}</p>
+                <CardTitle className="text-lg font-semibold">{profile.name || 'No Name'}</CardTitle>
+                <p className="text-sm text-gray-500">User ID: {user?.id}</p>
               </div>
             </CardHeader>
             <CardContent>
@@ -135,11 +133,11 @@ const Profile = () => {
                 </div>
                 <div className="flex items-center text-gray-600">
                   <Phone className="h-4 w-4 mr-1" />
-                  <span>{profile.phone_number || 'No Phone'}</span>
+                  <span>{profile.phone || 'No Phone'}</span>
                 </div>
                 <div className="flex items-center text-gray-600">
                   <Mail className="h-4 w-4 mr-1" />
-                  <span>{user.email || 'No Email'}</span>
+                  <span>{user?.email || 'No Email'}</span>
                 </div>
               </div>
             </CardContent>

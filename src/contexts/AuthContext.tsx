@@ -21,6 +21,7 @@ interface AuthContextType {
   loginWithOTP: (phone: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   signup: (name: string, email: string, password: string, phone?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
+  signOut: () => Promise<void>; // Added this method
   sendOTP: (phone: string) => Promise<{ success: boolean; error?: string }>;
   updateUser: (userData: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
 }
@@ -295,6 +296,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Add signOut as an alias to logout for compatibility
+  const signOut = async (): Promise<void> => {
+    await logout();
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -304,6 +310,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loginWithOTP,
       signup,
       logout,
+      signOut, // Added this to the provider value
       sendOTP,
       updateUser
     }}>

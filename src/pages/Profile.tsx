@@ -41,8 +41,8 @@ const Profile = () => {
     phone: null,
   });
 
-  // Scroll to top when component mounts
-  useScrollToTop();
+  // Make scroll to top optional - don't auto-scroll on profile page
+  useScrollToTop(false);
 
   useEffect(() => {
     if (user) {
@@ -274,7 +274,6 @@ const Profile = () => {
               </CardContent>
             </Card>
 
-            {/* Mobile App Download Section */}
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                 <div className="bg-purple-100 p-2 rounded-lg">

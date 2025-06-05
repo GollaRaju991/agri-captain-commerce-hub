@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -41,8 +40,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
-  // Scroll to top when component mounts
-  useScrollToTop();
+  // Make scroll to top optional - only scroll when coming from external navigation
+  useScrollToTop(false);
 
   useEffect(() => {
     if (user) {
@@ -122,7 +121,6 @@ const Orders = () => {
     try {
       if (typeof address === 'object' && address !== null && !Array.isArray(address)) {
         const addr = address as { [key: string]: any };
-        // Check if it has the required properties
         if (addr.name && addr.phone && addr.address && addr.city && addr.state && addr.pincode) {
           return {
             name: addr.name,
@@ -205,10 +203,8 @@ const Orders = () => {
                         </div>
                       </div>
 
-                      {/* Expanded Order Details */}
                       {isExpanded && (
                         <div className="border-t pt-4 space-y-4">
-                          {/* Order Items */}
                           {orderItems.length > 0 && (
                             <div>
                               <h4 className="font-medium mb-2">Order Items</h4>
@@ -228,7 +224,6 @@ const Orders = () => {
                             </div>
                           )}
 
-                          {/* Shipping Address */}
                           {shippingAddress && (
                             <div>
                               <h4 className="font-medium mb-2 flex items-center">
@@ -252,7 +247,6 @@ const Orders = () => {
                             </div>
                           )}
 
-                          {/* Payment Details */}
                           <div>
                             <h4 className="font-medium mb-2">Payment Details</h4>
                             <div className="bg-gray-50 p-3 rounded">

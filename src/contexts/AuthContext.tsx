@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -21,7 +20,7 @@ interface AuthContextType {
   loginWithOTP: (phone: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   signup: (name: string, email: string, password: string, phone?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  signOut: () => Promise<void>; // Added this method
+  signOut: () => Promise<void>;
   sendOTP: (phone: string) => Promise<{ success: boolean; error?: string }>;
   updateUser: (userData: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
 }
@@ -49,24 +48,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // Fetch user profile from secure database
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profile) {
-            setUser({
-              id: profile.id,
-              name: profile.name,
-              email: session.user.email || '',
-              phone: profile.phone,
-              address: profile.address,
-              panCard: profile.pan_card,
-              aadharCard: profile.aadhar_card
-            });
-          }
+          // Defer profile fetching to avoid blocking the auth flow
+          setTimeout(async () => {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profile) {
+              setUser({
+                id: profile.id,
+                name: profile.name,
+                email: session.user.email || '',
+                phone: profile.phone,
+                address: profile.address,
+                panCard: profile.pan_card,
+                aadharCard: profile.aadhar_card
+              });
+            }
+          }, 0);
         } else {
           setUser(null);
         }
@@ -119,23 +120,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      // Validate inputs
       const validationError = validateInput(undefined, undefined, userData.name, userData.phone);
       if (validationError) {
         return { success: false, error: validationError };
       }
 
-      // Validate PAN card if provided
       if (userData.panCard && !validatePAN(userData.panCard)) {
         return { success: false, error: 'Invalid PAN card format. Please use format: ABCDE1234F' };
       }
 
-      // Validate Aadhar card if provided
       if (userData.aadharCard && !validateAadhar(userData.aadharCard)) {
         return { success: false, error: 'Invalid Aadhar card format. Please enter 12 digits' };
       }
 
-      // Update profile in secure database
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -152,7 +149,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: 'Failed to update profile' };
       }
 
-      // Update local state
       setUser(prev => prev ? { ...prev, ...userData } : null);
       return { success: true };
     } catch (error) {
@@ -218,10 +214,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithOTP = async (phone: string, otp: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Ensure phone number starts with country code
       let formattedPhone = phone.trim();
       if (!formattedPhone.startsWith('+')) {
-        // Add India country code if not present
         formattedPhone = '+91' + formattedPhone.replace(/^0+/, '');
       }
 
@@ -256,10 +250,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const sendOTP = async (phone: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      // Ensure phone number starts with country code
       let formattedPhone = phone.trim();
       if (!formattedPhone.startsWith('+')) {
-        // Add India country code if not present
         formattedPhone = '+91' + formattedPhone.replace(/^0+/, '');
       }
 
@@ -296,7 +288,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Add signOut as an alias to logout for compatibility
   const signOut = async (): Promise<void> => {
     await logout();
   };
@@ -310,7 +301,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loginWithOTP,
       signup,
       logout,
-      signOut, // Added this to the provider value
+      signOut,
       sendOTP,
       updateUser
     }}>

@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.0fc49de2412c4286be978fef50065ec0',
-  appName: 'agri-captain-commerce-hub',
+  appName: 'AgriCaptain',
   webDir: 'dist',
   server: {
     url: "https://0fc49de2-412c-4286-be97-8fef50065ec0.lovableproject.com?forceHideBadge=true",
@@ -20,7 +20,16 @@ const config: CapacitorConfig = {
       androidSpinnerStyle: "large",
       iosSpinnerStyle: "small",
       spinnerColor: "#ffffff"
+    },
+    StatusBar: {
+      style: "DARK",
+      backgroundColor: "#16a34a"
     }
+  },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true
   }
 };
 

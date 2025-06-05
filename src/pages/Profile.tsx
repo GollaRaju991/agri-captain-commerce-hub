@@ -1,25 +1,86 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Phone, MapPin, CreditCard, FileText, Mail, Calendar } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { 
+  User, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  Edit, 
+  Package, 
+  Heart, 
+  Gift, 
+  Bell, 
+  CreditCard, 
+  Settings, 
+  LogOut, 
+  Star,
+  Smartphone
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import EditProfile from '@/components/EditProfile';
+import AddressManager from '@/components/AddressManager';
+import { supabase } from '@/integrations/supabase/client';
 import useScrollToTop from '@/hooks/useScrollToTop';
+import MobileAppDownload from '@/components/MobileAppDownload';
 
 const Profile = () => {
-  const { user, loading } = useAuth();
-  
+  const { user, loading: authLoading, signOut } = useAuth();
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isAddressManagerOpen, setIsAddressManagerOpen] = useState(false);
+  const [profile, setProfile] = useState<{
+    full_name: string | null;
+    avatar_url: string | null;
+    phone_number: string | null;
+  }>({
+    full_name: null,
+    avatar_url: null,
+    phone_number: null,
+  });
+
   // Scroll to top when component mounts
   useScrollToTop();
 
-  if (loading) {
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url, phone_number')
+        .eq('id', user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+      } else {
+        setProfile({
+          full_name: data?.full_name || null,
+          avatar_url: data?.avatar_url || null,
+          phone_number: data?.phone_number || null,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
+        <svg className="animate-spin h-8 w-8 text-green-500" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
       </div>
     );
   }
@@ -28,147 +89,221 @@ const Profile = () => {
     return <Navigate to="/auth" replace />;
   }
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+
+      <EditProfile
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        initialFullName={profile.full_name}
+        initialPhoneNumber={profile.phone_number}
+        onProfileUpdate={fetchProfile}
+      />
+
+      <AddressManager
+        isOpen={isAddressManagerOpen}
+        onClose={() => setIsAddressManagerOpen(false)}
+      />
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
-          <p className="text-gray-600">Manage your personal information and preferences</p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {/* Profile Header */}
+          <Card className="bg-white shadow-md rounded-lg overflow-hidden">
+            <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+              <Avatar className="h-12 w-12">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Avatar" className="rounded-full" />
+                ) : (
+                  <AvatarFallback>{profile.full_name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
+                )}
+              </Avatar>
+              <div className="ml-4">
+                <CardTitle className="text-lg font-semibold">{profile.full_name || 'No Name'}</CardTitle>
+                <p className="text-sm text-gray-500">User ID: {user.id}</p>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center text-gray-600">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <span>No Address</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <Phone className="h-4 w-4 mr-1" />
+                  <span>{profile.phone_number || 'No Phone'}</span>
+                </div>
+                <div className="flex items-center text-gray-600">
+                  <Mail className="h-4 w-4 mr-1" />
+                  <span>{user.email || 'No Email'}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Information */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="h-5 w-5" />
-                  <span>Personal Information</span>
-                </CardTitle>
+          {/* Profile Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setIsEditProfileOpen(true)}>
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-blue-100 p-2 rounded-lg">
+                  <User className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Edit Profile</CardTitle>
+                  <p className="text-sm text-gray-600">Update your profile information</p>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Name */}
-                <div className="flex items-center space-x-3">
-                  <User className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Full Name</p>
-                    <p className="font-medium">{user.name}</p>
-                  </div>
-                </div>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Manage your personal details, such as name, and phone number.
+                </p>
+              </CardContent>
+            </Card>
 
-                {/* Email */}
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Email Address</p>
-                    <p className="font-medium">{user.email}</p>
-                  </div>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setIsAddressManagerOpen(true)}>
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-green-100 p-2 rounded-lg">
+                  <MapPin className="h-5 w-5 text-green-600" />
                 </div>
-
-                {/* Phone */}
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Phone Number</p>
-                    <p className="font-medium">{user.phone || 'Not provided'}</p>
-                  </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Manage Addresses</CardTitle>
+                  <p className="text-sm text-gray-600">Add, edit, or remove your addresses</p>
                 </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Manage your saved addresses for faster checkout and delivery.
+                </p>
+              </CardContent>
+            </Card>
 
-                {/* Address */}
-                <div className="flex items-start space-x-3">
-                  <MapPin className="h-5 w-5 text-gray-400 mt-1" />
-                  <div>
-                    <p className="text-sm text-gray-600">Address</p>
-                    <p className="font-medium">{user.address || 'Not provided'}</p>
-                  </div>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-orange-100 p-2 rounded-lg">
+                  <Package className="h-5 w-5 text-orange-600" />
                 </div>
-
-                {/* PAN Card */}
-                <div className="flex items-center space-x-3">
-                  <CreditCard className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">PAN Card</p>
-                    <p className="font-medium">{user.panCard || 'Not provided'}</p>
-                  </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Orders</CardTitle>
+                  <p className="text-sm text-gray-600">View your order history</p>
                 </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Track your past orders and view details.
+                </p>
+              </CardContent>
+            </Card>
 
-                {/* Aadhar Card */}
-                <div className="flex items-center space-x-3">
-                  <FileText className="h-5 w-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-600">Aadhar Card</p>
-                    <p className="font-medium">
-                      {user.aadharCard ? 
-                        `****-****-${user.aadharCard.slice(-4)}` : 
-                        'Not provided'
-                      }
-                    </p>
-                  </div>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-red-100 p-2 rounded-lg">
+                  <Heart className="h-5 w-5 text-red-600" />
                 </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Wishlist</CardTitle>
+                  <p className="text-sm text-gray-600">Your favorite items</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  View and manage items you've saved for later.
+                </p>
+              </CardContent>
+            </Card>
 
-                <EditProfile />
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-teal-100 p-2 rounded-lg">
+                  <Gift className="h-5 w-5 text-teal-600" />
+                </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Rewards</CardTitle>
+                  <p className="text-sm text-gray-600">Your earned rewards and points</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Check your rewards balance and redeem points.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Bell className="h-5 w-5 text-purple-600" />
+                </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Notifications</CardTitle>
+                  <p className="text-sm text-gray-600">Your latest updates</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Stay informed about your orders and account activity.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-yellow-100 p-2 rounded-lg">
+                  <CreditCard className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Payment Methods</CardTitle>
+                  <p className="text-sm text-gray-600">Manage your payment options</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Add, edit, or remove your credit and debit cards.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-gray-100 p-2 rounded-lg">
+                  <Settings className="h-5 w-5 text-gray-600" />
+                </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Settings</CardTitle>
+                  <p className="text-sm text-gray-600">Customize your account settings</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Configure your preferences and manage your account.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Mobile App Download Section */}
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Smartphone className="h-5 w-5 text-purple-600" />
+                </div>
+                <div className="ml-3">
+                  <CardTitle className="text-base">Mobile App</CardTitle>
+                  <p className="text-sm text-gray-600">Download our mobile app</p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <MobileAppDownload />
               </CardContent>
             </Card>
           </div>
 
-          {/* Account Stats */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5" />
-                  <span>Account Status</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Account Type</span>
-                  <Badge variant="secondary">Standard</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Email Verified</span>
-                  <Badge variant="default" className="bg-green-100 text-green-800">
-                    Verified
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Phone Verified</span>
-                  <Badge variant={user.phone ? "default" : "secondary"} 
-                         className={user.phone ? "bg-green-100 text-green-800" : ""}>
-                    {user.phone ? "Verified" : "Pending"}
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">KYC Status</span>
-                  <Badge variant={user.panCard && user.aadharCard ? "default" : "secondary"}
-                         className={user.panCard && user.aadharCard ? "bg-green-100 text-green-800" : ""}>
-                    {user.panCard && user.aadharCard ? "Complete" : "Incomplete"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-sm space-y-2">
-                  <p className="text-gray-600">
-                    Complete your profile to unlock all features:
-                  </p>
-                  <ul className="space-y-1 text-xs text-gray-500">
-                    {!user.phone && <li>• Add phone number</li>}
-                    {!user.address && <li>• Add address</li>}
-                    {!user.panCard && <li>• Add PAN card</li>}
-                    {!user.aadharCard && <li>• Add Aadhar card</li>}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <Button variant="destructive" className="w-full" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
         </div>
       </div>
 

@@ -28,17 +28,17 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleAddToCart = () => {
-    addItem({
+    addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
-      quantity: 1
+      category: product.category || 'General'
     });
     
     toast({
@@ -49,12 +49,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleBuyNow = () => {
     // Add to cart first
-    addItem({
+    addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
-      quantity: 1
+      category: product.category || 'General'
     });
     
     // Navigate to checkout and scroll to top

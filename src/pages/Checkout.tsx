@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -108,7 +107,15 @@ const Checkout = () => {
             price: item.price,
             quantity: item.quantity
           })),
-          shipping_address: selectedAddress
+          shipping_address: selectedAddress ? {
+            name: selectedAddress.name,
+            phone: selectedAddress.phone,
+            address: selectedAddress.address,
+            city: selectedAddress.city,
+            state: selectedAddress.state,
+            pincode: selectedAddress.pincode,
+            address_type: selectedAddress.address_type
+          } : null
         })
         .select()
         .single();

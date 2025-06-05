@@ -35,11 +35,9 @@ const Profile = () => {
   const [isAddressManagerOpen, setIsAddressManagerOpen] = useState(false);
   const [profile, setProfile] = useState<{
     name: string | null;
-    avatar_url: string | null;
     phone: string | null;
   }>({
     name: null,
-    avatar_url: null,
     phone: null,
   });
 
@@ -56,7 +54,7 @@ const Profile = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('name, avatar_url, phone')
+        .select('name, phone')
         .eq('id', user?.id)
         .single();
 
@@ -65,7 +63,6 @@ const Profile = () => {
       } else {
         setProfile({
           name: data?.name || null,
-          avatar_url: data?.avatar_url || null,
           phone: data?.phone || null,
         });
       }
@@ -114,11 +111,7 @@ const Profile = () => {
           <Card className="bg-white shadow-md rounded-lg overflow-hidden">
             <CardHeader className="flex flex-row items-center space-y-0 pb-2">
               <Avatar className="h-12 w-12">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Avatar" className="rounded-full" />
-                ) : (
-                  <AvatarFallback>{profile.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
-                )}
+                <AvatarFallback>{profile.name?.charAt(0).toUpperCase() || '?'}</AvatarFallback>
               </Avatar>
               <div className="ml-4">
                 <CardTitle className="text-lg font-semibold">{profile.name || 'No Name'}</CardTitle>

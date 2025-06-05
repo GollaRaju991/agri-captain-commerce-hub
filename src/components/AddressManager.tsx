@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import LocationDetector from './LocationDetector';
 
+// Use the Supabase schema type for addresses
 interface Address {
   id: string;
   name: string;
@@ -20,8 +20,11 @@ interface Address {
   city: string;
   state: string;
   pincode: string;
-  address_type: 'home' | 'work';
+  address_type: string; // This matches the Supabase schema (string, not union)
   is_default: boolean;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
 }
 
 interface AddressManagerProps {
@@ -43,7 +46,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
     city: '',
     state: '',
     pincode: '',
-    address_type: 'home' as 'home' | 'work'
+    address_type: 'home' as string
   });
 
   useEffect(() => {
@@ -71,7 +74,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         setAddresses(data || []);
         
         // Auto-select default address
-        const defaultAddress = data?.find((addr: Address) => addr.is_default);
+        const defaultAddress = data?.find((addr) => addr.is_default);
         if (defaultAddress && !selectedAddressId) {
           onAddressSelect(defaultAddress);
         }

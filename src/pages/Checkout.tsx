@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -14,7 +13,9 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { CreditCard, Smartphone, Building, Truck, Gift, Percent, Shield, Tag, QrCode } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
+// Use the same Address interface as AddressManager
 interface Address {
   id: string;
   name: string;
@@ -23,8 +24,11 @@ interface Address {
   city: string;
   state: string;
   pincode: string;
-  type: 'home' | 'work';
-  isDefault: boolean;
+  address_type: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
 }
 
 const Checkout = () => {
@@ -54,9 +58,7 @@ const Checkout = () => {
   const finalTotal = Math.max(0, totalPrice + deliveryFee + platformFee + handlingFee - upiDiscount - couponDiscount);
 
   // Scroll to top when component mounts
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  useScrollToTop();
 
   const handleAddressSelect = (address: Address) => {
     setSelectedAddress(address);

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
 interface Order {
   id: string;
@@ -41,9 +42,7 @@ const Orders = () => {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   // Scroll to top when component mounts
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  useScrollToTop();
 
   useEffect(() => {
     if (user) {
@@ -120,8 +119,23 @@ const Orders = () => {
   };
 
   const getShippingAddress = (address: Json): ShippingAddress | null => {
-    if (typeof address === 'object' && address !== null) {
-      return address as ShippingAddress;
+    try {
+      if (typeof address === 'object' && address !== null && !Array.isArray(address)) {
+        const addr = address as { [key: string]: any };
+        // Check if it has the required properties
+        if (addr.name && addr.phone && addr.address && addr.city && addr.state && addr.pincode) {
+          return {
+            name: addr.name,
+            phone: addr.phone,
+            address: addr.address,
+            city: addr.city,
+            state: addr.state,
+            pincode: addr.pincode
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing shipping address:', error);
     }
     return null;
   };

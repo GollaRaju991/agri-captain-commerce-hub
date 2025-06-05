@@ -2,21 +2,24 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import EditProfile from '@/components/EditProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { User, Mail, Phone, MapPin, Package, Heart, Settings, Shield } from 'lucide-react';
+import { User, Phone, MapPin, CreditCard, FileText, Mail, Calendar } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import EditProfile from '@/components/EditProfile';
+import useScrollToTop from '@/hooks/useScrollToTop';
 
 const Profile = () => {
-  const { user, logout, loading } = useAuth();
+  const { user, loading } = useAuth();
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
       </div>
     );
   }
@@ -25,238 +28,146 @@ const Profile = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  // Mock orders data - in real app this would come from the orders table
-  const mockOrders = [
-    {
-      id: 'ORD001',
-      date: '2024-01-15',
-      total: 1299,
-      status: 'Delivered',
-      items: 2
-    },
-    {
-      id: 'ORD002',
-      date: '2024-01-10',
-      total: 599,
-      status: 'In Transit',
-      items: 1
-    },
-    {
-      id: 'ORD003',
-      date: '2024-01-05',
-      total: 2499,
-      status: 'Processing',
-      items: 3
-    }
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Delivered':
-        return 'bg-green-100 text-green-800';
-      case 'In Transit':
-        return 'bg-blue-100 text-blue-800';
-      case 'Processing':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Sidebar */}
-          <div className="space-y-6">
-            {/* User Info */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <User className="h-10 w-10 text-white" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
-                  <p className="text-gray-600">AgriCaptain Member</p>
-                  <div className="flex items-center justify-center mt-2">
-                    <Shield className="h-4 w-4 text-green-600 mr-1" />
-                    <span className="text-sm text-green-600">Verified Account</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
+          <p className="text-gray-600">Manage your personal information and preferences</p>
+        </div>
 
-            {/* Contact Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Profile Information */}
+          <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Settings className="h-5 w-5 mr-2" />
-                  Contact Information
+                <CardTitle className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span>Personal Information</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {user.email && (
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm">{user.email}</span>
+              <CardContent className="space-y-6">
+                {/* Name */}
+                <div className="flex items-center space-x-3">
+                  <User className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-600">Full Name</p>
+                    <p className="font-medium">{user.name}</p>
                   </div>
-                )}
-                {user.phone ? (
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm">{user.phone}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm text-gray-500">Phone not set</span>
-                  </div>
-                )}
-                {user.address ? (
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm">{user.address}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm text-gray-500">Address not set</span>
-                  </div>
-                )}
-                <EditProfile />
-              </CardContent>
-            </Card>
+                </div>
 
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start">
-                  <Heart className="h-4 w-4 mr-2" />
-                  Wishlist
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Account Settings
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full justify-start text-red-600 hover:text-red-700"
-                  onClick={logout}
-                >
-                  Logout
-                </Button>
+                {/* Email */}
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-600">Email Address</p>
+                    <p className="font-medium">{user.email}</p>
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="flex items-center space-x-3">
+                  <Phone className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-600">Phone Number</p>
+                    <p className="font-medium">{user.phone || 'Not provided'}</p>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="flex items-start space-x-3">
+                  <MapPin className="h-5 w-5 text-gray-400 mt-1" />
+                  <div>
+                    <p className="text-sm text-gray-600">Address</p>
+                    <p className="font-medium">{user.address || 'Not provided'}</p>
+                  </div>
+                </div>
+
+                {/* PAN Card */}
+                <div className="flex items-center space-x-3">
+                  <CreditCard className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-600">PAN Card</p>
+                    <p className="font-medium">{user.panCard || 'Not provided'}</p>
+                  </div>
+                </div>
+
+                {/* Aadhar Card */}
+                <div className="flex items-center space-x-3">
+                  <FileText className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-600">Aadhar Card</p>
+                    <p className="font-medium">
+                      {user.aadharCard ? 
+                        `****-****-${user.aadharCard.slice(-4)}` : 
+                        'Not provided'
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                <EditProfile />
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Welcome Message */}
-            <Card>
-              <CardContent className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Welcome back, {user.name}!
-                </h1>
-                <p className="text-gray-600">
-                  Manage your orders, track deliveries, and update your profile information securely.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Security Notice */}
-            <Card className="border-green-200 bg-green-50">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-green-600" />
-                  <h3 className="font-medium text-green-800">Secure Account</h3>
-                </div>
-                <p className="text-sm text-green-700 mt-1">
-                  Your data is encrypted and stored securely. We never store sensitive information in your browser.
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Order History */}
+          {/* Account Stats */}
+          <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Package className="h-5 w-5 mr-2" />
-                  Recent Orders
+                <CardTitle className="flex items-center space-x-2">
+                  <Calendar className="h-5 w-5" />
+                  <span>Account Status</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockOrders.map((order) => (
-                    <div key={order.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <h3 className="font-semibold">Order #{order.id}</h3>
-                          <p className="text-sm text-gray-600">
-                            Placed on {new Date(order.date).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            {order.items} item(s) • ₹{order.total}
-                          </p>
-                        </div>
-                        <div className="space-x-2">
-                          <Button variant="outline" size="sm">
-                            Track Order
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Account Type</span>
+                  <Badge variant="secondary">Standard</Badge>
                 </div>
-                
-                {mockOrders.length === 0 && (
-                  <div className="text-center py-8">
-                    <Package className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-600">No orders yet</p>
-                    <Button className="mt-4">Start Shopping</Button>
-                  </div>
-                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Email Verified</span>
+                  <Badge variant="default" className="bg-green-100 text-green-800">
+                    Verified
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Phone Verified</span>
+                  <Badge variant={user.phone ? "default" : "secondary"} 
+                         className={user.phone ? "bg-green-100 text-green-800" : ""}>
+                    {user.phone ? "Verified" : "Pending"}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">KYC Status</span>
+                  <Badge variant={user.panCard && user.aadharCard ? "default" : "secondary"}
+                         className={user.panCard && user.aadharCard ? "bg-green-100 text-green-800" : ""}>
+                    {user.panCard && user.aadharCard ? "Complete" : "Incomplete"}
+                  </Badge>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Account Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Package className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">{mockOrders.length}</p>
-                  <p className="text-sm text-gray-600">Total Orders</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Heart className="h-8 w-8 text-red-500 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">0</p>
-                  <p className="text-sm text-gray-600">Wishlist Items</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <Shield className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">Active</p>
-                  <p className="text-sm text-gray-600">Account Status</p>
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-sm space-y-2">
+                  <p className="text-gray-600">
+                    Complete your profile to unlock all features:
+                  </p>
+                  <ul className="space-y-1 text-xs text-gray-500">
+                    {!user.phone && <li>• Add phone number</li>}
+                    {!user.address && <li>• Add address</li>}
+                    {!user.panCard && <li>• Add PAN card</li>}
+                    {!user.aadharCard && <li>• Add Aadhar card</li>}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

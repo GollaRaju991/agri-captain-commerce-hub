@@ -5,8 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { MapPin, Plus, Edit, Trash2, Home, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import LocationDetector from './LocationDetector';
 
 interface Address {
@@ -17,8 +20,8 @@ interface Address {
   city: string;
   state: string;
   pincode: string;
-  type: 'home' | 'work';
-  isDefault: boolean;
+  address_type: 'home' | 'work';
+  is_default: boolean;
 }
 
 interface AddressManagerProps {
@@ -28,9 +31,11 @@ interface AddressManagerProps {
 
 const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, selectedAddressId }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -38,31 +43,45 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
     city: '',
     state: '',
     pincode: '',
-    type: 'home' as 'home' | 'work'
+    address_type: 'home' as 'home' | 'work'
   });
 
   useEffect(() => {
-    // Load saved addresses from localStorage
-    const savedAddresses = localStorage.getItem('agricaptain_addresses');
-    if (savedAddresses) {
-      const parsed = JSON.parse(savedAddresses);
-      setAddresses(parsed);
-      
-      // Auto-select default address
-      const defaultAddress = parsed.find((addr: Address) => addr.isDefault);
-      if (defaultAddress && !selectedAddressId) {
-        onAddressSelect(defaultAddress);
-      }
-    } else {
-      // If no addresses, show form to add first address
-      setShowForm(true);
+    if (user) {
+      fetchAddresses();
     }
-  }, []);
+  }, [user]);
 
-  useEffect(() => {
-    // Save addresses to localStorage whenever addresses change
-    localStorage.setItem('agricaptain_addresses', JSON.stringify(addresses));
-  }, [addresses]);
+  const fetchAddresses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching addresses:', error);
+        toast({
+          title: "Error loading addresses",
+          description: "Failed to load your saved addresses",
+          variant: "destructive"
+        });
+      } else {
+        setAddresses(data || []);
+        
+        // Auto-select default address
+        const defaultAddress = data?.find((addr: Address) => addr.is_default);
+        if (defaultAddress && !selectedAddressId) {
+          onAddressSelect(defaultAddress);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -81,7 +100,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
     });
   };
 
-  const handleSaveAddress = (e: React.FormEvent) => {
+  const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.pincode) {
@@ -92,35 +111,68 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
       return;
     }
 
-    const newAddress: Address = {
-      id: editingAddress?.id || Date.now().toString(),
-      ...formData,
-      isDefault: addresses.length === 0 // First address is default
-    };
+    try {
+      const addressData = {
+        user_id: user?.id,
+        ...formData,
+        is_default: addresses.length === 0 // First address is default
+      };
 
-    if (editingAddress) {
-      setAddresses(addresses.map(addr => addr.id === editingAddress.id ? newAddress : addr));
-      toast({ title: "Address updated successfully" });
-    } else {
-      setAddresses([...addresses, newAddress]);
-      toast({ title: "Address added successfully" });
+      if (editingAddress) {
+        const { error } = await supabase
+          .from('addresses')
+          .update(addressData)
+          .eq('id', editingAddress.id);
+
+        if (error) {
+          console.error('Error updating address:', error);
+          toast({
+            title: "Error updating address",
+            variant: "destructive"
+          });
+          return;
+        }
+        toast({ title: "Address updated successfully" });
+      } else {
+        const { data, error } = await supabase
+          .from('addresses')
+          .insert([addressData])
+          .select()
+          .single();
+
+        if (error) {
+          console.error('Error saving address:', error);
+          toast({
+            title: "Error saving address",
+            variant: "destructive"
+          });
+          return;
+        }
+        toast({ title: "Address added successfully" });
+      }
+
+      // Refresh addresses
+      await fetchAddresses();
+      
+      // Reset form
+      setFormData({
+        name: '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        pincode: '',
+        address_type: 'home'
+      });
+      setShowForm(false);
+      setEditingAddress(null);
+    } catch (error) {
+      console.error('Error saving address:', error);
+      toast({
+        title: "Error saving address",
+        variant: "destructive"
+      });
     }
-
-    // Auto-select the new/updated address
-    onAddressSelect(newAddress);
-    
-    // Reset form
-    setFormData({
-      name: '',
-      phone: '',
-      address: '',
-      city: '',
-      state: '',
-      pincode: '',
-      type: 'home'
-    });
-    setShowForm(false);
-    setEditingAddress(null);
   };
 
   const handleEditAddress = (address: Address) => {
@@ -131,31 +183,78 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
       city: address.city,
       state: address.state,
       pincode: address.pincode,
-      type: address.type
+      address_type: address.address_type
     });
     setEditingAddress(address);
     setShowForm(true);
   };
 
-  const handleDeleteAddress = (addressId: string) => {
-    setAddresses(addresses.filter(addr => addr.id !== addressId));
-    toast({ title: "Address deleted successfully" });
+  const handleDeleteAddress = async (addressId: string) => {
+    try {
+      const { error } = await supabase
+        .from('addresses')
+        .delete()
+        .eq('id', addressId);
+
+      if (error) {
+        console.error('Error deleting address:', error);
+        toast({
+          title: "Error deleting address",
+          variant: "destructive"
+        });
+      } else {
+        toast({ title: "Address deleted successfully" });
+        await fetchAddresses();
+      }
+    } catch (error) {
+      console.error('Error deleting address:', error);
+    }
   };
 
-  const handleSetDefault = (addressId: string) => {
-    const updatedAddresses = addresses.map(addr => ({
-      ...addr,
-      isDefault: addr.id === addressId
-    }));
-    setAddresses(updatedAddresses);
-    
-    const defaultAddress = updatedAddresses.find(addr => addr.id === addressId);
-    if (defaultAddress) {
-      onAddressSelect(defaultAddress);
+  const handleSetDefault = async (addressId: string) => {
+    try {
+      // First, unset all other addresses as default
+      await supabase
+        .from('addresses')
+        .update({ is_default: false })
+        .eq('user_id', user?.id);
+
+      // Then set the selected address as default
+      const { error } = await supabase
+        .from('addresses')
+        .update({ is_default: true })
+        .eq('id', addressId);
+
+      if (error) {
+        console.error('Error setting default address:', error);
+        toast({
+          title: "Error setting default address",
+          variant: "destructive"
+        });
+      } else {
+        toast({ title: "Default address updated" });
+        await fetchAddresses();
+        
+        const defaultAddress = addresses.find(addr => addr.id === addressId);
+        if (defaultAddress) {
+          onAddressSelect(defaultAddress);
+        }
+      }
+    } catch (error) {
+      console.error('Error setting default address:', error);
     }
-    
-    toast({ title: "Default address updated" });
   };
+
+  const handleAddressSelection = (addressId: string) => {
+    const selectedAddress = addresses.find(addr => addr.id === addressId);
+    if (selectedAddress) {
+      onAddressSelect(selectedAddress);
+    }
+  };
+
+  if (loading) {
+    return <div>Loading addresses...</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -251,11 +350,11 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
               </div>
 
               <div>
-                <Label htmlFor="type">Address Type</Label>
+                <Label htmlFor="address_type">Address Type</Label>
                 <select
-                  id="type"
-                  name="type"
-                  value={formData.type}
+                  id="address_type"
+                  name="address_type"
+                  value={formData.address_type}
                   onChange={handleInputChange}
                   className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
@@ -285,7 +384,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                       city: '',
                       state: '',
                       pincode: '',
-                      type: 'home'
+                      address_type: 'home'
                     });
                   }}
                 >
@@ -297,84 +396,84 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         </Card>
       )}
 
-      {/* Address List */}
-      <div className="space-y-3">
-        {addresses.map((address) => (
-          <Card
-            key={address.id}
-            className={`cursor-pointer transition-all ${
-              selectedAddressId === address.id
-                ? 'border-green-500 bg-green-50'
-                : 'hover:border-gray-300'
-            }`}
-            onClick={() => onAddressSelect(address)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="flex items-center space-x-1">
-                      {address.type === 'home' ? (
-                        <Home className="h-4 w-4 text-gray-500" />
-                      ) : (
-                        <Building className="h-4 w-4 text-gray-500" />
-                      )}
-                      <span className="font-medium">{address.name}</span>
+      {/* Address List with Radio Buttons */}
+      {addresses.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Select Delivery Address</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelection}>
+              <div className="space-y-3">
+                {addresses.map((address) => (
+                  <div key={address.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                    <RadioGroupItem value={address.id} className="mt-1" />
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex items-center space-x-1">
+                          {address.address_type === 'home' ? (
+                            <Home className="h-4 w-4 text-gray-500" />
+                          ) : (
+                            <Building className="h-4 w-4 text-gray-500" />
+                          )}
+                          <span className="font-medium">{address.name}</span>
+                        </div>
+                        {address.is_default && (
+                          <Badge variant="secondary" className="text-xs">
+                            Default
+                          </Badge>
+                        )}
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {address.address_type}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-1">{address.address}</p>
+                      <p className="text-sm text-gray-600 mb-1">
+                        {address.city}, {address.state} - {address.pincode}
+                      </p>
+                      <p className="text-sm text-gray-600">Phone: {address.phone}</p>
                     </div>
-                    {address.isDefault && (
-                      <Badge variant="secondary" className="text-xs">
-                        Default
-                      </Badge>
-                    )}
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {address.type}
-                    </Badge>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditAddress(address);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteAddress(address.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                      {!address.is_default && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSetDefault(address.id);
+                          }}
+                        >
+                          Set Default
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 mb-1">{address.address}</p>
-                  <p className="text-sm text-gray-600 mb-1">
-                    {address.city}, {address.state} - {address.pincode}
-                  </p>
-                  <p className="text-sm text-gray-600">Phone: {address.phone}</p>
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditAddress(address);
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteAddress(address.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                  {!address.isDefault && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSetDefault(address.id);
-                      }}
-                    >
-                      Set Default
-                    </Button>
-                  )}
-                </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </RadioGroup>
+          </CardContent>
+        </Card>
+      )}
 
       {addresses.length === 0 && !showForm && (
         <Card className="text-center py-8">

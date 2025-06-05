@@ -44,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         
         if (session?.user) {
@@ -96,8 +97,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return 'Name must be at least 2 characters long';
     }
     
-    if (phone && !/^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s/g, ''))) {
-      return 'Please enter a valid phone number';
+    if (phone && !/^\+?[1-9]\d{9,14}$/.test(phone.replace(/\s/g, ''))) {
+      return 'Please enter a valid phone number with country code';
     }
     
     return null;
@@ -216,7 +217,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithOTP = async (phone: string, otp: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const validationError = validateInput(undefined, undefined, undefined, phone);
+      // Ensure phone number starts with country code
+      let formattedPhone = phone.trim();
+      if (!formattedPhone.startsWith('+')) {
+        // Add India country code if not present
+        formattedPhone = '+91' + formattedPhone.replace(/^0+/, '');
+      }
+
+      const validationError = validateInput(undefined, undefined, undefined, formattedPhone);
       if (validationError) {
         return { success: false, error: validationError };
       }
@@ -225,8 +233,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: 'OTP must be 6 digits' };
       }
 
+      console.log('Verifying OTP for phone:', formattedPhone);
+
       const { error } = await supabase.auth.verifyOtp({
-        phone: phone.trim(),
+        phone: formattedPhone,
         token: otp,
         type: 'sms'
       });
@@ -245,13 +255,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const sendOTP = async (phone: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const validationError = validateInput(undefined, undefined, undefined, phone);
+      // Ensure phone number starts with country code
+      let formattedPhone = phone.trim();
+      if (!formattedPhone.startsWith('+')) {
+        // Add India country code if not present
+        formattedPhone = '+91' + formattedPhone.replace(/^0+/, '');
+      }
+
+      const validationError = validateInput(undefined, undefined, undefined, formattedPhone);
       if (validationError) {
         return { success: false, error: validationError };
       }
 
+      console.log('Sending OTP to phone:', formattedPhone);
+
       const { error } = await supabase.auth.signInWithOtp({
-        phone: phone.trim()
+        phone: formattedPhone
       });
 
       if (error) {

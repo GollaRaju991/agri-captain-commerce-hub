@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Package, Truck, CheckCircle, Clock, Eye, Loader2 } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, Eye, Loader2, MapPin, Phone, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,10 +25,25 @@ interface Order {
   payment_method: string;
 }
 
+interface ShippingAddress {
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
 const Orders = () => {
   const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -47,6 +62,7 @@ const Orders = () => {
       if (error) {
         console.error('Error fetching orders:', error);
       } else {
+        console.log('Fetched orders:', data);
         setOrders(data || []);
       }
     } catch (error) {
@@ -103,6 +119,24 @@ const Orders = () => {
     return 0;
   };
 
+  const getShippingAddress = (address: Json): ShippingAddress | null => {
+    if (typeof address === 'object' && address !== null) {
+      return address as ShippingAddress;
+    }
+    return null;
+  };
+
+  const getOrderItems = (items: Json): any[] => {
+    if (Array.isArray(items)) {
+      return items;
+    }
+    return [];
+  };
+
+  const toggleOrderDetails = (orderId: string) => {
+    setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -115,62 +149,146 @@ const Orders = () => {
 
         {orders.length > 0 ? (
           <div className="space-y-6">
-            {orders.map((order) => (
-              <Card key={order.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Order #{order.order_number}</CardTitle>
-                      <p className="text-sm text-gray-600">
-                        Placed on {new Date(order.created_at).toLocaleDateString('en-IN', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {getStatusIcon(order.status)}
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+            {orders.map((order) => {
+              const shippingAddress = getShippingAddress(order.shipping_address);
+              const orderItems = getOrderItems(order.items);
+              const isExpanded = expandedOrder === order.id;
+
+              return (
+                <Card key={order.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">Items Ordered:</p>
-                        <div className="text-sm text-gray-600">
-                          {getItemsCount(order.items)} item(s)
+                        <CardTitle className="text-lg">Order #{order.order_number}</CardTitle>
+                        <p className="text-sm text-gray-600">
+                          Placed on {new Date(order.created_at).toLocaleDateString('en-IN', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(order.status)}
+                        <Badge className={getStatusColor(order.status)}>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">Items Ordered:</p>
+                          <div className="text-sm text-gray-600">
+                            {getItemsCount(order.items)} item(s)
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">Payment: {order.payment_status}</p>
+                          <p className="font-bold text-lg">₹{order.total_amount}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Payment: {order.payment_status}</p>
-                        <p className="font-bold text-lg">₹{order.total_amount}</p>
+
+                      {/* Expanded Order Details */}
+                      {isExpanded && (
+                        <div className="border-t pt-4 space-y-4">
+                          {/* Order Items */}
+                          {orderItems.length > 0 && (
+                            <div>
+                              <h4 className="font-medium mb-2">Order Items</h4>
+                              <div className="space-y-2">
+                                {orderItems.map((item: any, index: number) => (
+                                  <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                    <div>
+                                      <p className="font-medium">{item.name || `Item ${index + 1}`}</p>
+                                      <p className="text-sm text-gray-600">
+                                        Quantity: {item.quantity || 1} × ₹{item.price || 0}
+                                      </p>
+                                    </div>
+                                    <p className="font-medium">₹{(item.quantity || 1) * (item.price || 0)}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Shipping Address */}
+                          {shippingAddress && (
+                            <div>
+                              <h4 className="font-medium mb-2 flex items-center">
+                                <MapPin className="h-4 w-4 mr-1" />
+                                Shipping Address
+                              </h4>
+                              <div className="bg-gray-50 p-3 rounded">
+                                <div className="flex items-center mb-1">
+                                  <User className="h-4 w-4 mr-1 text-gray-500" />
+                                  <span className="font-medium">{shippingAddress.name}</span>
+                                </div>
+                                <div className="flex items-center mb-1">
+                                  <Phone className="h-4 w-4 mr-1 text-gray-500" />
+                                  <span>{shippingAddress.phone}</span>
+                                </div>
+                                <p className="text-sm">{shippingAddress.address}</p>
+                                <p className="text-sm">
+                                  {shippingAddress.city}, {shippingAddress.state} - {shippingAddress.pincode}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Payment Details */}
+                          <div>
+                            <h4 className="font-medium mb-2">Payment Details</h4>
+                            <div className="bg-gray-50 p-3 rounded">
+                              <div className="flex justify-between">
+                                <span>Payment Method:</span>
+                                <span className="font-medium">{order.payment_method}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Payment Status:</span>
+                                <span className={`font-medium ${
+                                  order.payment_status === 'completed' ? 'text-green-600' : 
+                                  order.payment_status === 'failed' ? 'text-red-600' : 'text-yellow-600'
+                                }`}>
+                                  {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
+                                <span>Total Amount:</span>
+                                <span>₹{order.total_amount}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center space-x-3 pt-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex items-center space-x-1"
+                          onClick={() => toggleOrderDetails(order.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span>{isExpanded ? 'Hide Details' : 'View Details'}</span>
+                        </Button>
+                        <Button variant="outline" size="sm" className="flex items-center space-x-1">
+                          <Truck className="h-4 w-4" />
+                          <span>Track Order</span>
+                        </Button>
+                        {order.status === 'delivered' && (
+                          <Button variant="outline" size="sm">
+                            Reorder
+                          </Button>
+                        )}
                       </div>
                     </div>
-                    
-                    <div className="flex items-center space-x-3 pt-4">
-                      <Button variant="outline" size="sm" className="flex items-center space-x-1">
-                        <Truck className="h-4 w-4" />
-                        <span>Track Order</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                        <Eye className="h-4 w-4" />
-                        <span>View Details</span>
-                      </Button>
-                      {order.status === 'delivered' && (
-                        <Button variant="outline" size="sm">
-                          Reorder
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <Card>

@@ -15,16 +15,18 @@ const Auth = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login, loginWithOTP, signup, sendOTP, user, loading } = useAuth();
+  const { login, loginWithOTP, signup, sendOTP, user, loading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
-      navigate('/');
+      const redirectPath = redirectAfterLogin || '/';
+      setRedirectAfterLogin(undefined);
+      navigate(redirectPath);
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, redirectAfterLogin, setRedirectAfterLogin]);
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -55,7 +57,9 @@ const Auth = () => {
           title: "Login Successful",
           description: "Welcome back to AgriCaptain!"
         });
-        navigate('/');
+        const redirectPath = redirectAfterLogin || '/';
+        setRedirectAfterLogin(undefined);
+        navigate(redirectPath);
       } else {
         toast({
           title: "Login Failed",
@@ -154,7 +158,9 @@ const Auth = () => {
           title: "Login Successful",
           description: "Welcome to AgriCaptain!"
         });
-        navigate('/');
+        const redirectPath = redirectAfterLogin || '/';
+        setRedirectAfterLogin(undefined);
+        navigate(redirectPath);
       } else {
         toast({
           title: "Login Failed",

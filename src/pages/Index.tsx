@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSlider from '@/components/HeroSlider';
+import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +39,10 @@ const Index = () => {
       originalPrice: 399,
       image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=300&h=300&fit=crop",
       rating: 4.5,
-      discount: 25
+      discount: 25,
+      inStock: true,
+      description: "High-quality hybrid tomato seeds for excellent yield and disease resistance",
+      reviews: 124
     },
     {
       id: "2",
@@ -47,7 +51,10 @@ const Index = () => {
       originalPrice: 999,
       image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
       rating: 4.8,
-      discount: 20
+      discount: 20,
+      inStock: true,
+      description: "Complete nutrition fertilizer for healthy plant growth and better yield",
+      reviews: 89
     },
     {
       id: "3",
@@ -56,7 +63,10 @@ const Index = () => {
       originalPrice: 1699,
       image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
       rating: 4.3,
-      discount: 24
+      discount: 24,
+      inStock: true,
+      description: "Professional grade garden tools for efficient farming and gardening",
+      reviews: 56
     },
     {
       id: "4",
@@ -65,188 +75,59 @@ const Index = () => {
       originalPrice: 3199,
       image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
       rating: 4.6,
-      discount: 22
+      discount: 22,
+      inStock: true,
+      description: "Water-efficient irrigation system for precise and economical watering",
+      reviews: 78
     },
     {
-    id: "5",
-    name: "Premium Tomato Seeds",
-    price: 299,
-    originalPrice: 399,
-    image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "6",
-    name: "Organic NPK Fertilizer",
-    price: 799,
-    originalPrice: 999,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "7",
-    name: "Garden Tools Set",
-    price: 1299,
-    originalPrice: 1699,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "8",
-    name: "Drip Irrigation Kit",
-    price: 2499,
-    originalPrice: 3199,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "9",
-    name: "Organic Compost",
-    price: 499,
-    originalPrice: 659,
-    image: "https://images.unsplash.com/photo-1582281298051-3c3b1f3f1c8d?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "10",
-    name: "Hybrid Corn Seeds",
-    price: 349,
-    originalPrice: 459,
-    image: "https://images.unsplash.com/photo-1602524204894-5e4b2d6d5f6e?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "11",
-    name: "Electric Sprayer",
-    price: 2199,
-    originalPrice: 2899,
-    image: "https://images.unsplash.com/photo-1581090700227-2e8d6f1f6f3e?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "12",
-    name: "Soil pH Tester",
-    price: 799,
-    originalPrice: 1059,
-    image: "https://images.unsplash.com/photo-1593642634367-d91a135587b5?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "13",
-    name: "Organic Pesticide",
-    price: 599,
-    originalPrice: 789,
-    image: "https://images.unsplash.com/photo-1581093588401-ecf9c1c3d3c3?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "14",
-    name: "Greenhouse Kit",
-    price: 4999,
-    originalPrice: 6599,
-    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
+      id: "5",
+      name: "Wheat Seeds Premium",
+      price: 450,
+      originalPrice: 550,
+      image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=300&fit=crop",
+      rating: 4.7,
+      discount: 18,
+      inStock: true,
+      description: "High-yielding wheat seeds suitable for various soil conditions",
+      reviews: 203
+    },
     {
-    id: "15",
-    name: "Premium Tomato Seeds",
-    price: 299,
-    originalPrice: 399,
-    image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "16",
-    name: "Organic NPK Fertilizer",
-    price: 799,
-    originalPrice: 999,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "17",
-    name: "Garden Tools Set",
-    price: 1299,
-    originalPrice: 1699,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "18",
-    name: "Drip Irrigation Kit",
-    price: 2499,
-    originalPrice: 3199,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "19",
-    name: "Organic Compost",
-    price: 499,
-    originalPrice: 659,
-    image: "https://images.unsplash.com/photo-1582281298051-3c3b1f3f1c8d?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "20",
-    name: "Hybrid Corn Seeds",
-    price: 349,
-    originalPrice: 459,
-    image: "https://images.unsplash.com/photo-1602524204894-5e4b2d6d5f6e?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "21",
-    name: "Electric Sprayer",
-    price: 2199,
-    originalPrice: 2899,
-    image: "https://images.unsplash.com/photo-1581090700227-2e8d6f1f6f3e?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "22",
-    name: "Soil pH Tester",
-    price: 799,
-    originalPrice: 1059,
-    image: "https://images.unsplash.com/photo-1593642634367-d91a135587b5?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "23",
-    name: "Organic Pesticide",
-    price: 599,
-    originalPrice: 789,
-    image: "https://images.unsplash.com/photo-1581093588401-ecf9c1c3d3c3?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  },
-  {
-    id: "24",
-    name: "Greenhouse Kit",
-    price: 4999,
-    originalPrice: 6599,
-    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=300&h=300&fit=crop",
-    rating: 4.3,
-    discount: 24
-  }
+      id: "6",
+      name: "Bio Fertilizer Mix",
+      price: 799,
+      originalPrice: 999,
+      image: "https://images.unsplash.com/photo-1566909702770-bd3ec25f6b29?w=300&h=300&fit=crop",
+      rating: 4.4,
+      discount: 20,
+      inStock: false,
+      description: "Organic bio-fertilizer for sustainable farming and soil health",
+      reviews: 145
+    },
+    {
+      id: "7",
+      name: "Organic Pesticide Spray",
+      price: 349,
+      originalPrice: 449,
+      image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=300&h=300&fit=crop",
+      rating: 4.5,
+      discount: 22,
+      inStock: true,
+      description: "Natural pest control solution safe for organic farming",
+      reviews: 98
+    },
+    {
+      id: "8",
+      name: "Cotton Seeds Hybrid",
+      price: 520,
+      originalPrice: 620,
+      image: "https://images.unsplash.com/photo-1609824971439-95bb4b58c5b5?w=300&h=300&fit=crop",
+      rating: 4.6,
+      discount: 16,
+      inStock: true,
+      description: "Premium hybrid cotton seeds for high fiber quality and yield",
+      reviews: 234
+    }
   ];
 
   const socialMediaLinks = [
@@ -296,39 +177,7 @@ const Index = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {products.map((product) => (
-              <Card key={product.id} className="hover:shadow-lg transition-shadow">
-                <div className="relative">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-40 md:h-48 object-cover rounded-t-lg"
-                  />
-                  <Badge className="absolute top-2 left-2 bg-red-500 text-xs">
-                    {product.discount}% OFF
-                  </Badge>
-                </div>
-                <CardContent className="p-3 md:p-4">
-                  <h3 className="font-semibold text-sm md:text-base mb-2 line-clamp-2">{product.name}</h3>
-                  <div className="flex items-center mb-2">
-                    <Star className="h-3 w-3 md:h-4 md:w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="ml-1 text-xs md:text-sm">{product.rating}</span>
-                  </div>
-                  <div className="flex items-center space-x-2 mb-3">
-                    <span className="text-base md:text-lg font-bold text-green-600">₹{product.price}</span>
-                    <span className="text-xs md:text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Link to={`/product/${product.id}`} className="flex-1">
-                      <Button 
-                        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs md:text-sm py-2 md:py-3"
-                        onClick={() => window.scrollTo(0, 0)}
-                      >
-                        {translations.view_details || "View Details"}
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
           

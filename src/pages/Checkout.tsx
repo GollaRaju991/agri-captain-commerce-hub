@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AddressManager from '@/components/AddressManager';
@@ -14,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { CreditCard, Smartphone, Building, Truck, Gift, Percent, Shield, Tag, QrCode } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import useScrollToTop from '@/hooks/useScrollToTop';
+import { supabase } from '@/integrations/supabase/client';
 
 // Use the same Address interface as AddressManager
 interface Address {
@@ -33,8 +35,9 @@ interface Address {
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { items, totalPrice, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState('');
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
@@ -60,6 +63,13 @@ const Checkout = () => {
   // Scroll to top when component mounts
   useScrollToTop();
 
+  // Set redirect path when user comes to checkout without being logged in
+  useEffect(() => {
+    if (!user && location.pathname === '/checkout') {
+      setRedirectAfterLogin('/checkout');
+    }
+  }, [user, location.pathname, setRedirectAfterLogin]);
+
   const handleAddressSelect = (address: Address) => {
     setSelectedAddress(address);
   };
@@ -81,14 +91,49 @@ const Checkout = () => {
     }
   };
 
-  const handlePayment = () => {
+  const saveOrderToDatabase = async (orderDetails: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user?.id,
+          order_number: orderDetails.orderNumber,
+          total_amount: finalTotal,
+          status: 'pending',
+          payment_status: 'completed',
+          payment_method: paymentMethod,
+          items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+          })),
+          shipping_address: selectedAddress
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving order:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error saving order to database:', error);
+      throw error;
+    }
+  };
+
+  const handlePayment = async () => {
     if (!user) {
       toast({
         title: "Please login",
         description: "You need to be logged in to place an order",
         variant: "destructive",
       });
-      navigate('/auth', { state: { returnTo: '/checkout' } });
+      setRedirectAfterLogin('/checkout');
+      navigate('/auth');
       return;
     }
 
@@ -147,36 +192,48 @@ const Checkout = () => {
       return;
     }
 
-    // Create order details
-    const orderDetails = {
-      orderNumber: '#AG' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-      date: new Date().toLocaleDateString('en-IN', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      items: items.map(item => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      shippingAddress: selectedAddress,
-      paymentSummary: {
-        subtotal: totalPrice,
-        delivery: deliveryFee,
-        discount: upiDiscount + couponDiscount,
-        total: finalTotal
-      }
-    };
+    try {
+      // Create order details
+      const orderDetails = {
+        orderNumber: '#AG' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+        date: new Date().toLocaleDateString('en-IN', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        items: items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        shippingAddress: selectedAddress,
+        paymentSummary: {
+          subtotal: totalPrice,
+          delivery: deliveryFee,
+          discount: upiDiscount + couponDiscount,
+          total: finalTotal
+        }
+      };
 
-    // Simulate payment processing
-    toast({
-      title: "Order placed successfully!",
-      description: `Your order has been placed using ${paymentMethod.toUpperCase()}`,
-    });
+      // Save order to database
+      await saveOrderToDatabase(orderDetails);
 
-    clearCart();
-    navigate('/order-confirmation', { state: { orderDetails } });
+      // Simulate payment processing
+      toast({
+        title: "Order placed successfully!",
+        description: `Your order has been placed using ${paymentMethod.toUpperCase()}`,
+      });
+
+      clearCart();
+      navigate('/order-confirmation', { state: { orderDetails } });
+    } catch (error) {
+      console.error('Error processing order:', error);
+      toast({
+        title: "Order failed",
+        description: "There was an error processing your order. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (items.length === 0) {

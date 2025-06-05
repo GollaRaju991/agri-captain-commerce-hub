@@ -23,6 +23,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   sendOTP: (phone: string) => Promise<{ success: boolean; error?: string }>;
   updateUser: (userData: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
+  redirectAfterLogin?: string;
+  setRedirectAfterLogin: (path?: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | undefined>();
 
   useEffect(() => {
     // Set up auth state listener
@@ -48,26 +51,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // Defer profile fetching to avoid blocking the auth flow
-          setTimeout(async () => {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            if (profile) {
-              setUser({
-                id: profile.id,
-                name: profile.name,
-                email: session.user.email || '',
-                phone: profile.phone,
-                address: profile.address,
-                panCard: profile.pan_card,
-                aadharCard: profile.aadhar_card
-              });
-            }
-          }, 0);
+          // Fetch profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile) {
+            setUser({
+              id: profile.id,
+              name: profile.name,
+              email: session.user.email || '',
+              phone: profile.phone,
+              address: profile.address,
+              panCard: profile.pan_card,
+              aadharCard: profile.aadhar_card
+            });
+          }
         } else {
           setUser(null);
         }
@@ -303,7 +304,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout,
       signOut,
       sendOTP,
-      updateUser
+      updateUser,
+      redirectAfterLogin,
+      setRedirectAfterLogin
     }}>
       {children}
     </AuthContext.Provider>

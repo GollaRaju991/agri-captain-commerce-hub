@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -16,6 +15,7 @@ import { CreditCard, Smartphone, Building, Truck, Gift, Percent, Shield, Tag, Qr
 import { useToast } from '@/hooks/use-toast';
 import useScrollToTop from '@/hooks/useScrollToTop';
 import { supabase } from '@/integrations/supabase/client';
+import { dualBackendService } from '@/services/dualBackendService';
 
 // Use the same Address interface as AddressManager
 interface Address {
@@ -93,42 +93,35 @@ const Checkout = () => {
 
   const saveOrderToDatabase = async (orderDetails: any) => {
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user?.id,
-          order_number: orderDetails.orderNumber,
-          total_amount: finalTotal,
-          status: 'pending',
-          payment_status: 'completed',
-          payment_method: paymentMethod,
-          items: items.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity
-          })),
-          shipping_address: selectedAddress ? {
-            name: selectedAddress.name,
-            phone: selectedAddress.phone,
-            address: selectedAddress.address,
-            city: selectedAddress.city,
-            state: selectedAddress.state,
-            pincode: selectedAddress.pincode,
-            address_type: selectedAddress.address_type
-          } : null
-        })
-        .select()
-        .single();
+      // Use dual backend service for better reliability
+      const dualOrderData = {
+        orderId: orderDetails.orderNumber,
+        userId: user?.id || '',
+        customerData: {
+          name: user?.name || '',
+          email: user?.email || '',
+          phone: user?.phone || ''
+        },
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        totalAmount: finalTotal,
+        paymentMethod: paymentMethod,
+        address: selectedAddress
+      };
 
-      if (error) {
-        console.error('Error saving order:', error);
-        throw error;
+      const result = await dualBackendService.saveOrderDual(dualOrderData);
+      
+      if (!result.success) {
+        throw new Error(result.error);
       }
 
-      return data;
+      return { success: true };
     } catch (error) {
-      console.error('Error saving order to database:', error);
+      console.error('Error saving order:', error);
       throw error;
     }
   };

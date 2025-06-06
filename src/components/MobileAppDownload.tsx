@@ -1,13 +1,26 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Smartphone, Download, QrCode, Tablet } from 'lucide-react';
+import { Smartphone, Download, QrCode, Tablet, ExternalLink, CheckCircle } from 'lucide-react';
 
 const MobileAppDownload = () => {
+  const [downloadStarted, setDownloadStarted] = useState(false);
+
   const handleDownloadInstructions = () => {
     // This would typically link to your app store or APK download
     window.open('https://docs.lovable.dev/tips-tricks/mobile-development', '_blank');
+  };
+
+  const handleDirectDownload = () => {
+    setDownloadStarted(true);
+    // This would be your actual APK download link
+    const downloadLink = document.createElement('a');
+    downloadLink.href = '/AgriCaptain.apk'; // You'll need to host your APK file
+    downloadLink.download = 'AgriCaptain.apk';
+    downloadLink.click();
+    
+    setTimeout(() => setDownloadStarted(false), 3000);
   };
 
   return (
@@ -27,8 +40,8 @@ const MobileAppDownload = () => {
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
             <Tablet className="h-5 w-5 text-green-600" />
             <div>
-              <p className="font-medium">Android</p>
-              <p className="text-sm text-gray-600">Available for Android 7.0+</p>
+              <p className="font-medium">Android APK</p>
+              <p className="text-sm text-gray-600">Direct download available</p>
             </div>
           </div>
           
@@ -39,19 +52,59 @@ const MobileAppDownload = () => {
               <p className="text-sm text-gray-600">Scan to download directly</p>
             </div>
           </div>
+
+          <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+            <ExternalLink className="h-5 w-5 text-blue-600" />
+            <div>
+              <p className="font-medium">Play Store</p>
+              <p className="text-sm text-gray-600">Coming soon...</p>
+            </div>
+          </div>
         </div>
 
-        <Button 
-          onClick={handleDownloadInstructions}
-          className="w-full bg-green-600 hover:bg-green-700"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Download Instructions
-        </Button>
+        <div className="space-y-2">
+          <Button 
+            onClick={handleDirectDownload}
+            className="w-full bg-green-600 hover:bg-green-700"
+            disabled={downloadStarted}
+          >
+            {downloadStarted ? (
+              <>
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Download Started
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4 mr-2" />
+                Download APK (Direct)
+              </>
+            )}
+          </Button>
+
+          <Button 
+            onClick={handleDownloadInstructions}
+            variant="outline"
+            className="w-full"
+          >
+            Build Instructions
+          </Button>
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+          <p className="text-yellow-800 text-sm font-medium">📱 Android Features:</p>
+          <ul className="text-yellow-700 text-xs mt-1 space-y-1">
+            <li>• Offline product browsing</li>
+            <li>• Push notifications for orders</li>
+            <li>• Native camera for product scanning</li>
+            <li>• GPS location for delivery</li>
+            <li>• Biometric login support</li>
+          </ul>
+        </div>
 
         <div className="text-xs text-gray-500 text-center">
           <p>Current version: 1.0.0</p>
           <p>Last updated: {new Date().toLocaleDateString()}</p>
+          <p>Size: ~15MB | Minimum Android: 7.0</p>
         </div>
       </CardContent>
     </Card>

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -11,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 const Cart = () => {
   const { items, removeFromCart, updateQuantity, totalPrice, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, setRedirectAfterLogin } = useAuth();
   const { translations } = useLanguage();
   const navigate = useNavigate();
 
@@ -19,6 +20,17 @@ const Cart = () => {
   const platformCharges = 0;
   const discountAmount = Math.round(totalPrice * 0.05); // 5% general discount
   const upiDiscount = Math.round(totalPrice * 0.1); // 10% UPI discount
+
+  const handleCheckoutClick = () => {
+    if (user) {
+      navigate('/checkout');
+      window.scrollTo(0, 0);
+    } else {
+      // Set redirect path to checkout after login
+      setRedirectAfterLogin('/checkout');
+      navigate('/auth');
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -150,27 +162,17 @@ const Cart = () => {
                   </div>
                 </div>
                 
-                {user ? (
-                  <Link to="/checkout" className="block">
-                    <Button className="w-full mb-4" onClick={() => window.scrollTo(0, 0)}>
-                      {translations.checkout}
-                    </Button>
-                  </Link>
-                ) : (
-                  <div className="space-y-2">
-                    <Button 
-                      className="w-full"
-                      onClick={() => {
-                        localStorage.setItem('returnTo', '/checkout');
-                        navigate('/auth');
-                      }}
-                    >
-                      Login to {translations.checkout}
-                    </Button>
-                    <p className="text-sm text-gray-600 text-center">
-                      Please login to proceed with your order
-                    </p>
-                  </div>
+                <Button 
+                  className="w-full mb-4" 
+                  onClick={handleCheckoutClick}
+                >
+                  {user ? translations.checkout : 'Login to Checkout'}
+                </Button>
+                
+                {!user && (
+                  <p className="text-sm text-gray-600 text-center mb-4">
+                    Please login to proceed with your order
+                  </p>
                 )}
                 
                 <Link to="/products">

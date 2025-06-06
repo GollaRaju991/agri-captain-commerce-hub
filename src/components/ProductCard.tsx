@@ -57,8 +57,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       category: product.category || 'General'
     });
     
-    // Navigate to checkout and scroll to top
-    navigate('/checkout');
+    // Navigate to cart page and scroll to top
+    navigate('/cart');
     window.scrollTo(0, 0);
   };
 

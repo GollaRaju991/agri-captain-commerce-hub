@@ -88,24 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const validateInput = (email?: string, password?: string, name?: string, phone?: string) => {
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return 'Please enter a valid email address';
-    }
-    
-    if (password && password.length < 8) {
-      return 'Password must be at least 8 characters long';
-    }
-    
-    if (name && name.trim().length < 2) {
-      return 'Name must be at least 2 characters long';
-    }
-    
-    if (phone && !/^\+?[1-9]\d{9,14}$/.test(phone.replace(/\s/g, ''))) {
-      return 'Please enter a valid phone number with country code';
-    }
-    
-    return null;
+  // Simplified validation - only basic checks
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const validatePAN = (pan: string) => {
@@ -122,11 +107,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const validationError = validateInput(undefined, undefined, userData.name, userData.phone);
-      if (validationError) {
-        return { success: false, error: validationError };
-      }
-
       if (userData.panCard && !validatePAN(userData.panCard)) {
         return { success: false, error: 'Invalid PAN card format. Please use format: ABCDE1234F' };
       }
@@ -161,9 +141,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const validationError = validateInput(email, password);
-      if (validationError) {
-        return { success: false, error: validationError };
+      if (!validateEmail(email)) {
+        return { success: false, error: 'Please enter a valid email address' };
+      }
+
+      if (password.length < 8) {
+        return { success: false, error: 'Password must be at least 8 characters long' };
       }
 
       const { error } = await supabase.auth.signInWithPassword({
@@ -185,9 +168,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (name: string, email: string, password: string, phone?: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const validationError = validateInput(email, password, name, phone);
-      if (validationError) {
-        return { success: false, error: validationError };
+      if (!validateEmail(email)) {
+        return { success: false, error: 'Please enter a valid email address' };
+      }
+
+      if (password.length < 8) {
+        return { success: false, error: 'Password must be at least 8 characters long' };
+      }
+
+      if (name.trim().length < 2) {
+        return { success: false, error: 'Name must be at least 2 characters long' };
       }
 
       const { error } = await supabase.auth.signUp({
@@ -221,11 +211,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         formattedPhone = '+91' + formattedPhone.replace(/^0+/, '');
       }
 
-      const validationError = validateInput(undefined, undefined, undefined, formattedPhone);
-      if (validationError) {
-        return { success: false, error: validationError };
-      }
-
       if (!/^\d{6}$/.test(otp)) {
         return { success: false, error: 'OTP must be 6 digits' };
       }
@@ -255,11 +240,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let formattedPhone = phone.trim();
       if (!formattedPhone.startsWith('+')) {
         formattedPhone = '+91' + formattedPhone.replace(/^0+/, '');
-      }
-
-      const validationError = validateInput(undefined, undefined, undefined, formattedPhone);
-      if (validationError) {
-        return { success: false, error: validationError };
       }
 
       console.log('Sending OTP to phone:', formattedPhone);

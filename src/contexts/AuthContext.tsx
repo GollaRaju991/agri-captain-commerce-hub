@@ -52,24 +52,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // Fetch profile
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profile) {
-            setUser({
-              id: profile.id,
-              name: profile.name,
-              email: session.user.email || '',
-              phone: profile.phone,
-              address: profile.address,
-              panCard: profile.pan_card,
-              aadharCard: profile.aadhar_card
-            });
-          }
+          // Use setTimeout to defer profile fetch and avoid blocking UI
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (profile) {
+                setUser({
+                  id: profile.id,
+                  name: profile.name,
+                  email: session.user.email || '',
+                  phone: profile.phone,
+                  address: profile.address,
+                  panCard: profile.pan_card,
+                  aadharCard: profile.aadhar_card
+                });
+              }
+            } catch (error) {
+              console.error('Profile fetch error:', error);
+            }
+          }, 0);
         } else {
           setUser(null);
         }
@@ -88,33 +94,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  // Simplified validation - only basic checks
-  const validateEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const validatePAN = (pan: string) => {
-    return /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
-  };
-
-  const validateAadhar = (aadhar: string) => {
-    return /^\d{12}$/.test(aadhar.replace(/\s/g, ''));
-  };
-
   const updateUser = async (userData: Partial<UserProfile>): Promise<{ success: boolean; error?: string }> => {
     if (!session?.user) {
       return { success: false, error: 'User not authenticated' };
     }
 
     try {
-      if (userData.panCard && !validatePAN(userData.panCard)) {
-        return { success: false, error: 'Invalid PAN card format. Please use format: ABCDE1234F' };
-      }
-
-      if (userData.aadharCard && !validateAadhar(userData.aadharCard)) {
-        return { success: false, error: 'Invalid Aadhar card format. Please enter 12 digits' };
-      }
-
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -141,14 +126,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      if (!validateEmail(email)) {
-        return { success: false, error: 'Please enter a valid email address' };
-      }
-
-      if (password.length < 8) {
-        return { success: false, error: 'Password must be at least 8 characters long' };
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password
@@ -168,18 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (name: string, email: string, password: string, phone?: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      if (!validateEmail(email)) {
-        return { success: false, error: 'Please enter a valid email address' };
-      }
-
-      if (password.length < 8) {
-        return { success: false, error: 'Password must be at least 8 characters long' };
-      }
-
-      if (name.trim().length < 2) {
-        return { success: false, error: 'Name must be at least 2 characters long' };
-      }
-
       const { error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
@@ -209,10 +174,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let formattedPhone = phone.trim();
       if (!formattedPhone.startsWith('+')) {
         formattedPhone = '+91' + formattedPhone.replace(/^0+/, '');
-      }
-
-      if (!/^\d{6}$/.test(otp)) {
-        return { success: false, error: 'OTP must be 6 digits' };
       }
 
       console.log('Verifying OTP for phone:', formattedPhone);

@@ -131,8 +131,8 @@ class HostingerApiService {
 
 // Create and export the Hostinger API instance
 export const hostingerApi = new HostingerApiService({
-  apiKey: process.env.HOSTINGER_API_KEY || 'your-hostinger-api-key-here',
-  baseUrl: process.env.HOSTINGER_API_URL || 'https://your-hostinger-domain.com/api'
+  apiKey: import.meta.env.VITE_HOSTINGER_API_KEY || 'your-hostinger-api-key-here',
+  baseUrl: import.meta.env.VITE_HOSTINGER_API_URL || 'https://your-hostinger-domain.com/api'
 });
 
 export type { OrderData, OTPRequest };

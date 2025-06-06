@@ -9,24 +9,45 @@ const slides = [
     title: "Premium Quality Seeds",
     subtitle: "Grow Your Success",
     description: "Discover our collection of high-yield, disease-resistant seeds for better harvests",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=600&fit=crop",
-    cta: "Shop Seeds"
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1400&h=500&fit=crop",
+    cta: "Shop Seeds",
+    bgColor: "from-green-600 to-green-800"
   },
   {
     id: 2,
     title: "Advanced Farm Equipment",
     subtitle: "Modern Farming Solutions",
     description: "Upgrade your farming with our latest machinery and equipment",
-    image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=1200&h=600&fit=crop",
-    cta: "View Equipment"
+    image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=1400&h=500&fit=crop",
+    cta: "View Equipment",
+    bgColor: "from-blue-600 to-blue-800"
   },
   {
     id: 3,
     title: "Organic Fertilizers",
     subtitle: "Nourish Your Crops",
     description: "Boost soil health and crop yield with our organic fertilizer range",
-    image: "https://images.unsplash.com/photo-1566909702770-bd3ec25f6b29?w=1200&h=600&fit=crop",
-    cta: "Shop Fertilizers"
+    image: "https://images.unsplash.com/photo-1566909702770-bd3ec25f6b29?w=1400&h=500&fit=crop",
+    cta: "Shop Fertilizers",
+    bgColor: "from-purple-600 to-purple-800"
+  },
+  {
+    id: 4,
+    title: "Smart Irrigation Systems",
+    subtitle: "Water Efficiently",
+    description: "Save water and increase productivity with our smart irrigation solutions",
+    image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1400&h=500&fit=crop",
+    cta: "Explore Systems",
+    bgColor: "from-teal-600 to-teal-800"
+  },
+  {
+    id: 5,
+    title: "Seasonal Sale - Up to 50% Off",
+    subtitle: "Limited Time Offer",
+    description: "Don't miss out on amazing deals across all agricultural products",
+    image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=1400&h=500&fit=crop",
+    cta: "Shop Now",
+    bgColor: "from-red-600 to-red-800"
   }
 ];
 
@@ -36,7 +57,7 @@ const HeroSlider = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 4000);
 
     return () => clearInterval(timer);
   }, []);
@@ -50,33 +71,44 @@ const HeroSlider = () => {
   };
 
   return (
-    <div className="relative h-[60vh] md:h-[70vh] overflow-hidden">
+    <div className="relative w-full h-[280px] sm:h-[320px] md:h-[400px] lg:h-[500px] overflow-hidden bg-gray-100">
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          className={`absolute inset-0 transition-transform duration-500 ease-in-out ${
+          className={`absolute inset-0 transition-transform duration-700 ease-in-out ${
             index === currentSlide ? 'translate-x-0' : index < currentSlide ? '-translate-x-full' : 'translate-x-full'
           }`}
         >
-          <div
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${slide.image})` }}
-          >
-            <div className="absolute inset-0 bg-black bg-opacity-40" />
-            <div className="relative h-full flex items-center justify-center">
-              <div className="text-center text-white max-w-4xl mx-auto px-4">
-                <h2 className="text-sm md:text-lg font-medium mb-2 text-green-400 animate-fade-in">
-                  {slide.subtitle}
-                </h2>
-                <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
-                  {slide.title}
-                </h1>
-                <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto animate-fade-in">
-                  {slide.description}
-                </p>
-                <Button size="lg" className="bg-green-600 hover:bg-green-700 animate-fade-in">
-                  {slide.cta}
-                </Button>
+          <div className="relative w-full h-full">
+            {/* Background Image */}
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${slide.image})` }}
+            />
+            
+            {/* Gradient Overlay */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${slide.bgColor} bg-opacity-60`} />
+            
+            {/* Content */}
+            <div className="relative h-full flex items-center">
+              <div className="container mx-auto px-4 lg:px-8">
+                <div className="max-w-2xl text-white">
+                  <h3 className="text-sm md:text-base font-medium mb-2 text-yellow-300 animate-fade-in">
+                    {slide.subtitle}
+                  </h3>
+                  <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight animate-fade-in">
+                    {slide.title}
+                  </h1>
+                  <p className="text-sm md:text-lg mb-6 max-w-xl leading-relaxed animate-fade-in">
+                    {slide.description}
+                  </p>
+                  <Button 
+                    size="lg" 
+                    className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-6 py-3 animate-fade-in"
+                  >
+                    {slide.cta}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -87,18 +119,18 @@ const HeroSlider = () => {
       <Button
         variant="ghost"
         size="sm"
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white"
+        className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white border-0 h-10 w-10 rounded-full"
         onClick={prevSlide}
       >
-        <ChevronLeft className="h-6 w-6" />
+        <ChevronLeft className="h-5 w-5" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white"
+        className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white border-0 h-10 w-10 rounded-full"
         onClick={nextSlide}
       >
-        <ChevronRight className="h-6 w-6" />
+        <ChevronRight className="h-5 w-5" />
       </Button>
 
       {/* Dots Indicator */}
@@ -106,8 +138,8 @@ const HeroSlider = () => {
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              index === currentSlide ? 'bg-white' : 'bg-white/50'
+            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
+              index === currentSlide ? 'bg-white scale-110' : 'bg-white/50 hover:bg-white/70'
             }`}
             onClick={() => setCurrentSlide(index)}
           />

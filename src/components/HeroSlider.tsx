@@ -18,7 +18,7 @@ const slides = [
     title: "Advanced Farm Equipment",
     subtitle: "Modern Farming Solutions",
     description: "Upgrade your farming with our latest machinery and equipment",
-    image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=1400&h=500&fit=crop",
+    image: "https://i.postimg.cc/tCdy7LZT/Slide2.png",
     cta: "View Equipment",
     bgColor: "from-blue-600 to-blue-800"
   },

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -41,6 +42,8 @@ const Checkout = () => {
   const { toast } = useToast();
   const [paymentMethod, setPaymentMethod] = useState('');
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addressesLoading, setAddressesLoading] = useState(true);
   const [upiId, setUpiId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -69,6 +72,47 @@ const Checkout = () => {
       setRedirectAfterLogin('/checkout');
     }
   }, [user, location.pathname, setRedirectAfterLogin]);
+
+  // Load addresses when user is available
+  useEffect(() => {
+    const loadAddresses = async () => {
+      if (!user) {
+        setAddressesLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('addresses')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('is_default', { ascending: false })
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading addresses:', error);
+          toast({
+            title: "Error loading addresses",
+            description: "Please try again or add a new address",
+            variant: "destructive",
+          });
+        } else {
+          setAddresses(data || []);
+          // Auto-select default address or first available address
+          const defaultAddress = data?.find(addr => addr.is_default) || data?.[0];
+          if (defaultAddress) {
+            setSelectedAddress(defaultAddress);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading addresses:', error);
+      } finally {
+        setAddressesLoading(false);
+      }
+    };
+
+    loadAddresses();
+  }, [user, toast]);
 
   const handleAddressSelect = (address: Address) => {
     setSelectedAddress(address);
@@ -273,10 +317,50 @@ const Checkout = () => {
                 <CardTitle className="text-lg">1. Delivery Address</CardTitle>
               </CardHeader>
               <CardContent>
-                <AddressManager 
-                  onAddressSelect={handleAddressSelect}
-                  selectedAddressId={selectedAddress?.id}
-                />
+                {addressesLoading ? (
+                  <div className="text-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                    <p className="text-gray-600 mt-2">Loading addresses...</p>
+                  </div>
+                ) : addresses.length > 0 ? (
+                  <div className="space-y-4">
+                    <RadioGroup 
+                      value={selectedAddress?.id || ''} 
+                      onValueChange={(value) => {
+                        const address = addresses.find(addr => addr.id === value);
+                        if (address) handleAddressSelect(address);
+                      }}
+                    >
+                      {addresses.map((address) => (
+                        <div key={address.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
+                          <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
+                          <div className="flex-1">
+                            <Label htmlFor={address.id} className="cursor-pointer">
+                              <div className="font-medium">{address.name}</div>
+                              <div className="text-sm text-gray-600">{address.phone}</div>
+                              <div className="text-sm text-gray-600 mt-1">
+                                {address.address}, {address.city}, {address.state} - {address.pincode}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1 capitalize">
+                                {address.address_type}
+                                {address.is_default && <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 rounded">Default</span>}
+                              </div>
+                            </Label>
+                          </div>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                    <AddressManager 
+                      onAddressSelect={handleAddressSelect}
+                      selectedAddressId={selectedAddress?.id}
+                    />
+                  </div>
+                ) : (
+                  <AddressManager 
+                    onAddressSelect={handleAddressSelect}
+                    selectedAddressId={selectedAddress?.id}
+                  />
+                )}
               </CardContent>
             </Card>
 
@@ -286,44 +370,45 @@ const Checkout = () => {
                 <CardTitle className="text-lg">2. Choose Payment Method</CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 flex items-center">
+                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-3">4</div>
+                  <div>
+                    <p className="text-sm font-medium">PAYMENT OPTIONS</p>
+                    <div className="flex items-center text-xs text-gray-600 mt-1">
+                      <span className="mr-2">Complete payment in</span>
+                      <div className="bg-white px-2 py-1 rounded border">00:10:39</div>
+                    </div>
+                  </div>
+                </div>
+
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-1">
                   {/* UPI Payment */}
-                  <div className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-start space-x-3">
+                  <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
+                    <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
                       <RadioGroupItem value="upi" id="upi" className="mt-1" />
                       <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <Smartphone className="h-6 w-6 text-blue-600" />
-                            <div>
-                              <Label htmlFor="upi" className="text-base font-medium cursor-pointer">UPI</Label>
-                              <p className="text-sm text-gray-600">Pay by any UPI app</p>
-                            </div>
-                          </div>
-                          <span className="text-green-600 text-sm font-medium flex items-center">
-                            <Percent className="h-4 w-4 mr-1" />
-                            10% Off
-                          </span>
+                        <div className="flex items-center space-x-3 mb-1">
+                          <Smartphone className="h-5 w-5 text-orange-500" />
+                          <Label htmlFor="upi" className="text-base font-medium cursor-pointer">UPI</Label>
                         </div>
+                        <p className="text-sm text-gray-600 mb-2">Pay by any UPI app</p>
                         {paymentMethod === 'upi' && (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex space-x-2">
+                          <div className="mt-4 space-y-3 border-t pt-4">
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="upi-id" id="upi-id" />
+                              <Label htmlFor="upi-id" className="text-sm font-medium">Your UPI ID</Label>
+                            </div>
+                            <div className="flex space-x-2 ml-6">
                               <Input
-                                placeholder="Enter your UPI ID (e.g., name@paytm)"
+                                placeholder="Enter UPI ID"
                                 value={upiId}
                                 onChange={(e) => setUpiId(e.target.value)}
                                 className="flex-1"
                               />
-                              <Button variant="outline" size="sm">Verify</Button>
+                              <Button variant="outline" size="sm" className="text-blue-600">VERIFY</Button>
+                              <Button size="sm" className="bg-gray-600 hover:bg-gray-700">PAY ₹{finalTotal}</Button>
                             </div>
-                            <div className="flex items-center space-x-4">
-                              <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                                <QrCode className="h-4 w-4" />
-                                <span>Pay with QR</span>
-                              </Button>
-                              <p className="text-xs text-gray-500">Or scan QR code from any UPI app</p>
-                            </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-gray-500 ml-6">
                               You need to have a registered account with any UPI app like Paytm, Google Pay, PhonePe
                             </p>
                           </div>
@@ -333,20 +418,17 @@ const Checkout = () => {
                   </div>
 
                   {/* Credit/Debit Card */}
-                  <div className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-start space-x-3">
+                  <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
+                    <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
                       <RadioGroupItem value="card" id="card" className="mt-1" />
                       <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <CreditCard className="h-6 w-6 text-green-600" />
-                          <div>
-                            <Label htmlFor="card" className="text-base font-medium cursor-pointer">Credit / Debit / ATM Card</Label>
-                            <p className="text-sm text-gray-600">Add and secure cards as per RBI guidelines</p>
-                            <p className="text-sm text-green-600">5% Unlimited Cashback on AgriCaptain Axis Bank Credit Card</p>
-                          </div>
+                        <div className="flex items-center space-x-3 mb-1">
+                          <CreditCard className="h-5 w-5 text-gray-600" />
+                          <Label htmlFor="card" className="text-base font-medium cursor-pointer">Credit / Debit / ATM Card</Label>
                         </div>
+                        <p className="text-sm text-gray-600">Add and secure cards as per RBI guidelines</p>
                         {paymentMethod === 'card' && (
-                          <div className="mt-4 space-y-4">
+                          <div className="mt-4 space-y-4 border-t pt-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label className="text-sm">Card Number</Label>
@@ -387,21 +469,51 @@ const Checkout = () => {
                     </div>
                   </div>
 
+                  {/* Net Banking */}
+                  <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
+                    <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
+                      <RadioGroupItem value="netbanking" id="netbanking" className="mt-1" />
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-1">
+                          <Building className="h-5 w-5 text-blue-600" />
+                          <Label htmlFor="netbanking" className="text-base font-medium cursor-pointer">Net Banking</Label>
+                        </div>
+                        <p className="text-sm text-gray-600">This instrument has low success, use UPI or cards for better experience</p>
+                        {paymentMethod === 'netbanking' && (
+                          <div className="mt-4 border-t pt-4">
+                            <Label className="text-sm">Select Your Bank</Label>
+                            <select 
+                              value={selectedBank} 
+                              onChange={(e) => setSelectedBank(e.target.value)}
+                              className="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Choose Bank</option>
+                              <option value="sbi">State Bank of India</option>
+                              <option value="hdfc">HDFC Bank</option>
+                              <option value="icici">ICICI Bank</option>
+                              <option value="axis">Axis Bank</option>
+                              <option value="pnb">Punjab National Bank</option>
+                              <option value="bob">Bank of Baroda</option>
+                              <option value="other">Other Banks</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   {/* EMI */}
-                  <div className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-start space-x-3">
+                  <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
+                    <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
                       <RadioGroupItem value="emi" id="emi" className="mt-1" />
                       <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <CreditCard className="h-6 w-6 text-orange-600" />
-                          <div>
-                            <Label htmlFor="emi" className="text-base font-medium cursor-pointer">EMI</Label>
-                            <p className="text-sm text-gray-600">Get Debit and Cardless EMIs on HDFC Bank, SBI, ICICI Bank</p>
-                            <p className="text-sm text-blue-600">Starting from ₹833/month</p>
-                          </div>
+                        <div className="flex items-center space-x-3 mb-1">
+                          <CreditCard className="h-5 w-5 text-purple-600" />
+                          <Label htmlFor="emi" className="text-base font-medium cursor-pointer">EMI (Easy Installments)</Label>
                         </div>
+                        <p className="text-sm text-gray-600">Get Debit and Cardless EMIs on HDFC Bank, SBI, ICICI Bank</p>
                         {paymentMethod === 'emi' && (
-                          <div className="mt-4 space-y-3">
+                          <div className="mt-4 space-y-3 border-t pt-4">
                             <RadioGroup value={selectedEMI} onValueChange={setSelectedEMI}>
                               <div className="space-y-2">
                                 <div className="flex items-center space-x-2">
@@ -420,59 +532,6 @@ const Checkout = () => {
                             </RadioGroup>
                           </div>
                         )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Net Banking */}
-                  <div className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-start space-x-3">
-                      <RadioGroupItem value="netbanking" id="netbanking" className="mt-1" />
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <Building className="h-6 w-6 text-blue-700" />
-                          <div>
-                            <Label htmlFor="netbanking" className="text-base font-medium cursor-pointer">Net Banking</Label>
-                            <p className="text-sm text-gray-600">All major banks supported</p>
-                          </div>
-                        </div>
-                        {paymentMethod === 'netbanking' && (
-                          <div className="mt-4">
-                            <Label className="text-sm">Select Your Bank</Label>
-                            <select 
-                              value={selectedBank} 
-                              onChange={(e) => setSelectedBank(e.target.value)}
-                              className="w-full mt-1 p-2 border rounded focus:ring-2 focus:ring-green-500"
-                            >
-                              <option value="">Choose Bank</option>
-                              <option value="sbi">State Bank of India</option>
-                              <option value="hdfc">HDFC Bank</option>
-                              <option value="icici">ICICI Bank</option>
-                              <option value="axis">Axis Bank</option>
-                              <option value="pnb">Punjab National Bank</option>
-                              <option value="bob">Bank of Baroda</option>
-                              <option value="other">Other Banks</option>
-                            </select>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Cash on Delivery */}
-                  <div className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-start space-x-3">
-                      <RadioGroupItem value="cod" id="cod" className="mt-1" />
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <Truck className="h-6 w-6 text-yellow-600" />
-                          <div>
-                            <Label htmlFor="cod" className="text-base font-medium cursor-pointer">Cash on Delivery</Label>
-                            <p className="text-sm text-orange-600">
-                              💡 Complete payment before delivery and get 10% discount!
-                            </p>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -527,26 +586,22 @@ const Checkout = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex justify-between items-center">
-                  <span>Price Details</span>
+                  <span>PRICE DETAILS</span>
                   <span className="text-sm font-normal">({items.length} item{items.length > 1 ? 's' : ''})</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
-                  <span>Total MRP</span>
+                  <span>Price ({items.length} item{items.length > 1 ? 's' : ''})</span>
                   <span>₹{totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-green-600">
                   <span>Delivery Charges</span>
-                  <span>₹0 (Free)</span>
+                  <span>₹0 Free</span>
                 </div>
                 <div className="flex justify-between text-green-600">
-                  <span>Platform Fee</span>
-                  <span>₹0 (Free)</span>
-                </div>
-                <div className="flex justify-between text-green-600">
-                  <span>Handling Charges</span>
-                  <span>₹0 (Free)</span>
+                  <span>Packaging Charges</span>
+                  <span>₹0 Free</span>
                 </div>
                 {upiDiscount > 0 && (
                   <div className="flex justify-between text-green-600">
@@ -562,16 +617,9 @@ const Checkout = () => {
                 )}
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
-                  <span>Total Amount</span>
+                  <span>Amount Payable</span>
                   <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
-                
-                {upiDiscount > 0 && (
-                  <div className="bg-green-50 border border-green-200 rounded p-3">
-                    <p className="text-green-800 text-sm font-medium">🎉 UPI Discount Applied!</p>
-                    <p className="text-green-600 text-xs">You saved ₹{upiDiscount} with UPI payment</p>
-                  </div>
-                )}
                 
                 {/* Pay Button */}
                 <div className="mt-6">
@@ -591,13 +639,14 @@ const Checkout = () => {
               </CardContent>
             </Card>
 
-            {/* 5% Cashback Offer */}
-            <Card className="bg-green-50 border-green-200">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-green-800 font-medium text-sm">5% Cashback</p>
-                  <p className="text-green-700 text-xs">Claim now with payment offers</p>
+            {/* Safe Payments Info */}
+            <Card className="bg-gray-50">
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center space-x-2 text-gray-600">
+                  <Shield className="h-4 w-4" />
+                  <span className="text-sm">Safe and Secure Payments. Easy returns.</span>
                 </div>
+                <p className="text-xs text-gray-500 mt-1">100% Authentic products.</p>
               </CardContent>
             </Card>
           </div>

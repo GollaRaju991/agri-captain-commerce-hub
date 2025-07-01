@@ -1,11 +1,11 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Smartphone, Building } from 'lucide-react';
+import { CreditCard, Smartphone, Building, Truck } from 'lucide-react';
 
 interface PaymentMethodsSectionProps {
   paymentMethod: string;
@@ -46,27 +46,54 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({
   setSelectedEMI,
   finalTotal
 }) => {
+  const [timeLeft, setTimeLeft] = useState(10 * 60); // 10 minutes in seconds
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">2. Choose Payment Method</CardTitle>
+    <Card className="border border-gray-200">
+      <CardHeader className="bg-blue-50 border-b">
+        <CardTitle className="text-lg font-medium flex items-center">
+          <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">2</span>
+          Choose Payment Method
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 flex items-center">
           <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold mr-3">4</div>
           <div>
             <p className="text-sm font-medium">PAYMENT OPTIONS</p>
             <div className="flex items-center text-xs text-gray-600 mt-1">
               <span className="mr-2">Complete payment in</span>
-              <div className="bg-white px-2 py-1 rounded border">00:10:39</div>
+              <div className="bg-white px-2 py-1 rounded border font-mono">
+                {formatTime(timeLeft)}
+              </div>
             </div>
           </div>
         </div>
 
-        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-1">
+        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-2">
           {/* UPI Payment */}
-          <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
-            <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
+          <div className="border rounded-lg">
+            <div className="flex items-start space-x-3 p-4 hover:bg-gray-50">
               <RadioGroupItem value="upi" id="upi" className="mt-1" />
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-1">
@@ -90,9 +117,6 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({
                       <Button variant="outline" size="sm" className="text-blue-600">VERIFY</Button>
                       <Button size="sm" className="bg-gray-600 hover:bg-gray-700">PAY ₹{finalTotal}</Button>
                     </div>
-                    <p className="text-xs text-gray-500 ml-6">
-                      You need to have a registered account with any UPI app like Paytm, Google Pay, PhonePe
-                    </p>
                   </div>
                 )}
               </div>
@@ -100,8 +124,8 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({
           </div>
 
           {/* Credit/Debit Card */}
-          <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
-            <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
+          <div className="border rounded-lg">
+            <div className="flex items-start space-x-3 p-4 hover:bg-gray-50">
               <RadioGroupItem value="card" id="card" className="mt-1" />
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-1">
@@ -152,8 +176,8 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({
           </div>
 
           {/* Net Banking */}
-          <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
-            <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
+          <div className="border rounded-lg">
+            <div className="flex items-start space-x-3 p-4 hover:bg-gray-50">
               <RadioGroupItem value="netbanking" id="netbanking" className="mt-1" />
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-1">
@@ -184,9 +208,33 @@ const PaymentMethodsSection: React.FC<PaymentMethodsSectionProps> = ({
             </div>
           </div>
 
+          {/* Cash on Delivery */}
+          <div className="border rounded-lg">
+            <div className="flex items-start space-x-3 p-4 hover:bg-gray-50">
+              <RadioGroupItem value="cod" id="cod" className="mt-1" />
+              <div className="flex-1">
+                <div className="flex items-center space-x-3 mb-1">
+                  <Truck className="h-5 w-5 text-green-600" />
+                  <Label htmlFor="cod" className="text-base font-medium cursor-pointer">Cash on Delivery</Label>
+                </div>
+                <p className="text-sm text-gray-600">Pay when you receive your order</p>
+                {paymentMethod === 'cod' && (
+                  <div className="mt-4 border-t pt-4 bg-green-50 p-3 rounded">
+                    <p className="text-sm text-green-700 font-medium">
+                      ✓ You can pay cash when your order is delivered
+                    </p>
+                    <p className="text-xs text-green-600 mt-1">
+                      No additional charges for Cash on Delivery
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* EMI */}
-          <div className="border-l-4 border-transparent data-[state=checked]:border-blue-600">
-            <div className="flex items-start space-x-3 p-4 bg-white hover:bg-gray-50">
+          <div className="border rounded-lg">
+            <div className="flex items-start space-x-3 p-4 hover:bg-gray-50">
               <RadioGroupItem value="emi" id="emi" className="mt-1" />
               <div className="flex-1">
                 <div className="flex items-center space-x-3 mb-1">

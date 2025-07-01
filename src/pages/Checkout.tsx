@@ -38,7 +38,7 @@ const Checkout = () => {
   // Address state
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [addressesLoading, setAddressesLoading] = useState(true);
+  const [addressesLoading, setAddressesLoading] = useState(false);
   
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -77,6 +77,9 @@ const Checkout = () => {
         return;
       }
 
+      setAddressesLoading(true);
+      console.log('Loading addresses for user:', user.id);
+
       try {
         const { data, error } = await supabase
           .from('addresses')
@@ -84,6 +87,8 @@ const Checkout = () => {
           .eq('user_id', user.id)
           .order('is_default', { ascending: false })
           .order('created_at', { ascending: false });
+
+        console.log('Addresses query result:', { data, error });
 
         if (error) {
           console.error('Error loading addresses:', error);
@@ -93,14 +98,23 @@ const Checkout = () => {
             variant: "destructive",
           });
         } else {
+          console.log('Successfully loaded addresses:', data?.length || 0);
           setAddresses(data || []);
-          const defaultAddress = data?.find(addr => addr.is_default) || data?.[0];
-          if (defaultAddress) {
+          
+          // Auto-select default address or first address
+          if (data && data.length > 0) {
+            const defaultAddress = data.find(addr => addr.is_default) || data[0];
+            console.log('Auto-selecting address:', defaultAddress);
             setSelectedAddress(defaultAddress);
           }
         }
       } catch (error) {
-        console.error('Error loading addresses:', error);
+        console.error('Exception loading addresses:', error);
+        toast({
+          title: "Error loading addresses",
+          description: "Something went wrong while loading addresses",
+          variant: "destructive",
+        });
       } finally {
         setAddressesLoading(false);
       }
@@ -110,6 +124,7 @@ const Checkout = () => {
   }, [user, toast]);
 
   const handleAddressSelect = (address: Address) => {
+    console.log('Address selected:', address);
     setSelectedAddress(address);
   };
 
@@ -136,9 +151,9 @@ const Checkout = () => {
         orderId: orderDetails.orderNumber,
         userId: user?.id || '',
         customerData: {
-          name: user?.name || '',
+          name: user?.name || selectedAddress?.name || '',
           email: user?.email || '',
-          phone: user?.phone || ''
+          phone: user?.phone || selectedAddress?.phone || ''
         },
         items: items.map(item => ({
           id: item.id,
@@ -194,6 +209,7 @@ const Checkout = () => {
       return;
     }
 
+    // Validation for different payment methods
     if (paymentMethod === 'upi' && !upiId) {
       toast({
         title: "Enter UPI ID",
@@ -203,7 +219,7 @@ const Checkout = () => {
       return;
     }
 
-    if ((paymentMethod === 'card') && (!cardNumber || !expiryDate || !cvv || !nameOnCard)) {
+    if (paymentMethod === 'card' && (!cardNumber || !expiryDate || !cvv || !nameOnCard)) {
       toast({
         title: "Complete card details",
         description: "Please fill in all card details",
@@ -249,14 +265,19 @@ const Checkout = () => {
           delivery: deliveryFee,
           discount: upiDiscount + couponDiscount,
           total: finalTotal
-        }
+        },
+        paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod.toUpperCase()
       };
 
       await saveOrderToDatabase(orderDetails);
 
+      const paymentMessage = paymentMethod === 'cod' 
+        ? "Order placed successfully! You can pay when your order is delivered."
+        : `Order placed successfully! Payment will be processed using ${paymentMethod.toUpperCase()}`;
+
       toast({
         title: "Order placed successfully!",
-        description: `Your order has been placed using ${paymentMethod.toUpperCase()}`,
+        description: paymentMessage,
       });
 
       clearCart();

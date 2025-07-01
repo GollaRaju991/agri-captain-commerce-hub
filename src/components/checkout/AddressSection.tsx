@@ -3,6 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 import AddressManager from '@/components/AddressManager';
 
 interface Address {
@@ -34,15 +36,18 @@ const AddressSection: React.FC<AddressSectionProps> = ({
   onAddressSelect
 }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">1. Delivery Address</CardTitle>
+    <Card className="border border-gray-200">
+      <CardHeader className="bg-blue-50 border-b">
+        <CardTitle className="text-lg font-medium flex items-center">
+          <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm mr-3">1</span>
+          Delivery Address
+        </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         {addressesLoading ? (
-          <div className="text-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Loading addresses...</p>
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Loading addresses...</span>
           </div>
         ) : addresses.length > 0 ? (
           <div className="space-y-4">
@@ -54,34 +59,47 @@ const AddressSection: React.FC<AddressSectionProps> = ({
               }}
             >
               {addresses.map((address) => (
-                <div key={address.id} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                  <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
-                  <div className="flex-1">
-                    <Label htmlFor={address.id} className="cursor-pointer">
-                      <div className="font-medium">{address.name}</div>
-                      <div className="text-sm text-gray-600">{address.phone}</div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        {address.address}, {address.city}, {address.state} - {address.pincode}
+                <div key={address.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                  <div className="flex items-start space-x-3">
+                    <RadioGroupItem value={address.id} className="mt-1" />
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className="font-medium text-gray-900">{address.name}</span>
+                        <span className="text-sm bg-gray-100 px-2 py-1 rounded capitalize">
+                          {address.address_type}
+                        </span>
+                        {address.is_default && (
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                            Default
+                          </span>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 capitalize">
-                        {address.address_type}
-                        {address.is_default && <span className="ml-2 px-2 py-1 bg-green-100 text-green-700 rounded">Default</span>}
-                      </div>
-                    </Label>
+                      <p className="text-sm text-gray-600 mb-1">{address.address}</p>
+                      <p className="text-sm text-gray-600 mb-1">
+                        {address.city}, {address.state} - {address.pincode}
+                      </p>
+                      <p className="text-sm text-gray-600">Mobile: {address.phone}</p>
+                    </div>
                   </div>
                 </div>
               ))}
             </RadioGroup>
+            
+            <div className="border-t pt-4">
+              <AddressManager 
+                onAddressSelect={onAddressSelect}
+                selectedAddressId={selectedAddress?.id}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-600 mb-4">No delivery addresses found</p>
             <AddressManager 
               onAddressSelect={onAddressSelect}
               selectedAddressId={selectedAddress?.id}
             />
           </div>
-        ) : (
-          <AddressManager 
-            onAddressSelect={onAddressSelect}
-            selectedAddressId={selectedAddress?.id}
-          />
         )}
       </CardContent>
     </Card>

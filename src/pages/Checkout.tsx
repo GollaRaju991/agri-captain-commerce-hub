@@ -33,7 +33,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { items, totalPrice, clearCart } = useCart();
-  const { user, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
+  const { user, session, loading: authLoading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   
   // Address state
@@ -65,20 +65,26 @@ const Checkout = () => {
 
   useScrollToTop();
 
+  // Handle redirect after login if needed
   useEffect(() => {
-    if (!user && location.pathname === '/checkout') {
+    if (!authLoading && !user && !session && location.pathname === '/checkout') {
+      console.log('User not authenticated, redirecting to auth');
       setRedirectAfterLogin('/checkout');
+      navigate('/auth');
     }
-  }, [user, location.pathname, setRedirectAfterLogin]);
+  }, [user, session, authLoading, location.pathname, setRedirectAfterLogin, navigate]);
 
+  // Load addresses when user is authenticated
   useEffect(() => {
-    loadAddresses();
-  }, [user]);
+    if (!authLoading && user && session) {
+      console.log('User authenticated, loading addresses');
+      loadAddresses();
+    }
+  }, [user, session, authLoading]);
 
   const loadAddresses = async () => {
-    if (!user) {
-      console.log('No user found, skipping address load');
-      setAddressesLoading(false);
+    if (!user || !session) {
+      console.log('No authenticated user, skipping address load');
       return;
     }
 
@@ -186,7 +192,7 @@ const Checkout = () => {
   };
 
   const handlePayment = async () => {
-    if (!user) {
+    if (!user || !session) {
       toast({
         title: "Please login",
         description: "You need to be logged in to place an order",
@@ -297,6 +303,24 @@ const Checkout = () => {
       });
     }
   };
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <span className="text-gray-600">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to auth if not authenticated (this should be handled by useEffect but as backup)
+  if (!user || !session) {
+    navigate('/auth');
+    return null;
+  }
 
   if (items.length === 0) {
     return (

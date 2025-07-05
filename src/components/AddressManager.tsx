@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { MapPin, Plus, Edit, Trash2, Home, Building, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,7 +34,7 @@ interface AddressManagerProps {
 
 const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, selectedAddressId, onClose }) => {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
@@ -52,13 +51,16 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && session) {
       fetchAddresses();
     }
-  }, [user]);
+  }, [user, session]);
 
   const fetchAddresses = async () => {
-    if (!user) return;
+    if (!user || !session) {
+      console.log('No authenticated user, skipping address fetch');
+      return;
+    }
     
     setLoading(true);
     console.log('Fetching addresses for user:', user.id);
@@ -80,14 +82,18 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
           description: error.message || "Failed to load your saved addresses",
           variant: "destructive"
         });
+        setAddresses([]);
       } else {
         console.log('Successfully fetched addresses:', data?.length || 0);
         setAddresses(data || []);
         
-        // Auto-select default address
-        const defaultAddress = data?.find((addr) => addr.is_default);
-        if (defaultAddress && !selectedAddressId) {
-          onAddressSelect(defaultAddress);
+        // Auto-select default address if none selected
+        if (data && data.length > 0 && !selectedAddressId) {
+          const defaultAddress = data.find((addr) => addr.is_default) || data[0];
+          if (defaultAddress) {
+            console.log('Auto-selecting default address:', defaultAddress);
+            onAddressSelect(defaultAddress);
+          }
         }
       }
     } catch (error) {
@@ -97,6 +103,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         description: "Something went wrong while loading addresses",
         variant: "destructive"
       });
+      setAddresses([]);
     } finally {
       setLoading(false);
     }
@@ -128,9 +135,10 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
+    if (!user || !session) {
       toast({
-        title: "Please login to save address",
+        title: "Authentication required",
+        description: "Please login to save address",
         variant: "destructive"
       });
       return;
@@ -162,10 +170,15 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
       console.log('Saving address data:', addressData);
 
       if (editingAddress) {
+        // Update existing address
         const { data, error } = await supabase
           .from('addresses')
-          .update(addressData)
+          .update({
+            ...addressData,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', editingAddress.id)
+          .eq('user_id', user.id) // Extra security check
           .select()
           .single();
 
@@ -179,12 +192,18 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
           return;
         }
         
+        console.log('Address updated successfully:', data);
         toast({ title: "Address updated successfully" });
         onAddressSelect(data);
       } else {
+        // Create new address
         const { data, error } = await supabase
           .from('addresses')
-          .insert([addressData])
+          .insert([{
+            ...addressData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }])
           .select()
           .single();
 
@@ -203,7 +222,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         onAddressSelect(data);
       }
 
-      // Refresh addresses and reset form
+      // Refresh addresses list and close form
       await fetchAddresses();
       resetForm();
       setShowForm(false);
@@ -247,11 +266,21 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
   };
 
   const handleDeleteAddress = async (addressId: string) => {
+    if (!user || !session) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to delete address",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('addresses')
         .delete()
-        .eq('id', addressId);
+        .eq('id', addressId)
+        .eq('user_id', user.id); // Extra security check
 
       if (error) {
         console.error('Error deleting address:', error);
@@ -261,13 +290,36 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
           variant: "destructive"
         });
       } else {
+        console.log('Address deleted successfully');
         toast({ title: "Address deleted successfully" });
         await fetchAddresses();
       }
     } catch (error) {
       console.error('Exception deleting address:', error);
+      toast({
+        title: "Error deleting address",
+        description: "Something went wrong while deleting the address",
+        variant: "destructive"
+      });
     }
   };
+
+  const handleUseAddress = (address: Address) => {
+    console.log('Using address:', address);
+    onAddressSelect(address);
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Loading addresses...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -277,7 +329,10 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setShowForm(!showForm)}
+            onClick={() => {
+              resetForm();
+              setShowForm(!showForm);
+            }}
             className="text-blue-600 border-blue-600 hover:bg-blue-50"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -417,10 +472,10 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
       )}
 
       {/* Address List */}
-      {addresses.length > 0 && !showForm && (
+      {addresses.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Saved Addresses</CardTitle>
+            <CardTitle className="text-base">Saved Addresses ({addresses.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -469,7 +524,8 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onAddressSelect(address)}
+                      onClick={() => handleUseAddress(address)}
+                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
                     >
                       Use This
                     </Button>
@@ -481,13 +537,19 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         </Card>
       )}
 
-      {addresses.length === 0 && !showForm && !loading && (
+      {addresses.length === 0 && !showForm && (
         <Card className="text-center py-8">
           <CardContent>
             <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">No addresses saved</h3>
             <p className="text-gray-600 mb-4">Add your first address to proceed with checkout</p>
-            <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Button 
+              onClick={() => {
+                resetForm();
+                setShowForm(true);
+              }} 
+              className="bg-blue-600 hover:bg-blue-700"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Address
             </Button>

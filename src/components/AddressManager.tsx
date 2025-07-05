@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,13 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { MapPin, Plus, Edit, Trash2, Home, Building } from 'lucide-react';
+import { MapPin, Plus, Edit, Trash2, Home, Building, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import LocationDetector from './LocationDetector';
 
-// Use the Supabase schema type for addresses
 interface Address {
   id: string;
   name: string;
@@ -20,7 +20,7 @@ interface Address {
   city: string;
   state: string;
   pincode: string;
-  address_type: string; // This matches the Supabase schema (string, not union)
+  address_type: string;
   is_default: boolean;
   created_at: string;
   updated_at: string;
@@ -30,18 +30,20 @@ interface Address {
 interface AddressManagerProps {
   onAddressSelect: (address: Address) => void;
   selectedAddressId?: string;
+  onClose?: () => void;
 }
 
-const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, selectedAddressId }) => {
+const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, selectedAddressId, onClose }) => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
+    name: user?.name || '',
+    phone: user?.phone || '',
     address: '',
     city: '',
     state: '',
@@ -56,21 +58,30 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
   }, [user]);
 
   const fetchAddresses = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    console.log('Fetching addresses for user:', user.id);
+
     try {
       const { data, error } = await supabase
         .from('addresses')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
         .order('created_at', { ascending: false });
+
+      console.log('Addresses fetch result:', { data, error });
 
       if (error) {
         console.error('Error fetching addresses:', error);
         toast({
           title: "Error loading addresses",
-          description: "Failed to load your saved addresses",
+          description: error.message || "Failed to load your saved addresses",
           variant: "destructive"
         });
       } else {
+        console.log('Successfully fetched addresses:', data?.length || 0);
         setAddresses(data || []);
         
         // Auto-select default address
@@ -80,7 +91,12 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         }
       }
     } catch (error) {
-      console.error('Error fetching addresses:', error);
+      console.error('Exception fetching addresses:', error);
+      toast({
+        title: "Error loading addresses",
+        description: "Something went wrong while loading addresses",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -94,17 +110,31 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
   };
 
   const handleLocationDetected = (location: any) => {
+    console.log('Location detected:', location);
     setFormData({
       ...formData,
-      pincode: location.pincode,
-      city: location.city,
-      state: location.state,
-      address: `${location.area}, ${location.city}`
+      pincode: location.pincode || '',
+      city: location.city || location.district || '',
+      state: location.state || '',
+      address: location.area ? `${location.area}, ${location.city || location.district}` : formData.address
+    });
+    
+    toast({
+      title: "Location detected",
+      description: `Found: ${location.city || location.district}, ${location.state}`,
     });
   };
 
   const handleSaveAddress = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Please login to save address",
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (!formData.name || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.pincode) {
       toast({
@@ -114,28 +144,43 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
       return;
     }
 
+    setSaving(true);
+
     try {
       const addressData = {
-        user_id: user?.id,
-        ...formData,
+        user_id: user.id,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        address: formData.address.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        pincode: formData.pincode.trim(),
+        address_type: formData.address_type,
         is_default: addresses.length === 0 // First address is default
       };
 
+      console.log('Saving address data:', addressData);
+
       if (editingAddress) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('addresses')
           .update(addressData)
-          .eq('id', editingAddress.id);
+          .eq('id', editingAddress.id)
+          .select()
+          .single();
 
         if (error) {
           console.error('Error updating address:', error);
           toast({
             title: "Error updating address",
+            description: error.message,
             variant: "destructive"
           });
           return;
         }
+        
         toast({ title: "Address updated successfully" });
+        onAddressSelect(data);
       } else {
         const { data, error } = await supabase
           .from('addresses')
@@ -147,35 +192,44 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
           console.error('Error saving address:', error);
           toast({
             title: "Error saving address",
+            description: error.message,
             variant: "destructive"
           });
           return;
         }
+        
+        console.log('Address saved successfully:', data);
         toast({ title: "Address added successfully" });
+        onAddressSelect(data);
       }
 
-      // Refresh addresses
+      // Refresh addresses and reset form
       await fetchAddresses();
-      
-      // Reset form
-      setFormData({
-        name: '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        pincode: '',
-        address_type: 'home'
-      });
+      resetForm();
       setShowForm(false);
-      setEditingAddress(null);
     } catch (error) {
-      console.error('Error saving address:', error);
+      console.error('Exception saving address:', error);
       toast({
         title: "Error saving address",
+        description: "Something went wrong while saving the address",
         variant: "destructive"
       });
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: user?.name || '',
+      phone: user?.phone || '',
+      address: '',
+      city: '',
+      state: '',
+      pincode: '',
+      address_type: 'home'
+    });
+    setEditingAddress(null);
   };
 
   const handleEditAddress = (address: Address) => {
@@ -203,6 +257,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         console.error('Error deleting address:', error);
         toast({
           title: "Error deleting address",
+          description: error.message,
           variant: "destructive"
         });
       } else {
@@ -210,68 +265,30 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         await fetchAddresses();
       }
     } catch (error) {
-      console.error('Error deleting address:', error);
+      console.error('Exception deleting address:', error);
     }
   };
-
-  const handleSetDefault = async (addressId: string) => {
-    try {
-      // First, unset all other addresses as default
-      await supabase
-        .from('addresses')
-        .update({ is_default: false })
-        .eq('user_id', user?.id);
-
-      // Then set the selected address as default
-      const { error } = await supabase
-        .from('addresses')
-        .update({ is_default: true })
-        .eq('id', addressId);
-
-      if (error) {
-        console.error('Error setting default address:', error);
-        toast({
-          title: "Error setting default address",
-          variant: "destructive"
-        });
-      } else {
-        toast({ title: "Default address updated" });
-        await fetchAddresses();
-        
-        const defaultAddress = addresses.find(addr => addr.id === addressId);
-        if (defaultAddress) {
-          onAddressSelect(defaultAddress);
-        }
-      }
-    } catch (error) {
-      console.error('Error setting default address:', error);
-    }
-  };
-
-  const handleAddressSelection = (addressId: string) => {
-    const selectedAddress = addresses.find(addr => addr.id === addressId);
-    if (selectedAddress) {
-      onAddressSelect(selectedAddress);
-    }
-  };
-
-  if (loading) {
-    return <div>Loading addresses...</div>;
-  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Delivery Address</h3>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowForm(!showForm)}
-          className="text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Address
-        </Button>
+        <h3 className="text-lg font-semibold">Manage Addresses</h3>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowForm(!showForm)}
+            className="text-blue-600 border-blue-600 hover:bg-blue-50"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Address
+          </Button>
+          {onClose && (
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Address Form */}
@@ -292,6 +309,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
+                    placeholder="Enter full name"
                     required
                   />
                 </div>
@@ -302,6 +320,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
+                    placeholder="Enter 10-digit mobile number"
                     required
                   />
                 </div>
@@ -314,12 +333,23 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="House No, Street, Landmark"
+                  placeholder="House No, Building, Street, Landmark"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="pincode">Pincode *</Label>
+                  <Input
+                    id="pincode"
+                    name="pincode"
+                    value={formData.pincode}
+                    onChange={handleInputChange}
+                    placeholder="Enter pincode"
+                    required
+                  />
+                </div>
                 <div>
                   <Label htmlFor="city">City *</Label>
                   <Input
@@ -327,6 +357,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
+                    placeholder="Enter city"
                     required
                   />
                 </div>
@@ -337,16 +368,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                     name="state"
                     value={formData.state}
                     onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="pincode">Pincode *</Label>
-                  <Input
-                    id="pincode"
-                    name="pincode"
-                    value={formData.pincode}
-                    onChange={handleInputChange}
+                    placeholder="Enter state"
                     required
                   />
                 </div>
@@ -359,7 +381,7 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
                   name="address_type"
                   value={formData.address_type}
                   onChange={handleInputChange}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="home">Home</option>
                   <option value="work">Work</option>
@@ -371,24 +393,19 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
               </div>
 
               <div className="flex space-x-3">
-                <Button type="submit" className="bg-green-600 hover:bg-green-700">
-                  {editingAddress ? 'Update Address' : 'Save Address'}
+                <Button 
+                  type="submit" 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : (editingAddress ? 'Update Address' : 'Save Address')}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => {
                     setShowForm(false);
-                    setEditingAddress(null);
-                    setFormData({
-                      name: '',
-                      phone: '',
-                      address: '',
-                      city: '',
-                      state: '',
-                      pincode: '',
-                      address_type: 'home'
-                    });
+                    resetForm();
                   }}
                 >
                   Cancel
@@ -399,92 +416,78 @@ const AddressManager: React.FC<AddressManagerProps> = ({ onAddressSelect, select
         </Card>
       )}
 
-      {/* Address List with Radio Buttons */}
-      {addresses.length > 0 && (
+      {/* Address List */}
+      {addresses.length > 0 && !showForm && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Select Delivery Address</CardTitle>
+            <CardTitle className="text-base">Saved Addresses</CardTitle>
           </CardHeader>
           <CardContent>
-            <RadioGroup value={selectedAddressId} onValueChange={handleAddressSelection}>
-              <div className="space-y-3">
-                {addresses.map((address) => (
-                  <div key={address.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value={address.id} className="mt-1" />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="flex items-center space-x-1">
-                          {address.address_type === 'home' ? (
-                            <Home className="h-4 w-4 text-gray-500" />
-                          ) : (
-                            <Building className="h-4 w-4 text-gray-500" />
-                          )}
-                          <span className="font-medium">{address.name}</span>
-                        </div>
-                        {address.is_default && (
-                          <Badge variant="secondary" className="text-xs">
-                            Default
-                          </Badge>
+            <div className="space-y-3">
+              {addresses.map((address) => (
+                <div key={address.id} className="flex items-start justify-between p-3 border rounded-lg hover:bg-gray-50">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <div className="flex items-center space-x-1">
+                        {address.address_type === 'home' ? (
+                          <Home className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <Building className="h-4 w-4 text-gray-500" />
                         )}
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {address.address_type}
-                        </Badge>
+                        <span className="font-medium">{address.name}</span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-1">{address.address}</p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        {address.city}, {address.state} - {address.pincode}
-                      </p>
-                      <p className="text-sm text-gray-600">Phone: {address.phone}</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditAddress(address);
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteAddress(address.id);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                      {!address.is_default && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSetDefault(address.id);
-                          }}
-                        >
-                          Set Default
-                        </Button>
+                      {address.is_default && (
+                        <Badge variant="secondary" className="text-xs">
+                          Default
+                        </Badge>
                       )}
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {address.address_type}
+                      </Badge>
                     </div>
+                    <p className="text-sm text-gray-600 mb-1">{address.address}</p>
+                    <p className="text-sm text-gray-600 mb-1">
+                      {address.city}, {address.state} - {address.pincode}
+                    </p>
+                    <p className="text-sm text-gray-600">Phone: {address.phone}</p>
                   </div>
-                ))}
-              </div>
-            </RadioGroup>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditAddress(address)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteAddress(address.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onAddressSelect(address)}
+                    >
+                      Use This
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {addresses.length === 0 && !showForm && (
+      {addresses.length === 0 && !showForm && !loading && (
         <Card className="text-center py-8">
           <CardContent>
             <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">No addresses saved</h3>
             <p className="text-gray-600 mb-4">Add your first address to proceed with checkout</p>
-            <Button onClick={() => setShowForm(true)} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
               Add Address
             </Button>

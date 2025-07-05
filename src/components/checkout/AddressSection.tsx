@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, MapPin } from 'lucide-react';
 import AddressManager from '@/components/AddressManager';
 
 interface Address {
@@ -27,14 +27,24 @@ interface AddressSectionProps {
   selectedAddress: Address | null;
   addressesLoading: boolean;
   onAddressSelect: (address: Address) => void;
+  onAddressRefresh: () => void;
 }
 
 const AddressSection: React.FC<AddressSectionProps> = ({
   addresses,
   selectedAddress,
   addressesLoading,
-  onAddressSelect
+  onAddressSelect,
+  onAddressRefresh
 }) => {
+  const [showAddressManager, setShowAddressManager] = useState(false);
+
+  const handleAddressAdded = (address: Address) => {
+    onAddressSelect(address);
+    onAddressRefresh();
+    setShowAddressManager(false);
+  };
+
   return (
     <Card className="border border-gray-200">
       <CardHeader className="bg-blue-50 border-b">
@@ -49,7 +59,7 @@ const AddressSection: React.FC<AddressSectionProps> = ({
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             <span className="ml-3 text-gray-600">Loading addresses...</span>
           </div>
-        ) : addresses.length > 0 ? (
+        ) : addresses && addresses.length > 0 ? (
           <div className="space-y-4">
             <RadioGroup 
               value={selectedAddress?.id || ''} 
@@ -86,18 +96,37 @@ const AddressSection: React.FC<AddressSectionProps> = ({
             </RadioGroup>
             
             <div className="border-t pt-4">
-              <AddressManager 
-                onAddressSelect={onAddressSelect}
-                selectedAddressId={selectedAddress?.id}
-              />
+              <Button
+                variant="outline"
+                onClick={() => setShowAddressManager(true)}
+                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Address
+              </Button>
             </div>
           </div>
         ) : (
           <div className="text-center py-8">
+            <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-600 mb-4">No delivery addresses found</p>
+            <p className="text-sm text-gray-500 mb-4">Add your first address to proceed with checkout</p>
+            <Button 
+              onClick={() => setShowAddressManager(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Delivery Address
+            </Button>
+          </div>
+        )}
+
+        {showAddressManager && (
+          <div className="mt-6">
             <AddressManager 
-              onAddressSelect={onAddressSelect}
+              onAddressSelect={handleAddressAdded}
               selectedAddressId={selectedAddress?.id}
+              onClose={() => setShowAddressManager(false)}
             />
           </div>
         )}

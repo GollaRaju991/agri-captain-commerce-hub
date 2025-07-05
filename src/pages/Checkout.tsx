@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -71,57 +72,62 @@ const Checkout = () => {
   }, [user, location.pathname, setRedirectAfterLogin]);
 
   useEffect(() => {
-    const loadAddresses = async () => {
-      if (!user) {
-        setAddressesLoading(false);
-        return;
-      }
+    loadAddresses();
+  }, [user]);
 
-      setAddressesLoading(true);
-      console.log('Loading addresses for user:', user.id);
+  const loadAddresses = async () => {
+    if (!user) {
+      console.log('No user found, skipping address load');
+      setAddressesLoading(false);
+      return;
+    }
 
-      try {
-        const { data, error } = await supabase
-          .from('addresses')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('is_default', { ascending: false })
-          .order('created_at', { ascending: false });
+    setAddressesLoading(true);
+    console.log('Loading addresses for user:', user.id);
 
-        console.log('Addresses query result:', { data, error });
+    try {
+      const { data, error } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('Error loading addresses:', error);
-          toast({
-            title: "Error loading addresses",
-            description: "Please try again or add a new address",
-            variant: "destructive",
-          });
-        } else {
-          console.log('Successfully loaded addresses:', data?.length || 0);
-          setAddresses(data || []);
-          
-          // Auto-select default address or first address
-          if (data && data.length > 0) {
-            const defaultAddress = data.find(addr => addr.is_default) || data[0];
-            console.log('Auto-selecting address:', defaultAddress);
-            setSelectedAddress(defaultAddress);
-          }
-        }
-      } catch (error) {
-        console.error('Exception loading addresses:', error);
+      console.log('Addresses query result:', { data, error, count: data?.length });
+
+      if (error) {
+        console.error('Error loading addresses:', error);
         toast({
           title: "Error loading addresses",
-          description: "Something went wrong while loading addresses",
+          description: error.message || "Please try again or add a new address",
           variant: "destructive",
         });
-      } finally {
-        setAddressesLoading(false);
+        setAddresses([]);
+      } else {
+        console.log('Successfully loaded addresses:', data?.length || 0);
+        setAddresses(data || []);
+        
+        // Auto-select default address or first address
+        if (data && data.length > 0) {
+          const defaultAddress = data.find(addr => addr.is_default) || data[0];
+          console.log('Auto-selecting address:', defaultAddress);
+          setSelectedAddress(defaultAddress);
+        } else {
+          setSelectedAddress(null);
+        }
       }
-    };
-
-    loadAddresses();
-  }, [user, toast]);
+    } catch (error) {
+      console.error('Exception loading addresses:', error);
+      toast({
+        title: "Error loading addresses",
+        description: "Something went wrong while loading addresses",
+        variant: "destructive",
+      });
+      setAddresses([]);
+    } finally {
+      setAddressesLoading(false);
+    }
+  };
 
   const handleAddressSelect = (address: Address) => {
     console.log('Address selected:', address);
@@ -328,6 +334,7 @@ const Checkout = () => {
               selectedAddress={selectedAddress}
               addressesLoading={addressesLoading}
               onAddressSelect={handleAddressSelect}
+              onAddressRefresh={loadAddresses}
             />
 
             <PaymentMethodsSection

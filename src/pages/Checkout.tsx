@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -33,7 +32,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { items, totalPrice, clearCart } = useCart();
-  const { user, session, loading: authLoading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
+  const { user, session, loading: authLoading, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   
   // Address state
@@ -65,14 +64,14 @@ const Checkout = () => {
 
   useScrollToTop();
 
-  // Handle redirect after login if needed
+  // Handle authentication requirement
   useEffect(() => {
-    if (!authLoading && !user && !session && location.pathname === '/checkout') {
+    if (!authLoading && !user && !session) {
       console.log('User not authenticated, redirecting to auth');
       setRedirectAfterLogin('/checkout');
       navigate('/auth');
     }
-  }, [user, session, authLoading, location.pathname, setRedirectAfterLogin, navigate]);
+  }, [user, session, authLoading, setRedirectAfterLogin, navigate]);
 
   // Load addresses when user is authenticated
   useEffect(() => {
@@ -316,9 +315,8 @@ const Checkout = () => {
     );
   }
 
-  // Redirect to auth if not authenticated (this should be handled by useEffect but as backup)
+  // Redirect to auth if not authenticated
   if (!user || !session) {
-    navigate('/auth');
     return null;
   }
 

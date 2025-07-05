@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,20 +18,6 @@ const Auth = () => {
   const { login, loginWithOTP, signup, sendOTP, testLogin, user, session, loading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Redirect if already authenticated
-  useEffect(() => {
-    console.log('Auth page - checking authentication:', { user: !!user, session: !!session, loading });
-    
-    if (!loading && user && session) {
-      console.log('User already authenticated, redirecting...');
-      const redirectPath = redirectAfterLogin || '/';
-      console.log('Redirecting to:', redirectPath);
-      
-      setRedirectAfterLogin(undefined);
-      navigate(redirectPath, { replace: true });
-    }
-  }, [user, session, loading, navigate, redirectAfterLogin, setRedirectAfterLogin]);
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -52,6 +39,16 @@ const Auth = () => {
 
   // Test OTP for development
   const TEST_OTP = '123456';
+
+  // Handle successful authentication
+  useEffect(() => {
+    if (!loading && user && session) {
+      console.log('User authenticated, redirecting to:', redirectAfterLogin || '/');
+      const redirectPath = redirectAfterLogin || '/';
+      setRedirectAfterLogin(undefined);
+      navigate(redirectPath, { replace: true });
+    }
+  }, [user, session, loading, navigate, redirectAfterLogin, setRedirectAfterLogin]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,13 +172,13 @@ const Auth = () => {
         const result = await testLogin(otpForm.phone);
         if (result.success) {
           toast({
-            title: "Test Login Successful",
-            description: "Logged in with test OTP. Redirecting..."
+            title: "Login Successful",
+            description: "Welcome to AgriCaptain!"
           });
-          // The redirect will be handled by the useEffect
+          return;
         } else {
           toast({
-            title: "Test Login Failed",
+            title: "Login Failed",
             description: result.error || "Test login failed",
             variant: "destructive"
           });
@@ -220,19 +217,7 @@ const Auth = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <span className="text-gray-600">Checking authentication...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // If user is already authenticated, show loading while redirecting
-  if (user && session) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <span className="text-gray-600">Redirecting...</span>
+          <span className="text-gray-600">Loading...</span>
         </div>
       </div>
     );

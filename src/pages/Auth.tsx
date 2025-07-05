@@ -15,18 +15,26 @@ const Auth = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login, loginWithOTP, signup, sendOTP, user, loading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
+  const { login, loginWithOTP, signup, sendOTP, user, session, loading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated - with better checks
   useEffect(() => {
-    if (!loading && user) {
+    console.log('Auth page - checking authentication:', { user: !!user, session: !!session, loading });
+    
+    if (!loading && user && session) {
+      console.log('User already authenticated, redirecting...');
       const redirectPath = redirectAfterLogin || '/';
+      console.log('Redirecting to:', redirectPath);
+      
+      // Clear redirect and navigate
       setRedirectAfterLogin(undefined);
-      navigate(redirectPath);
+      
+      // Use replace to prevent going back to auth page
+      navigate(redirectPath, { replace: true });
     }
-  }, [user, loading, navigate, redirectAfterLogin, setRedirectAfterLogin]);
+  }, [user, session, loading, navigate, redirectAfterLogin, setRedirectAfterLogin]);
 
   const [loginForm, setLoginForm] = useState({
     email: '',
@@ -51,19 +59,24 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) return; // Prevent double submission
+    
     setIsLoading(true);
+    console.log('Attempting login...');
     
     try {
       const result = await login(loginForm.email, loginForm.password);
       if (result.success) {
+        console.log('Login successful');
         toast({
           title: "Login Successful",
           description: "Welcome back to AgriCaptain!"
         });
-        const redirectPath = redirectAfterLogin || '/';
-        setRedirectAfterLogin(undefined);
-        navigate(redirectPath);
+        
+        // Don't navigate here - let the useEffect handle it
       } else {
+        console.log('Login failed:', result.error);
         toast({
           title: "Login Failed",
           description: result.error || "Please check your credentials and try again.",
@@ -71,6 +84,7 @@ const Auth = () => {
         });
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Login Failed",
         description: "An unexpected error occurred.",
@@ -92,6 +106,8 @@ const Auth = () => {
       });
       return;
     }
+    
+    if (isLoading) return; // Prevent double submission
     
     setIsLoading(true);
     
@@ -122,6 +138,9 @@ const Auth = () => {
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) return; // Prevent double submission
+    
     setIsLoading(true);
     
     try {
@@ -153,6 +172,9 @@ const Auth = () => {
 
   const handleOTPLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) return; // Prevent double submission
+    
     setIsLoading(true);
     
     try {
@@ -162,21 +184,20 @@ const Auth = () => {
           title: "Test Login Successful",
           description: "Logged in with test OTP"
         });
-        const redirectPath = redirectAfterLogin || '/';
-        setRedirectAfterLogin(undefined);
-        navigate(redirectPath);
+        
+        // Don't navigate here - let the useEffect handle it
         return;
       }
 
       const result = await loginWithOTP(otpForm.phone, otpForm.otp);
       if (result.success) {
+        console.log('OTP login successful');
         toast({
           title: "Login Successful",
           description: "Welcome to AgriCaptain!"
         });
-        const redirectPath = redirectAfterLogin || '/';
-        setRedirectAfterLogin(undefined);
-        navigate(redirectPath);
+        
+        // Don't navigate here - let the useEffect handle it
       } else {
         toast({
           title: "Login Failed",
@@ -195,10 +216,26 @@ const Auth = () => {
     }
   };
 
+  // Show loading while checking authentication
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <span className="text-gray-600">Checking authentication...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is already authenticated, show loading while redirecting
+  if (user && session) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <span className="text-gray-600">Redirecting...</span>
+        </div>
       </div>
     );
   }
@@ -247,6 +284,7 @@ const Auth = () => {
                         value={otpForm.phone}
                         onChange={(e) => setOtpForm({...otpForm, phone: e.target.value})}
                         required
+                        disabled={isLoading}
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={isLoading}>
@@ -266,6 +304,7 @@ const Auth = () => {
                         onChange={(e) => setOtpForm({...otpForm, otp: e.target.value})}
                         required
                         maxLength={6}
+                        disabled={isLoading}
                       />
                       <p className="text-sm text-gray-600 mt-1">
                         OTP sent to {otpForm.phone}
@@ -283,6 +322,7 @@ const Auth = () => {
                       variant="outline" 
                       className="w-full"
                       onClick={() => setOtpSent(false)}
+                      disabled={isLoading}
                     >
                       Change Phone Number
                     </Button>
@@ -301,6 +341,7 @@ const Auth = () => {
                       onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
                       required
                       autoComplete="email"
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -313,6 +354,7 @@ const Auth = () => {
                         onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
                         required
                         autoComplete="current-password"
+                        disabled={isLoading}
                       />
                       <Button
                         type="button"
@@ -320,6 +362,7 @@ const Auth = () => {
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
+                        disabled={isLoading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
@@ -343,6 +386,7 @@ const Auth = () => {
                       onChange={(e) => setSignupForm({...signupForm, name: e.target.value})}
                       required
                       autoComplete="name"
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -354,6 +398,7 @@ const Auth = () => {
                       onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
                       required
                       autoComplete="email"
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -365,6 +410,7 @@ const Auth = () => {
                       value={signupForm.phone}
                       onChange={(e) => setSignupForm({...signupForm, phone: e.target.value})}
                       autoComplete="tel"
+                      disabled={isLoading}
                     />
                   </div>
                   <div>
@@ -378,6 +424,7 @@ const Auth = () => {
                         required
                         minLength={8}
                         autoComplete="new-password"
+                        disabled={isLoading}
                       />
                       <Button
                         type="button"
@@ -385,6 +432,7 @@ const Auth = () => {
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
+                        disabled={isLoading}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
@@ -400,6 +448,7 @@ const Auth = () => {
                         onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
                         required
                         autoComplete="new-password"
+                        disabled={isLoading}
                       />
                       <Button
                         type="button"
@@ -407,6 +456,7 @@ const Auth = () => {
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        disabled={isLoading}
                       >
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>

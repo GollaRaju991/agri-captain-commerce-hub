@@ -43,17 +43,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | undefined>();
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
+        
+        if (!mounted) return;
+        
         setSession(session);
         
         if (session?.user) {
           // Use setTimeout to defer profile fetch and avoid blocking UI
           setTimeout(async () => {
+            if (!mounted) return;
+            
             try {
               const { data: profile } = await supabase
                 .from('profiles')
@@ -61,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .eq('id', session.user.id)
                 .single();
               
-              if (profile) {
+              if (mounted && profile) {
                 setUser({
                   id: profile.id,
                   name: profile.name,
@@ -79,19 +87,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else {
           setUser(null);
         }
-        setLoading(false);
+        
+        if (mounted) {
+          setLoading(false);
+        }
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (!session) {
-        setLoading(false);
+      if (mounted) {
+        setSession(session);
+        if (!session) {
+          setLoading(false);
+        }
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const updateUser = async (userData: Partial<UserProfile>): Promise<{ success: boolean; error?: string }> => {
@@ -125,6 +141,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    if (isAuthenticating) {
+      return { success: false, error: 'Authentication in progress' };
+    }
+
+    setIsAuthenticating(true);
+    
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
@@ -140,10 +162,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, error: 'An unexpected error occurred' };
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
   const signup = async (name: string, email: string, password: string, phone?: string): Promise<{ success: boolean; error?: string }> => {
+    if (isAuthenticating) {
+      return { success: false, error: 'Authentication in progress' };
+    }
+
+    setIsAuthenticating(true);
+    
     try {
       const { error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
@@ -166,10 +196,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Signup error:', error);
       return { success: false, error: 'An unexpected error occurred' };
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
   const loginWithOTP = async (phone: string, otp: string): Promise<{ success: boolean; error?: string }> => {
+    if (isAuthenticating) {
+      return { success: false, error: 'Authentication in progress' };
+    }
+
+    setIsAuthenticating(true);
+    
     try {
       let formattedPhone = phone.trim();
       if (!formattedPhone.startsWith('+')) {
@@ -193,6 +231,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('OTP login error:', error);
       return { success: false, error: 'An unexpected error occurred' };
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 

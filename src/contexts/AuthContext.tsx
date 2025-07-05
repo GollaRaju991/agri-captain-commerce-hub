@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -26,6 +25,7 @@ interface AuthContextType {
   updateUser: (userData: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
   redirectAfterLogin?: string;
   setRedirectAfterLogin: (path?: string) => void;
+  testLogin: (phone: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
@@ -58,7 +57,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         
         if (session?.user) {
-          // Use setTimeout to defer profile fetch and avoid blocking UI
           setTimeout(async () => {
             if (!mounted) return;
             
@@ -94,7 +92,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (mounted) {
         setSession(session);
@@ -109,6 +106,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, []);
+
+  const testLogin = async (phone: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      console.log('Test login for phone:', phone);
+      
+      // Create a test user profile
+      const testUser: UserProfile = {
+        id: 'test-user-' + Date.now(),
+        name: 'Test User',
+        email: 'test@agricaptain.com',
+        phone: phone
+      };
+
+      // Set the test user as authenticated
+      setUser(testUser);
+      setSession({
+        access_token: 'test-token',
+        refresh_token: 'test-refresh',
+        expires_in: 3600,
+        token_type: 'bearer',
+        user: {
+          id: testUser.id,
+          email: testUser.email,
+          phone: testUser.phone
+        }
+      } as Session);
+
+      console.log('Test login successful for:', testUser);
+      return { success: true };
+    } catch (error) {
+      console.error('Test login error:', error);
+      return { success: false, error: 'Test login failed' };
+    }
+  };
 
   const updateUser = async (userData: Partial<UserProfile>): Promise<{ success: boolean; error?: string }> => {
     if (!session?.user) {
@@ -288,7 +319,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sendOTP,
       updateUser,
       redirectAfterLogin,
-      setRedirectAfterLogin
+      setRedirectAfterLogin,
+      testLogin
     }}>
       {children}
     </AuthContext.Provider>

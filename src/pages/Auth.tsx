@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,11 +14,11 @@ const Auth = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login, loginWithOTP, signup, sendOTP, user, session, loading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
+  const { login, loginWithOTP, signup, sendOTP, testLogin, user, session, loading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated - with better checks
+  // Redirect if already authenticated
   useEffect(() => {
     console.log('Auth page - checking authentication:', { user: !!user, session: !!session, loading });
     
@@ -28,10 +27,7 @@ const Auth = () => {
       const redirectPath = redirectAfterLogin || '/';
       console.log('Redirecting to:', redirectPath);
       
-      // Clear redirect and navigate
       setRedirectAfterLogin(undefined);
-      
-      // Use replace to prevent going back to auth page
       navigate(redirectPath, { replace: true });
     }
   }, [user, session, loading, navigate, redirectAfterLogin, setRedirectAfterLogin]);
@@ -54,13 +50,13 @@ const Auth = () => {
     otp: ''
   });
 
-  // Test OTP for development (remove in production)
+  // Test OTP for development
   const TEST_OTP = '123456';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isLoading) return; // Prevent double submission
+    if (isLoading) return;
     
     setIsLoading(true);
     console.log('Attempting login...');
@@ -73,8 +69,6 @@ const Auth = () => {
           title: "Login Successful",
           description: "Welcome back to AgriCaptain!"
         });
-        
-        // Don't navigate here - let the useEffect handle it
       } else {
         console.log('Login failed:', result.error);
         toast({
@@ -107,7 +101,7 @@ const Auth = () => {
       return;
     }
     
-    if (isLoading) return; // Prevent double submission
+    if (isLoading) return;
     
     setIsLoading(true);
     
@@ -139,26 +133,23 @@ const Auth = () => {
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isLoading) return; // Prevent double submission
+    if (isLoading) return;
     
     setIsLoading(true);
     
     try {
-      // For testing purposes, always show OTP sent message
       setOtpSent(true);
       toast({
         title: "OTP Sent",
         description: `OTP sent to ${otpForm.phone}. For testing, use: ${TEST_OTP}`
       });
       
-      // Also try to send real OTP (but don't fail if it doesn't work)
       const result = await sendOTP(otpForm.phone);
       if (!result.success) {
         console.log("Real OTP failed, using test OTP:", result.error);
       }
     } catch (error) {
       console.log("OTP error:", error);
-      // Still allow testing with test OTP
       setOtpSent(true);
       toast({
         title: "Test Mode",
@@ -173,19 +164,28 @@ const Auth = () => {
   const handleOTPLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isLoading) return; // Prevent double submission
+    if (isLoading) return;
     
     setIsLoading(true);
     
     try {
       // Check if test OTP is used
       if (otpForm.otp === TEST_OTP) {
-        toast({
-          title: "Test Login Successful",
-          description: "Logged in with test OTP"
-        });
-        
-        // Don't navigate here - let the useEffect handle it
+        console.log('Using test OTP for login');
+        const result = await testLogin(otpForm.phone);
+        if (result.success) {
+          toast({
+            title: "Test Login Successful",
+            description: "Logged in with test OTP. Redirecting..."
+          });
+          // The redirect will be handled by the useEffect
+        } else {
+          toast({
+            title: "Test Login Failed",
+            description: result.error || "Test login failed",
+            variant: "destructive"
+          });
+        }
         return;
       }
 
@@ -196,8 +196,6 @@ const Auth = () => {
           title: "Login Successful",
           description: "Welcome to AgriCaptain!"
         });
-        
-        // Don't navigate here - let the useEffect handle it
       } else {
         toast({
           title: "Login Failed",

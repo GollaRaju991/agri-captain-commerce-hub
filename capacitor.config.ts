@@ -1,54 +1,31 @@
 
-import { CapacitorConfig } from '@capacitor/cli';
+import { CapacitorConfig } from '@capacitor/core';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.0fc49de2412c4286be978fef50065ec0',
-  appName: 'AgriCaptain',
+  appName: 'agri-captain-commerce-hub',
   webDir: 'dist',
   server: {
-    url: "https://0fc49de2-412c-4286-be97-8fef50065ec0.lovableproject.com?forceHideBadge=true",
+    url: 'https://0fc49de2-412c-4286-be97-8fef50065ec0.lovableproject.com?forceHideBadge=true',
     cleartext: true
   },
   plugins: {
     SplashScreen: {
       launchShowDuration: 3000,
       launchAutoHide: true,
-      backgroundColor: "#16a34a",
-      androidSplashResourceName: "splash",
-      androidScaleType: "CENTER_CROP",
+      backgroundColor: '#1976d2',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
       showSpinner: true,
-      androidSpinnerStyle: "large",
-      iosSpinnerStyle: "small",
-      spinnerColor: "#ffffff"
+      androidSpinnerStyle: 'large',
+      iosSpinnerStyle: 'small',
+      spinnerColor: '#999999',
+      splashFullScreen: true,
+      splashImmersive: true,
+      layoutName: 'launch_screen',
+      useDialog: true,
     },
-    StatusBar: {
-      style: "DARK",
-      backgroundColor: "#16a34a"
-    },
-    PushNotifications: {
-      presentationOptions: ["badge", "sound", "alert"]
-    },
-    Camera: {
-      permissions: ["camera", "photos"]
-    },
-    Geolocation: {
-      permissions: ["location"]
-    },
-    LocalNotifications: {
-      smallIcon: "ic_stat_icon_config_sample",
-      iconColor: "#16a34a"
-    }
   },
-  android: {
-    allowMixedContent: true,
-    captureInput: true,
-    webContentsDebuggingEnabled: true,
-    buildOptions: {
-      keystorePath: undefined,
-      keystoreAlias: undefined,
-      releaseType: "APK"
-    }
-  }
 };
 
 export default config;

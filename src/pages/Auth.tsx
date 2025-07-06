@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,16 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/contexts/AuthContext';
+import { ArrowLeft, Phone, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Phone, Mail, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const Auth = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { login, loginWithOTP, signup, sendOTP, testLogin, user, session, loading, redirectAfterLogin, setRedirectAfterLogin } = useAuth();
+  const { user, session, loading, redirectAfterLogin, setRedirectAfterLogin, sendOTP, verifyOTP, testLogin } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -24,18 +21,20 @@ const Auth = () => {
     password: ''
   });
 
-  const [signupForm, setSignupForm] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: ''
-  });
-
   const [otpForm, setOtpForm] = useState({
     phone: '',
     otp: ''
   });
+
+  const [signupForm, setSignupForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const [otpSent, setOtpSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Test OTP for development
   const TEST_OTP = '123456';
@@ -52,121 +51,45 @@ const Auth = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    console.log('Attempting login...');
-    
-    try {
-      const result = await login(loginForm.email, loginForm.password);
-      if (result.success) {
-        console.log('Login successful');
-        toast({
-          title: "Login Successful",
-          description: "Welcome back to AgriCaptain!"
-        });
-      } else {
-        console.log('Login failed:', result.error);
-        toast({
-          title: "Login Failed",
-          description: result.error || "Please check your credentials and try again.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        title: "Login Failed",
-        description: "An unexpected error occurred.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Handle login logic here
+    console.log('Login form submitted', loginForm);
+    toast({
+      title: "Login form submitted",
+      description: `Email: ${loginForm.email}, Password: ${loginForm.password}`,
+    });
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    // Handle signup logic here
+    console.log('Signup form submitted', signupForm);
     if (signupForm.password !== signupForm.confirmPassword) {
       toast({
-        title: "Password Mismatch",
-        description: "Passwords do not match",
+        title: "Passwords do not match",
         variant: "destructive"
       });
       return;
     }
-    
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    
-    try {
-      const result = await signup(signupForm.name, signupForm.email, signupForm.password, signupForm.phone);
-      if (result.success) {
-        toast({
-          title: "Account Created",
-          description: "Please check your email to verify your account"
-        });
-      } else {
-        toast({
-          title: "Signup Failed",
-          description: result.error || "Please try again.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
+    toast({
+      title: "Signup form submitted",
+      description: `Name: ${signupForm.name}, Email: ${signupForm.email}`,
+    });
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpForm.phone || !otpForm.otp) {
       toast({
-        title: "Signup Failed",
-        description: "An unexpected error occurred.",
+        title: "Please fill all fields",
         variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
-  };
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (isLoading) return;
-    
     setIsLoading(true);
-    
-    try {
-      setOtpSent(true);
-      toast({
-        title: "OTP Sent",
-        description: `OTP sent to ${otpForm.phone}. For testing, use: ${TEST_OTP}`
-      });
-      
-      const result = await sendOTP(otpForm.phone);
-      if (!result.success) {
-        console.log("Real OTP failed, using test OTP:", result.error);
-      }
-    } catch (error) {
-      console.log("OTP error:", error);
-      setOtpSent(true);
-      toast({
-        title: "Test Mode",
-        description: `Using test OTP: ${TEST_OTP}`,
-        variant: "default"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleOTPLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (isLoading) return;
-    
-    setIsLoading(true);
-    
     try {
-      // Check if test OTP is used
+      // Check if it's the test OTP
       if (otpForm.otp === TEST_OTP) {
         console.log('Using test OTP for login');
         const result = await testLogin(otpForm.phone);
@@ -183,27 +106,27 @@ const Auth = () => {
             variant: "destructive"
           });
         }
-        return;
-      }
-
-      const result = await loginWithOTP(otpForm.phone, otpForm.otp);
-      if (result.success) {
-        console.log('OTP login successful');
-        toast({
-          title: "Login Successful",
-          description: "Welcome to AgriCaptain!"
-        });
       } else {
-        toast({
-          title: "Login Failed",
-          description: result.error || `Invalid OTP. For testing, use: ${TEST_OTP}`,
-          variant: "destructive"
-        });
+        // Try real OTP verification
+        const result = await verifyOTP(otpForm.phone, otpForm.otp);
+        if (result.success) {
+          toast({
+            title: "Login Successful",
+            description: "Welcome to AgriCaptain!"
+          });
+        } else {
+          toast({
+            title: "Invalid OTP",
+            description: result.error || "Please check your OTP and try again",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
+      console.error('OTP verification error:', error);
       toast({
-        title: "Login Failed",
-        description: `An error occurred. For testing, use: ${TEST_OTP}`,
+        title: "Verification failed",
+        description: "Something went wrong. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -211,7 +134,45 @@ const Auth = () => {
     }
   };
 
-  // Show loading while checking authentication
+  const handleSendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpForm.phone) {
+      toast({
+        title: "Please enter phone number",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await sendOTP(otpForm.phone);
+      if (result.success) {
+        setOtpSent(true);
+        toast({
+          title: "OTP Sent",
+          description: `Verification code sent to ${otpForm.phone}. For testing, use OTP: ${TEST_OTP}`,
+        });
+      } else {
+        toast({
+          title: "Failed to send OTP",
+          description: result.error || "Please try again",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Send OTP error:', error);
+      toast({
+        title: "Failed to send OTP",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -224,237 +185,194 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link to="/" className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">A</span>
-            </div>
-            <span className="text-2xl font-bold text-green-600">AgriCaptain</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your account or create a new one</p>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className="mb-6">
+            <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Home
+            </Link>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Welcome to AgriCaptain</h1>
+            <p className="text-gray-600 text-center text-sm md:text-base">Login or create account to continue</p>
+          </div>
+
+          <Card className="border-0 shadow-lg">
+            <CardContent className="p-4 md:p-6">
+              <Tabs defaultValue="phone" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="phone" className="text-xs md:text-sm">Phone Login</TabsTrigger>
+                  <TabsTrigger value="email" className="text-xs md:text-sm">Email Login</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="phone">
+                  <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP} className="space-y-4">
+                    <div>
+                      <Label htmlFor="phone" className="text-sm">Phone Number</Label>
+                      <div className="flex mt-1">
+                        <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                          +91
+                        </span>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="Enter 10-digit mobile number"
+                          value={otpForm.phone}
+                          onChange={(e) => setOtpForm({ ...otpForm, phone: e.target.value })}
+                          className="rounded-l-none text-sm"
+                          disabled={otpSent}
+                          maxLength={10}
+                        />
+                      </div>
+                    </div>
+
+                    {otpSent && (
+                      <div>
+                        <Label htmlFor="otp" className="text-sm">Enter OTP</Label>
+                        <Input
+                          id="otp"
+                          type="text"
+                          placeholder="Enter 6-digit OTP"
+                          value={otpForm.otp}
+                          onChange={(e) => setOtpForm({ ...otpForm, otp: e.target.value })}
+                          className="mt-1 text-sm"
+                          maxLength={6}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          For testing, use OTP: {TEST_OTP}
+                        </p>
+                      </div>
+                    )}
+
+                    <Button type="submit" className="w-full text-sm" disabled={isLoading}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {otpSent ? 'Verifying...' : 'Sending...'}
+                        </>
+                      ) : (
+                        <>
+                          <Phone className="mr-2 h-4 w-4" />
+                          {otpSent ? 'Verify OTP' : 'Send OTP'}
+                        </>
+                      )}
+                    </Button>
+
+                    {otpSent && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setOtpForm({ ...otpForm, otp: '' });
+                        }}
+                        className="w-full text-sm"
+                      >
+                        Change Phone Number
+                      </Button>
+                    )}
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="email">
+                  <Tabs defaultValue="login" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-4">
+                      <TabsTrigger value="login" className="text-xs">Login</TabsTrigger>
+                      <TabsTrigger value="signup" className="text-xs">Sign Up</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="login">
+                      <form onSubmit={handleLogin} className="space-y-4">
+                        <div>
+                          <Label htmlFor="email" className="text-sm">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            value={loginForm.email}
+                            onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="password" className="text-sm">Password</Label>
+                          <Input
+                            id="password"
+                            type="password"
+                            placeholder="Enter your password"
+                            value={loginForm.password}
+                            onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                            className="text-sm"
+                          />
+                        </div>
+                        <Button type="submit" className="w-full text-sm">
+                          Login
+                        </Button>
+                      </form>
+                    </TabsContent>
+
+                    <TabsContent value="signup">
+                      <form onSubmit={handleSignup} className="space-y-4">
+                        <div>
+                          <Label htmlFor="signup-name" className="text-sm">Full Name</Label>
+                          <Input
+                            id="signup-name"
+                            type="text"
+                            placeholder="Enter your full name"
+                            value={signupForm.name}
+                            onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="signup-email" className="text-sm">Email</Label>
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            placeholder="Enter your email"
+                            value={signupForm.email}
+                            onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="signup-password" className="text-sm">Password</Label>
+                          <Input
+                            id="signup-password"
+                            type="password"
+                            placeholder="Enter your password"
+                            value={signupForm.password}
+                            onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                            className="text-sm"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="signup-confirm-password" className="text-sm">Confirm Password</Label>
+                          <Input
+                            id="signup-confirm-password"
+                            type="password"
+                            placeholder="Confirm your password"
+                            value={signupForm.confirmPassword}
+                            onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
+                            className="text-sm"
+                          />
+                        </div>
+                        <Button type="submit" className="w-full text-sm">
+                          Sign Up
+                        </Button>
+                      </form>
+                    </TabsContent>
+                  </Tabs>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Authentication</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="otp" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="otp">
-                  <Phone className="h-4 w-4 mr-2" />
-                  Phone
-                </TabsTrigger>
-                <TabsTrigger value="login">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Email
-                </TabsTrigger>
-                <TabsTrigger value="signup">Signup</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="otp">
-                {!otpSent ? (
-                  <form onSubmit={handleSendOTP} className="space-y-4">
-                    <div>
-                      <Label htmlFor="phone">Phone Number *</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+91 9876543210"
-                        value={otpForm.phone}
-                        onChange={(e) => setOtpForm({...otpForm, phone: e.target.value})}
-                        required
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Send OTP
-                    </Button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleOTPLogin} className="space-y-4">
-                    <div>
-                      <Label htmlFor="otp">Enter OTP *</Label>
-                      <Input
-                        id="otp"
-                        type="text"
-                        placeholder="123456"
-                        value={otpForm.otp}
-                        onChange={(e) => setOtpForm({...otpForm, otp: e.target.value})}
-                        required
-                        maxLength={6}
-                        disabled={isLoading}
-                      />
-                      <p className="text-sm text-gray-600 mt-1">
-                        OTP sent to {otpForm.phone}
-                      </p>
-                      <p className="text-sm text-blue-600 mt-1">
-                        For testing, use: {TEST_OTP}
-                      </p>
-                    </div>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                      Verify OTP
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => setOtpSent(false)}
-                      disabled={isLoading}
-                    >
-                      Change Phone Number
-                    </Button>
-                  </form>
-                )}
-              </TabsContent>
-
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={loginForm.email}
-                      onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
-                      required
-                      autoComplete="email"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password *</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                        required
-                        autoComplete="current-password"
-                        disabled={isLoading}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Sign In
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      value={signupForm.name}
-                      onChange={(e) => setSignupForm({...signupForm, name: e.target.value})}
-                      required
-                      autoComplete="name"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={signupForm.email}
-                      onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
-                      required
-                      autoComplete="email"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone (Optional)</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+91 9876543210"
-                      value={signupForm.phone}
-                      onChange={(e) => setSignupForm({...signupForm, phone: e.target.value})}
-                      autoComplete="tel"
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="password">Password * (min 8 characters)</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        value={signupForm.password}
-                        onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
-                        required
-                        minLength={8}
-                        autoComplete="new-password"
-                        disabled={isLoading}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
-                        disabled={isLoading}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                    <div className="relative">
-                      <Input
-                        id="confirmPassword"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={signupForm.confirmPassword}
-                        onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
-                        required
-                        autoComplete="new-password"
-                        disabled={isLoading}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        disabled={isLoading}
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Create Account
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
       </div>
+
+      <Footer />
     </div>
   );
 };

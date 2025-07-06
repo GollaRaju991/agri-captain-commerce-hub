@@ -28,7 +28,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Generate a proper UUID for test users
 const generateTestUserId = () => {
-  return 'test-' + crypto.randomUUID();
+  // Generate a proper UUID without "test-" prefix
+  return crypto.randomUUID();
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -111,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Test login for phone:', phone);
       
-      // Create a proper test user with UUID
+      // Create a proper test user with valid UUID
       const testUserId = generateTestUserId();
       const testUser: AuthUser = {
         id: testUserId,
@@ -144,6 +145,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Set the test session
       setSession(testSession);
       setUser(testUser);
+      
+      // Create a profile record for the test user in Supabase
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: testUserId,
+            name: 'Test User',
+            phone: phone,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        
+        if (profileError) {
+          console.log('Profile creation warning (expected for test users):', profileError);
+        }
+      } catch (profileErr) {
+        console.log('Profile creation not required for test users');
+      }
       
       return { success: true };
     } catch (error) {

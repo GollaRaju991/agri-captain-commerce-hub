@@ -2,7 +2,8 @@
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import HeroSlider from '@/components/HeroSlider';
+import CategoryNavigation from '@/components/CategoryNavigation';
+import HeroSection from '@/components/HeroSection';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -117,10 +118,11 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <Header />
+      <CategoryNavigation />
       
       {/* Hero Section */}
       <div className="w-full">
-        <HeroSlider />
+        <HeroSection />
       </div>
 
       {/* Featured Products Section - Replacing Features */}

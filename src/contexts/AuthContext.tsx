@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +6,9 @@ import { useToast } from '@/hooks/use-toast';
 interface AuthUser extends User {
   name?: string;
   phone?: string;
+  address?: string;
+  panCard?: string;
+  aadharCard?: string;
 }
 
 interface AuthContextType {
@@ -18,6 +20,7 @@ interface AuthContextType {
   sendOTP: (phone: string) => Promise<{ success: boolean; error?: string }>;
   verifyOTP: (phone: string, otp: string) => Promise<{ success: boolean; error?: string }>;
   testLogin: (phone: string) => Promise<{ success: boolean; error?: string }>;
+  updateUser: (userData: Partial<AuthUser>) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -149,6 +152,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = async (userData: Partial<AuthUser>): Promise<{ success: boolean; error?: string }> => {
+    try {
+      if (!user) {
+        return { success: false, error: 'No user logged in' };
+      }
+
+      console.log('Updating user profile:', userData);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: userData.name,
+          phone: userData.phone,
+          address: userData.address,
+          pan_card: userData.panCard,
+          aadhar_card: userData.aadharCard,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Profile update error:', error);
+        return { success: false, error: error.message };
+      }
+
+      // Update local user state
+      const updatedUser = {
+        ...user,
+        ...userData
+      };
+      setUser(updatedUser);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Exception updating profile:', error);
+      return { success: false, error: 'Failed to update profile' };
+    }
+  };
+
   const logout = async () => {
     try {
       await supabase.auth.signOut();
@@ -169,6 +211,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     sendOTP,
     verifyOTP,
     testLogin,
+    updateUser,
     logout
   };
 

@@ -30,7 +30,7 @@ import useScrollToTop from '@/hooks/useScrollToTop';
 import MobileAppDownload from '@/components/MobileAppDownload';
 
 const Profile = () => {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isAddressManagerOpen, setIsAddressManagerOpen] = useState(false);
   const [profile, setProfile] = useState<{
@@ -87,7 +87,7 @@ const Profile = () => {
   }
 
   const handleSignOut = async () => {
-    await signOut();
+    await logout();
   };
 
   const handleAddressSelect = (address: any) => {

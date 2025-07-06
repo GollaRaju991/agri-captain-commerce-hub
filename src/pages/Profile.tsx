@@ -25,6 +25,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import EditProfile from '@/components/EditProfile';
 import AddressManager from '@/components/AddressManager';
+import LogoutConfirmation from '@/components/LogoutConfirmation';
 import { supabase } from '@/integrations/supabase/client';
 import useScrollToTop from '@/hooks/useScrollToTop';
 import MobileAppDownload from '@/components/MobileAppDownload';
@@ -33,6 +34,7 @@ const Profile = () => {
   const { user, loading: authLoading, logout } = useAuth();
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isAddressManagerOpen, setIsAddressManagerOpen] = useState(false);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
   const [profile, setProfile] = useState<{
     name: string | null;
     phone: string | null;
@@ -86,8 +88,13 @@ const Profile = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
+    setShowLogoutConfirmation(true);
+  };
+
+  const confirmLogout = async () => {
     await logout();
+    setShowLogoutConfirmation(false);
   };
 
   const handleAddressSelect = (address: any) => {
@@ -103,6 +110,12 @@ const Profile = () => {
       <AddressManager
         onAddressSelect={handleAddressSelect}
         selectedAddressId=""
+      />
+
+      <LogoutConfirmation
+        isOpen={showLogoutConfirmation}
+        onClose={() => setShowLogoutConfirmation(false)}
+        onConfirm={confirmLogout}
       />
       
       <div className="max-w-7xl mx-auto px-4 py-8">

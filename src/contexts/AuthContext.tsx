@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -142,15 +143,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Test login successful for:', testUser);
       
-      // Set the test session
+      // Set the test session first
       setSession(testSession);
       setUser(testUser);
       
-      // Create a profile record for the test user in Supabase
+      // Create a profile record for the test user in Supabase - THIS IS CRITICAL
       try {
+        // First, try to insert the profile
         const { error: profileError } = await supabase
           .from('profiles')
-          .upsert({
+          .insert({
             id: testUserId,
             name: 'Test User',
             phone: phone,
@@ -159,10 +161,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         
         if (profileError) {
-          console.log('Profile creation warning (expected for test users):', profileError);
+          console.log('Profile creation error for test user:', profileError);
+          // Try upsert instead
+          const { error: upsertError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: testUserId,
+              name: 'Test User',
+              phone: phone,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          
+          if (upsertError) {
+            console.error('Profile upsert also failed:', upsertError);
+          } else {
+            console.log('Profile created via upsert for test user');
+          }
+        } else {
+          console.log('Profile created successfully for test user');
         }
       } catch (profileErr) {
-        console.log('Profile creation not required for test users');
+        console.error('Exception creating profile for test user:', profileErr);
       }
       
       return { success: true };

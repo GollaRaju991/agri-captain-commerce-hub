@@ -9,7 +9,7 @@ const slides = [
     title: "Premium Quality Seeds",
     subtitle: "Grow Your Success",
     description: "Discover our collection of high-yield, disease-resistant seeds for better harvests",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1400&h=500&fit=crop",
+    image: "https://i.postimg.cc/pL0vy9Dt/head.png",
     cta: "Shop Seeds",
     bgColor: "from-green-600 to-green-800"
   },
@@ -18,7 +18,7 @@ const slides = [
     title: "Advanced Farm Equipment",
     subtitle: "Modern Farming Solutions",
     description: "Upgrade your farming with our latest machinery and equipment",
-    image: "https://i.postimg.cc/tCdy7LZT/Slide2.png",
+    image: "https://i.postimg.cc/qMTkKt8H/WEB-Brand-TCS-080725-en.webp",
     cta: "View Equipment",
     bgColor: "from-blue-600 to-blue-800"
   },
@@ -27,7 +27,7 @@ const slides = [
     title: "Organic Fertilizers",
     subtitle: "Nourish Your Crops",
     description: "Boost soil health and crop yield with our organic fertilizer range",
-    image: "https://images.unsplash.com/photo-1566909702770-bd3ec25f6b29?w=1400&h=500&fit=crop",
+    image: "https://i.postimg.cc/02nqJVk7/Screenshot-2025-07-09-230107.png",
     cta: "Shop Fertilizers",
     bgColor: "from-purple-600 to-purple-800"
   },
@@ -36,7 +36,7 @@ const slides = [
     title: "Smart Irrigation Systems",
     subtitle: "Water Efficiently",
     description: "Save water and increase productivity with our smart irrigation solutions",
-    image: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1400&h=500&fit=crop",
+    image: "https://i.postimg.cc/nrx6XDNd/Chat-GPT-Image-2.png",
     cta: "Explore Systems",
     bgColor: "from-teal-600 to-teal-800"
   },
@@ -45,7 +45,7 @@ const slides = [
     title: "Seasonal Sale - Up to 50% Off",
     subtitle: "Limited Time Offer",
     description: "Don't miss out on amazing deals across all agricultural products",
-    image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=1400&h=500&fit=crop",
+    image: "https://i.postimg.cc/dV3gZvSK/header1.png",
     cta: "Shop Now",
     bgColor: "from-red-600 to-red-800"
   }

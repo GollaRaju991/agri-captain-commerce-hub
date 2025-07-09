@@ -3,12 +3,12 @@ import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryNavigation from '@/components/CategoryNavigation';
-import HeroSection from '@/components/HeroSection';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Index = () => {
   const { translations } = useLanguage();
@@ -115,17 +115,88 @@ const Index = () => {
   // Featured products to display in the top section
   const featuredProducts = products.slice(0, 3);
 
+  const seedCategories = [
+    "Vegetable Seeds",
+    "Flower Seeds", 
+    "Fruit Seeds",
+    "Grain Seeds",
+    "Herb Seeds"
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <Header />
       <CategoryNavigation />
       
-      {/* Hero Section */}
-      <div className="w-full">
-        <HeroSection />
+      {/* Hero Section with Sidebar */}
+      <div className="flex">
+        {/* Left Sidebar */}
+        <div className="w-64 bg-white border-r border-gray-200 min-h-[600px]">
+          <div className="p-4">
+            {seedCategories.map((category, index) => (
+              <Link
+                key={index}
+                to={`/products?category=${category.toLowerCase().replace(' ', '-')}`}
+                className="block py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                {category}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Hero Section */}
+        <div className="flex-1 relative">
+          <div className="relative w-full h-[600px] bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 overflow-hidden">
+            {/* Navigation arrows */}
+            <button className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors z-10">
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors z-10">
+              <ChevronRight className="h-6 w-6" />
+            </button>
+
+            {/* Navigation dots at bottom */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {[...Array(5)].map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === 2 ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Content */}
+            <div className="relative h-full flex items-center">
+              <div className="container mx-auto px-8 lg:px-12">
+                <div className="max-w-2xl text-white">
+                  <h3 className="text-lg md:text-xl font-medium mb-3 text-yellow-300">
+                    Nourish Your Crops
+                  </h3>
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                    Organic Fertilizers
+                  </h1>
+                  <p className="text-lg md:text-xl mb-8 leading-relaxed opacity-90">
+                    Boost soil health and crop yield with our organic fertilizer range
+                  </p>
+                  <Link to="/products?category=fertilizers">
+                    <Button 
+                      size="lg" 
+                      className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-8 py-4 text-lg"
+                    >
+                      Shop Fertilizers
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Featured Products Section - Replacing Features */}
+      {/* Featured Products Section */}
       <section className="py-8 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">

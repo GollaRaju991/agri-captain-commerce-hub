@@ -1,17 +1,35 @@
-
 import React from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import CategoryNavigation from '@/components/CategoryNavigation';
+import HeroSlider from '@/components/HeroSlider';
 import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Star, Truck, Shield, Headphones, Users, Share2, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Index = () => {
   const { translations } = useLanguage();
+
+  const features = [
+    {
+      icon: Truck,
+      title: translations.free_delivery || "Free Delivery",
+      description: "On orders above ₹500"
+    },
+    {
+      icon: Shield,
+      title: translations.secure_payment || "Secure Payment",
+      description: "100% safe and secure"
+    },
+    {
+      icon: Headphones,
+      title: translations.support || "24/7 Support",
+      description: "Expert guidance available"
+    }
+  ];
 
   const products = [
     {
@@ -112,107 +130,44 @@ const Index = () => {
     }
   ];
 
-  // Featured products to display in the top section
-  const featuredProducts = products.slice(0, 3);
-
-  const seedCategories = [
-    "Vegetable Seeds",
-    "Flower Seeds", 
-    "Fruit Seeds",
-    "Grain Seeds",
-    "Herb Seeds"
+  const socialMediaLinks = [
+    { name: 'Facebook', url: 'https://facebook.com/agricaptain', color: 'bg-blue-600' },
+    { name: 'WhatsApp', url: 'https://wa.me/9912365550', color: 'bg-green-500' },
+    { name: 'Instagram', url: 'https://instagram.com/agricaptain', color: 'bg-pink-500' },
+    { name: 'Twitter', url: 'https://twitter.com/agricaptain', color: 'bg-blue-400' },
+    { name: 'Snapchat', url: 'https://snapchat.com/add/agricaptain', color: 'bg-yellow-400' }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       <Header />
-      <CategoryNavigation />
       
-      {/* Hero Section with Sidebar */}
-      <div className="flex">
-        {/* Left Sidebar */}
-        <div className="w-64 bg-white border-r border-gray-200 min-h-[600px]">
-          <div className="p-4">
-            {seedCategories.map((category, index) => (
-              <Link
-                key={index}
-                to={`/products?category=${category.toLowerCase().replace(' ', '-')}`}
-                className="block py-3 px-4 text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                {category}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Hero Section */}
-        <div className="flex-1 relative">
-          <div className="relative w-full h-[600px] bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 overflow-hidden">
-            {/* Navigation arrows */}
-            <button className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors z-10">
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <button className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors z-10">
-              <ChevronRight className="h-6 w-6" />
-            </button>
-
-            {/* Navigation dots at bottom */}
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {[...Array(5)].map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    index === 2 ? 'bg-white' : 'bg-white/50'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Content */}
-            <div className="relative h-full flex items-center">
-              <div className="container mx-auto px-8 lg:px-12">
-                <div className="max-w-2xl text-white">
-                  <h3 className="text-lg md:text-xl font-medium mb-3 text-yellow-300">
-                    Nourish Your Crops
-                  </h3>
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                    Organic Fertilizers
-                  </h1>
-                  <p className="text-lg md:text-xl mb-8 leading-relaxed opacity-90">
-                    Boost soil health and crop yield with our organic fertilizer range
-                  </p>
-                  <Link to="/products?category=fertilizers">
-                    <Button 
-                      size="lg" 
-                      className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-8 py-4 text-lg"
-                    >
-                      Shop Fertilizers
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Hero Section */}
+      <div className="w-full">
+        <HeroSlider />
       </div>
 
-      {/* Featured Products Section */}
+      {/* Features Section */}
       <section className="py-8 md:py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">Top Products</h2>
-            <p className="text-sm md:text-base text-gray-600">Discover our most popular agricultural products</p>
-          </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <div key={index} className="text-center p-4">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                    <IconComponent className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
+                  </div>
+                  <h3 className="text-base md:text-lg font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-sm md:text-base text-gray-600">{feature.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* All Featured Products */}
+      {/* Featured Products */}
       <section className="py-8 md:py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
@@ -269,6 +224,35 @@ const Index = () => {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Refer Friends Section - Smaller width */}
+      <section className="py-6 md:py-8 bg-green-50">
+        <div className="max-w-4xl mx-auto px-4">
+          <Card className="bg-gradient-to-r from-green-600 to-green-700 text-white border-0">
+            <CardContent className="p-4 md:p-6">
+              <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <Gift className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold">Refer Friends & Earn ₹25</h3>
+                    <p className="text-sm text-green-100">Get ₹25 for each successful referral. 50 referrals = ₹1000 directly to your UPI!</p>
+                  </div>
+                </div>
+                <div className="flex space-x-3">
+                  <Button variant="secondary" className="bg-white text-green-700 hover:bg-gray-100">
+                    Refer Now
+                  </Button>
+                  <Button variant="outline" className="border-white text-white hover:bg-white hover:text-green-700">
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 

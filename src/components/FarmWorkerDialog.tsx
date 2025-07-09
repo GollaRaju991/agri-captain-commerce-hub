@@ -11,6 +11,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { countries, states, districts, divisions, mandals, villages } from '@/data/locationData';
+import LocationDetector from './LocationDetector';
 
 interface FarmWorkerDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
   const [endDate, setEndDate] = useState<Date>();
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearched, setIsSearched] = useState(false);
+  const [autoDetectLocation, setAutoDetectLocation] = useState(true);
 
   // Reset dependent selections when parent changes
   useEffect(() => {
@@ -153,6 +155,20 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
     setEndDate(undefined);
     setSearchResults([]);
     setIsSearched(false);
+    setAutoDetectLocation(true);
+  };
+
+  const handleLocationDetected = (location: any) => {
+    // Map the detected location to the form values
+    const countryCode = location.country === 'India' ? 'IN' : '';
+    const stateCode = location.state === 'Telangana' ? 'TG' : '';
+    const districtCode = location.district === 'Hyderabad' ? 'HYD' : '';
+    
+    if (countryCode) setSelectedCountry(countryCode);
+    if (stateCode) setSelectedState(stateCode);
+    if (districtCode) setSelectedDistrict(districtCode);
+    
+    setAutoDetectLocation(false);
   };
 
   const isFormValid = selectedCountry && selectedState && selectedDistrict && selectedDivision && workerType && workerCategory && startDate && endDate && (workerCategory === 'Single' || numberOfWorkers);
@@ -165,6 +181,12 @@ const FarmWorkerDialog: React.FC<FarmWorkerDialogProps> = ({ open, onOpenChange 
         </DialogHeader>
         
         <div className="space-y-6">
+          {/* Auto Location Detection */}
+          <LocationDetector 
+            enabled={autoDetectLocation} 
+            onLocationDetected={handleLocationDetected}
+          />
+          
           {/* Location Selection */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>

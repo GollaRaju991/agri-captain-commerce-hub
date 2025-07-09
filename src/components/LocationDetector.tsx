@@ -1,100 +1,99 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { MapPin, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
+import React, { useEffect, useState } from 'react';
 
 interface LocationData {
-  pincode: string;
-  city: string;
+  country: string;
   state: string;
-  area: string;
+  district: string;
+  division?: string;
+  mandal?: string;
 }
 
 interface LocationDetectorProps {
+  enabled?: boolean;
   onLocationDetected: (location: LocationData) => void;
 }
 
-const LocationDetector: React.FC<LocationDetectorProps> = ({ onLocationDetected }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const { translations } = useLanguage();
+const LocationDetector: React.FC<LocationDetectorProps> = ({ enabled = false, onLocationDetected }) => {
+  const [isDetecting, setIsDetecting] = useState(false);
 
-  const getCurrentLocation = async () => {
-    setIsLoading(true);
-    
-    if (!navigator.geolocation) {
-      toast({
-        title: "Location Not Supported",
-        description: "Geolocation is not supported by this browser.",
-        variant: "destructive"
-      });
-      setIsLoading(false);
-      return;
-    }
+  useEffect(() => {
+    if (!enabled) return;
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          
-          // In a real app, you would call a reverse geocoding API
-          // For demo purposes, we'll simulate the response
-          const mockLocationData = {
-            pincode: "500001",
-            city: "Hyderabad",
-            state: "Telangana",
-            area: "Secunderabad"
-          };
-          
-          onLocationDetected(mockLocationData);
-          
-          toast({
-            title: "Location Detected",
-            description: `${mockLocationData.area}, ${mockLocationData.city}`
+    const detectLocation = async () => {
+      setIsDetecting(true);
+      
+      try {
+        // First try to get location using browser geolocation
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              
+              try {
+                // Use a reverse geocoding service to get location details
+                // For demo purposes, we'll use a mock response for India/Telangana
+                const mockLocationData: LocationData = {
+                  country: 'India',
+                  state: 'Telangana',
+                  district: 'Hyderabad',
+                  division: 'Secunderabad',
+                  mandal: 'Begumpet'
+                };
+                
+                onLocationDetected(mockLocationData);
+              } catch (error) {
+                console.error('Error in reverse geocoding:', error);
+                // Fallback to default location
+                onLocationDetected({
+                  country: 'India',
+                  state: 'Telangana',
+                  district: 'Hyderabad'
+                });
+              }
+              setIsDetecting(false);
+            },
+            (error) => {
+              console.error('Geolocation error:', error);
+              // Fallback to IP-based location detection or default
+              onLocationDetected({
+                country: 'India',
+                state: 'Telangana',
+                district: 'Hyderabad'
+              });
+              setIsDetecting(false);
+            }
+          );
+        } else {
+          // Geolocation not supported, use default
+          onLocationDetected({
+            country: 'India',
+            state: 'Telangana',
+            district: 'Hyderabad'
           });
-        } catch (error) {
-          toast({
-            title: "Error",
-            description: "Failed to get location details.",
-            variant: "destructive"
-          });
-        } finally {
-          setIsLoading(false);
+          setIsDetecting(false);
         }
-      },
-      (error) => {
-        toast({
-          title: "Location Error",
-          description: "Please allow location access or enter manually.",
-          variant: "destructive"
+      } catch (error) {
+        console.error('Location detection error:', error);
+        onLocationDetected({
+          country: 'India',
+          state: 'Telangana',
+          district: 'Hyderabad'
         });
-        setIsLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000
+        setIsDetecting(false);
       }
-    );
-  };
+    };
+
+    detectLocation();
+  }, [enabled, onLocationDetected]);
+
+  if (!enabled || !isDetecting) {
+    return null;
+  }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={getCurrentLocation}
-      disabled={isLoading}
-      className="w-full"
-    >
-      {isLoading ? (
-        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-      ) : (
-        <MapPin className="h-4 w-4 mr-2" />
-      )}
-      {translations.get_location}
-    </Button>
+    <div className="text-xs text-gray-500">
+      📍 Detecting location...
+    </div>
   );
 };
 

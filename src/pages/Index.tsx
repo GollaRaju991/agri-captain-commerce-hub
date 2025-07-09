@@ -6,30 +6,14 @@ import ProductCard from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Truck, Shield, Headphones, Users, Share2, Gift } from 'lucide-react';
+import { Star, Users, Share2, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import ProductCategories from '@/components/ProductCategories';
 
 const Index = () => {
   const { translations } = useLanguage();
 
-  const features = [
-    {
-      icon: Truck,
-      title: translations.free_delivery || "Free Delivery",
-      description: "On orders above ₹500"
-    },
-    {
-      icon: Shield,
-      title: translations.secure_payment || "Secure Payment",
-      description: "100% safe and secure"
-    },
-    {
-      icon: Headphones,
-      title: translations.support || "24/7 Support",
-      description: "Expert guidance available"
-    }
-  ];
 
   const products = [
     {
@@ -147,25 +131,8 @@ const Index = () => {
         <HeroSlider />
       </div>
 
-      {/* Features Section */}
-      <section className="py-8 md:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon;
-              return (
-                <div key={index} className="text-center p-4">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                    <IconComponent className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-base md:text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm md:text-base text-gray-600">{feature.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      {/* Product Categories */}
+      <ProductCategories />
 
       {/* Featured Products */}
       <section className="py-8 md:py-16 bg-gray-50">
@@ -175,7 +142,7 @@ const Index = () => {
             <p className="text-sm md:text-base text-gray-600">{translations.discover_products || "Discover our top-quality agricultural products"}</p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -195,66 +162,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-8 md:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 md:mb-4">{translations.shop_by_category || "Shop by Category"}</h2>
-            <p className="text-sm md:text-base text-gray-600">{translations.browse_categories || "Browse our wide range of agricultural categories"}</p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { name: translations.seeds || "Seeds", image: "https://images.unsplash.com/photo-1592921870789-04563d55041c?w=200&h=200&fit=crop", category: "seeds" },
-              { name: translations.fertilizers || "Fertilizers", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200&h=200&fit=crop", category: "fertilizers" },
-              { name: translations.agriculture_products || "Agriculture Tools", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200&h=200&fit=crop", category: "agriculture" },
-              { name: translations.brands || "Premium Brands", image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=200&h=200&fit=crop", category: "brands" }
-            ].map((category, index) => (
-              <Link key={index} to={`/products?category=${category.category}`}>
-                <Card className="text-center hover:shadow-lg transition-shadow cursor-pointer h-full">
-                  <CardContent className="p-4 md:p-6">
-                    <img 
-                      src={category.image} 
-                      alt={category.name}
-                      className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-full mx-auto mb-3 md:mb-4"
-                    />
-                    <h3 className="font-semibold text-sm md:text-base">{category.name}</h3>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Refer Friends Section - Smaller width */}
-      <section className="py-6 md:py-8 bg-green-50">
-        <div className="max-w-4xl mx-auto px-4">
-          <Card className="bg-gradient-to-r from-green-600 to-green-700 text-white border-0">
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <Gift className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg md:text-xl font-bold">Refer Friends & Earn ₹25</h3>
-                    <p className="text-sm text-green-100">Get ₹25 for each successful referral. 50 referrals = ₹1000 directly to your UPI!</p>
-                  </div>
-                </div>
-                <div className="flex space-x-3">
-                  <Button variant="secondary" className="bg-white text-green-700 hover:bg-gray-100">
-                    Refer Now
-                  </Button>
-                  <Button variant="outline" className="border-white text-white hover:bg-white hover:text-green-700">
-                    Learn More
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
       <Footer />
     </div>

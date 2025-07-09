@@ -25,12 +25,14 @@ import {
   Gift,
   Bell
 } from 'lucide-react';
+import ImageSearch from './ImageSearch';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageSelector from './LanguageSelector';
 import FarmWorkerDialog from './FarmWorkerDialog';
 import RentVehicleDialog from './RentVehicleDialog';
+import LogoutConfirmation from './LogoutConfirmation';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -43,6 +45,7 @@ const Header = () => {
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
   const [farmWorkerDialogOpen, setFarmWorkerDialogOpen] = useState(false);
   const [vehicleRentDialogOpen, setVehicleRentDialogOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -52,6 +55,19 @@ const Header = () => {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
     }
+  };
+
+  const handleImageSearch = (imageFile: File) => {
+    // Implement image search logic here
+    console.log('Image search:', imageFile);
+    // For now, just navigate to products page
+    navigate('/products');
+  };
+
+  const handleLogout = () => {
+    logout();
+    setLogoutDialogOpen(false);
+    setActiveDropdown(null);
   };
 
   const menuItems = [
@@ -166,9 +182,10 @@ const Header = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="rounded-r-none border-r-0 focus:ring-green-500 focus:border-green-500"
                 />
+                <ImageSearch onImageSearch={handleImageSearch} />
                 <Button 
                   type="submit"
-                  className="rounded-l-none bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
+                  className="rounded-none bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
                 >
                   <Search className="h-4 w-4" />
                 </Button>
@@ -177,15 +194,18 @@ const Header = () => {
 
             {/* User Actions */}
             <div className="flex items-center space-x-1 sm:space-x-4">
-              {/* Mobile Search Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="lg:hidden text-green-600 hover:text-green-700 hover:bg-green-50 p-2"
-                onClick={() => {/* Could implement mobile search modal */}}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
+              {/* Mobile Search and Image Search */}
+              <div className="lg:hidden flex items-center space-x-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-green-600 hover:text-green-700 hover:bg-green-50 p-2"
+                  onClick={() => {/* Could implement mobile search modal */}}
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+                <ImageSearch onImageSearch={handleImageSearch} />
+              </div>
 
               {/* Language Button */}
               <Button
@@ -254,8 +274,8 @@ const Header = () => {
                       <div className="border-t mt-1 pt-1">
                         <button
                           onClick={() => {
-                            logout();
                             setActiveDropdown(null);
+                            setLogoutDialogOpen(true);
                           }}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600"
                         >
@@ -373,18 +393,19 @@ const Header = () => {
 
           {/* Mobile Search Bar */}
           <div className="lg:hidden py-4 border-t border-gray-200">
-            <form onSubmit={handleSearch} className="flex">
-              <Input
-                type="text"
-                placeholder={`${translations.search} products...`}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-r-none border-r-0"
-              />
-              <Button type="submit" className="rounded-l-none bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">
-                <Search className="h-4 w-4" />
-              </Button>
-            </form>
+              <form onSubmit={handleSearch} className="flex">
+                <Input
+                  type="text"
+                  placeholder={`${translations.search} products...`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="rounded-r-none border-r-0"
+                />
+                <ImageSearch onImageSearch={handleImageSearch} />
+                <Button type="submit" className="rounded-none bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </form>
           </div>
         </div>
 
@@ -457,6 +478,13 @@ const Header = () => {
       <RentVehicleDialog
         open={vehicleRentDialogOpen}
         onOpenChange={setVehicleRentDialogOpen}
+      />
+
+      {/* Logout Confirmation Dialog */}
+      <LogoutConfirmation
+        isOpen={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
+        onConfirm={handleLogout}
       />
     </>
   );

@@ -185,32 +185,36 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <div className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md">
-          <div className="mb-6">
-            <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Link>
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Welcome to AgriCaptain</h1>
-            <p className="text-gray-600 text-center text-sm md:text-base">Login or create account to continue</p>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
+      <div className="text-center py-8">
+        <div className="flex items-center justify-center space-x-3 mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-xl">A</span>
           </div>
-
-          <Card className="border-0 shadow-lg">
-            <CardContent className="p-4 md:p-6">
-              <Tabs defaultValue="phone" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="phone" className="text-xs md:text-sm">Phone Login</TabsTrigger>
-                  <TabsTrigger value="email" className="text-xs md:text-sm">Email Login</TabsTrigger>
+          <span className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+            AgriCaptain
+          </span>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+        <p className="text-gray-600">Sign in to your account or create a new one</p>
+      </div>
+      
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold text-center mb-6">Authentication</h2>
+              <Tabs defaultValue="otp" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-6">
+                  <TabsTrigger value="email" className="text-xs">📧 Email</TabsTrigger>
+                  <TabsTrigger value="otp" className="text-xs">📱 OTP</TabsTrigger>
+                  <TabsTrigger value="signup" className="text-xs">📝 Signup</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="phone">
+                <TabsContent value="otp">
                   <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP} className="space-y-4">
                     <div>
-                      <Label htmlFor="phone" className="text-sm">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
                       <div className="flex mt-1">
                         <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
                           +91
@@ -218,7 +222,7 @@ const Auth = () => {
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder="Enter 10-digit mobile number"
+                          placeholder="9876543210"
                           value={otpForm.phone}
                           onChange={(e) => setOtpForm({ ...otpForm, phone: e.target.value })}
                           className="rounded-l-none text-sm"
@@ -246,7 +250,7 @@ const Auth = () => {
                       </div>
                     )}
 
-                    <Button type="submit" className="w-full text-sm" disabled={isLoading}>
+                    <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3" disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -277,102 +281,91 @@ const Auth = () => {
                 </TabsContent>
 
                 <TabsContent value="email">
-                  <Tabs defaultValue="login" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-4">
-                      <TabsTrigger value="login" className="text-xs">Login</TabsTrigger>
-                      <TabsTrigger value="signup" className="text-xs">Sign Up</TabsTrigger>
-                    </TabsList>
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div>
+                      <Label htmlFor="email" className="text-sm">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={loginForm.email}
+                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="password" className="text-sm">Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={loginForm.password}
+                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3">
+                      Login
+                    </Button>
+                  </form>
+                </TabsContent>
 
-                    <TabsContent value="login">
-                      <form onSubmit={handleLogin} className="space-y-4">
-                        <div>
-                          <Label htmlFor="email" className="text-sm">Email</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="Enter your email"
-                            value={loginForm.email}
-                            onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                            className="text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="password" className="text-sm">Password</Label>
-                          <Input
-                            id="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={loginForm.password}
-                            onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                            className="text-sm"
-                          />
-                        </div>
-                        <Button type="submit" className="w-full text-sm">
-                          Login
-                        </Button>
-                      </form>
-                    </TabsContent>
-
-                    <TabsContent value="signup">
-                      <form onSubmit={handleSignup} className="space-y-4">
-                        <div>
-                          <Label htmlFor="signup-name" className="text-sm">Full Name</Label>
-                          <Input
-                            id="signup-name"
-                            type="text"
-                            placeholder="Enter your full name"
-                            value={signupForm.name}
-                            onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
-                            className="text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="signup-email" className="text-sm">Email</Label>
-                          <Input
-                            id="signup-email"
-                            type="email"
-                            placeholder="Enter your email"
-                            value={signupForm.email}
-                            onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                            className="text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="signup-password" className="text-sm">Password</Label>
-                          <Input
-                            id="signup-password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={signupForm.password}
-                            onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                            className="text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="signup-confirm-password" className="text-sm">Confirm Password</Label>
-                          <Input
-                            id="signup-confirm-password"
-                            type="password"
-                            placeholder="Confirm your password"
-                            value={signupForm.confirmPassword}
-                            onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
-                            className="text-sm"
-                          />
-                        </div>
-                        <Button type="submit" className="w-full text-sm">
-                          Sign Up
-                        </Button>
-                      </form>
-                    </TabsContent>
-                  </Tabs>
+                <TabsContent value="signup">
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div>
+                      <Label htmlFor="signup-name" className="text-sm">Full Name</Label>
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={signupForm.name}
+                        onChange={(e) => setSignupForm({ ...signupForm, name: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="signup-email" className="text-sm">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={signupForm.email}
+                        onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="signup-password" className="text-sm">Password</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={signupForm.password}
+                        onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="signup-confirm-password" className="text-sm">Confirm Password</Label>
+                      <Input
+                        id="signup-confirm-password"
+                        type="password"
+                        placeholder="Confirm your password"
+                        value={signupForm.confirmPassword}
+                        onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
+                        className="text-sm"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium py-3">
+                      Sign Up
+                    </Button>
+                  </form>
                 </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };

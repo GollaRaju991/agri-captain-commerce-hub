@@ -187,14 +187,14 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50">
       <div className="text-center py-8">
-        <div className="flex items-center justify-center space-x-3 mb-4">
+        <Link to="/" className="flex items-center justify-center space-x-3 mb-4 hover:opacity-80 transition-opacity">
           <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-xl">A</span>
           </div>
           <span className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
             AgriCaptain
           </span>
-        </div>
+        </Link>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
         <p className="text-gray-600">Sign in to your account or create a new one</p>
       </div>

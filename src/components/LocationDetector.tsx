@@ -17,8 +17,7 @@ const LocationDetector: React.FC<LocationDetectorProps> = ({ enabled = false, on
   const [isDetecting, setIsDetecting] = useState(false);
 
   useEffect(() => {
-    if (!enabled) return;
-
+    // Auto-detect location on mount (always enabled for farm worker and rent vehicles)
     const detectLocation = async () => {
       setIsDetecting(true);
       
@@ -84,7 +83,13 @@ const LocationDetector: React.FC<LocationDetectorProps> = ({ enabled = false, on
     };
 
     detectLocation();
-  }, [enabled, onLocationDetected]);
+  }, [onLocationDetected]);
+
+  // Rest of the old useEffect logic removed since we're auto-detecting now
+  const oldDetectLogic = () => {
+    if (!enabled) return;
+
+  };
 
   if (!enabled || !isDetecting) {
     return null;

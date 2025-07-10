@@ -110,7 +110,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSearch }) => {
         className="text-green-600 hover:text-green-700 hover:bg-green-50 p-2"
         onClick={() => setIsOpen(true)}
       >
-        <Image className="h-5 w-5" />
+        <Image className="h-6 w-6" />
       </Button>
 
       {isOpen && (

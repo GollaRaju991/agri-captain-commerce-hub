@@ -10,6 +10,7 @@ import { Star, Users, Share2, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import ProductCategories from '@/components/ProductCategories';
+import BrandsSection from '@/components/BrandsSection';
 
 const Index = () => {
   const { translations } = useLanguage();
@@ -133,6 +134,9 @@ const Index = () => {
 
       {/* Product Categories */}
       <ProductCategories />
+
+      {/* Brands Section */}
+      <BrandsSection />
 
       {/* Featured Products */}
       <section className="py-8 md:py-16 bg-gray-50">

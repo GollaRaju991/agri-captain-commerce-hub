@@ -6,12 +6,11 @@ const BrandsSection = () => {
   const { translations } = useLanguage();
 
   const brands = [
-    { name: "Tapas", logo: "https://i.postimg.cc/3JWqNt9X/tapas.png" },
-    { name: "Syngenta", logo: "https://i.postimg.cc/RZNvxbPV/syngenta.png" },
-    { name: "Janatha Agro", logo: "https://i.postimg.cc/YqKtdVKH/janatha.png" },
-    { name: "Bayer", logo: "https://i.postimg.cc/Ls5g7DQP/bayer.png" },
-    { name: "Seminis", logo: "https://i.postimg.cc/fTMw2qJM/seminis.png" },
-    { name: "Namdhari Seeds", logo: "https://i.postimg.cc/7h9QqxTP/namdhari.png" },
+    { name: "Syngenta", logo: "https://i.postimg.cc/xTyJVwRM/Syngenta.png" },
+    { name: "Janatha Agro", logo: "https://i.postimg.cc/C5c3jL0b/janatha.png" },
+    { name: "Bayer", logo: "https://i.postimg.cc/GmWZP5Wg/BAYER.png" },
+    { name: "Seminis", logo: "https://i.postimg.cc/28JJmtSj/Seminis.png" },
+    { name: "Namdhari Seeds", logo: "https://i.postimg.cc/xdGFvTyq/nuziveedu-Seeds.webp" },
     { name: "Rallis India", logo: "https://i.postimg.cc/J7kLPNfb/rallis.png" },
     { name: "Dhanuka", logo: "https://i.postimg.cc/wMHYrQVF/dhanuka.png" },
     { name: "FMC", logo: "https://i.postimg.cc/Sxr0m4B6/fmc.png" },

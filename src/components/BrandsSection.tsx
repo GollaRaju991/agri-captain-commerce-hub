@@ -6,12 +6,12 @@ const BrandsSection = () => {
   const { translations } = useLanguage();
 
   const brands = [
-    { name: "Syngenta", logo: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=100&h=100&fit=crop&crop=center" },
-    { name: "Janatha Agro", logo: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=100&h=100&fit=crop&crop=center" },
+    { name: "Syngenta", logo: "https://i.postimg.cc/rwG5wdNn/Syngenta.png" },
+    { name: "Janatha Agro", logo: "https://i.postimg.cc/xdRGtkkJ/janatha-Agro-Products-Logo.webp" },
     { name: "Bayer", logo: "https://i.postimg.cc/vmqMrzv4/BAYER.png" },
-    { name: "Seminis", logo: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=100&h=100&fit=crop&crop=center" },
-    { name: "Namdhari Seeds", logo: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=100&h=100&fit=crop&crop=center" },
-    { name: "Rallis India", logo: "https://images.unsplash.com/photo-1500673922987-e212871fec22?w=100&h=100&fit=crop&crop=center" },
+    { name: "Seminis", logo: "https://i.postimg.cc/28JJmtSj/Seminis.png" },
+    { name: "Namdhari Seeds", logo: "https://i.postimg.cc/xdGFvTyq/nuziveedu-Seeds.webp" },
+    { name: "Rallis India", logo: "https://i.postimg.cc/J7BxWzvg/rallis-Logo.webp" },
     { name: "Dhanuka", logo: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=100&h=100&fit=crop&crop=center" },
     { name: "FMC", logo: "https://images.unsplash.com/photo-1466442929976-97f336a657be?w=100&h=100&fit=crop&crop=center" },
     { name: "UPL", logo: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=100&h=100&fit=crop&crop=center" },

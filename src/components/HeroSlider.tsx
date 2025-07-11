@@ -79,40 +79,38 @@ const HeroSlider = () => {
             index === currentSlide ? 'translate-x-0' : index < currentSlide ? '-translate-x-full' : 'translate-x-full'
           }`}
         >
-          <div className="relative w-full h-full flex">
-            {/* Image Section */}
-            <div className="absolute inset-0 w-full h-full">
-              <img
-                src={slide.image}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-              {/* Gradient Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-r ${slide.bgColor} opacity-70`} />
-            </div>
-            
-            {/* Content Section */}
-            <div className="relative z-10 h-full flex items-center w-full">
+          <div className="relative w-full h-full flex items-center">
+            {/* Content Section - Left Side */}
+            <div className="relative z-20 w-1/2 h-full flex items-center bg-gradient-to-r from-gray-900/80 to-transparent">
               <div className="container mx-auto px-4 lg:px-8">
                 <div className="max-w-2xl text-white">
                   <h3 className="text-sm md:text-base font-medium mb-2 text-yellow-300 animate-fade-in">
                     {slide.subtitle}
                   </h3>
-                  <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight animate-fade-in">
+                  <h1 className="text-xl md:text-3xl lg:text-4xl font-bold mb-4 leading-tight animate-fade-in">
                     {slide.title}
                   </h1>
-                  <p className="text-sm md:text-lg mb-6 max-w-xl leading-relaxed animate-fade-in">
+                  <p className="text-xs md:text-sm mb-6 max-w-lg leading-relaxed animate-fade-in">
                     {slide.description}
                   </p>
                   <Button 
                     size="lg" 
-                    className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-6 py-3 animate-fade-in"
+                    className="bg-white text-gray-900 hover:bg-gray-100 font-semibold px-4 md:px-6 py-2 md:py-3 animate-fade-in"
                   >
                     {slide.cta}
                   </Button>
                 </div>
               </div>
+            </div>
+            
+            {/* Image Section - Right Side */}
+            <div className="absolute inset-0 w-full h-full z-10">
+              <img
+                src={slide.image}
+                alt={slide.title}
+                className="w-full h-full object-cover object-center"
+                loading="lazy"
+              />
             </div>
           </div>
         </div>
@@ -137,14 +135,14 @@ const HeroSlider = () => {
       </Button>
 
       {/* Horizontal Line Indicators (Flipkart Style) */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1 z-20">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`h-1 transition-all duration-300 rounded-full ${
+            className={`h-1 transition-all duration-300 ${
               index === currentSlide 
-                ? 'bg-white w-8' 
-                : 'bg-white/50 hover:bg-white/70 w-4'
+                ? 'bg-white w-8 rounded-sm' 
+                : 'bg-white/60 hover:bg-white/80 w-6 rounded-sm'
             }`}
             onClick={() => setCurrentSlide(index)}
           />

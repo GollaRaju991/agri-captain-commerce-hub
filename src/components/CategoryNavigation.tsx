@@ -21,7 +21,7 @@ const CategoryNavigation = () => {
   return (
     <div className="bg-green-600 py-3">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between overflow-x-auto">
+        <div className="flex items-center justify-start overflow-x-auto">
           <div className="flex items-center space-x-1">
             {categories.map((category, index) => {
               const Icon = category.icon;
@@ -37,7 +37,7 @@ const CategoryNavigation = () => {
               );
             })}
             
-            {/* Animal Husbandry Menu */}
+            {/* Animal Husbandry Menu - positioned after Brands */}
             <AnimalHusbandryMenu />
             
             {rightCategories.map((category, index) => {

@@ -139,10 +139,10 @@ const HeroSlider = () => {
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`h-0.5 transition-all duration-300 ${
+            className={`h-px transition-all duration-300 rounded-full ${
               index === currentSlide 
-                ? 'bg-white w-6' 
-                : 'bg-white/60 hover:bg-white/80 w-4'
+                ? 'bg-white w-8' 
+                : 'bg-white/50 hover:bg-white/70 w-6'
             }`}
             onClick={() => setCurrentSlide(index)}
           />

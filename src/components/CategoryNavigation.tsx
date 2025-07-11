@@ -37,7 +37,7 @@ const CategoryNavigation = () => {
               );
             })}
             
-            {/* Animal Husbandry Menu - positioned after Brands */}
+            {/* Animal Husbandry Menu - positioned between Brands and Farm Worker */}
             <AnimalHusbandryMenu />
             
             {rightCategories.map((category, index) => {

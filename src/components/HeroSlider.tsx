@@ -135,14 +135,14 @@ const HeroSlider = () => {
       </Button>
 
       {/* Horizontal Line Indicators (Flipkart Style) */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1 z-30">
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`h-1 transition-all duration-300 ${
+            className={`h-0.5 transition-all duration-300 ${
               index === currentSlide 
-                ? 'bg-white w-8 rounded-sm' 
-                : 'bg-white/60 hover:bg-white/80 w-6 rounded-sm'
+                ? 'bg-white w-6' 
+                : 'bg-white/60 hover:bg-white/80 w-4'
             }`}
             onClick={() => setCurrentSlide(index)}
           />

@@ -79,20 +79,21 @@ const HeroSlider = () => {
             index === currentSlide ? 'translate-x-0' : index < currentSlide ? '-translate-x-full' : 'translate-x-full'
           }`}
         >
-          <div className="relative w-full h-full">
-            {/* Background Image */}
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className="absolute inset-0 w-full h-full object-cover"
-              loading="lazy"
-            />
+          <div className="relative w-full h-full flex">
+            {/* Image Section */}
+            <div className="absolute inset-0 w-full h-full">
+              <img
+                src={slide.image}
+                alt={slide.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+              {/* Gradient Overlay */}
+              <div className={`absolute inset-0 bg-gradient-to-r ${slide.bgColor} opacity-70`} />
+            </div>
             
-            {/* Gradient Overlay */}
-            <div className={`absolute inset-0 bg-gradient-to-r ${slide.bgColor} opacity-60`} />
-            
-            {/* Content */}
-            <div className="relative h-full flex items-center">
+            {/* Content Section */}
+            <div className="relative z-10 h-full flex items-center w-full">
               <div className="container mx-auto px-4 lg:px-8">
                 <div className="max-w-2xl text-white">
                   <h3 className="text-sm md:text-base font-medium mb-2 text-yellow-300 animate-fade-in">
@@ -121,7 +122,7 @@ const HeroSlider = () => {
       <Button
         variant="ghost"
         size="sm"
-        className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white border-0 h-10 w-10 rounded-full"
+        className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white border-0 h-10 w-10 rounded-full z-20"
         onClick={prevSlide}
       >
         <ChevronLeft className="h-5 w-5" />
@@ -129,21 +130,21 @@ const HeroSlider = () => {
       <Button
         variant="ghost"
         size="sm"
-        className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white border-0 h-10 w-10 rounded-full"
+        className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white border-0 h-10 w-10 rounded-full z-20"
         onClick={nextSlide}
       >
         <ChevronRight className="h-5 w-5" />
       </Button>
 
-      {/* Circle Dots Indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      {/* Horizontal Line Indicators (Flipkart Style) */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1 z-20">
         {slides.map((_, index) => (
           <button
             key={index}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`h-1 transition-all duration-300 rounded-full ${
               index === currentSlide 
-                ? 'bg-white scale-110 shadow-lg' 
-                : 'bg-white/50 hover:bg-white/70'
+                ? 'bg-white w-8' 
+                : 'bg-white/50 hover:bg-white/70 w-4'
             }`}
             onClick={() => setCurrentSlide(index)}
           />

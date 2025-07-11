@@ -14,7 +14,7 @@ const ProductCategories = () => {
       href: '/products?category=offers',
       color: 'bg-red-100 text-red-600',
       description: "Special offers and deals",
-      image: "https://i.postimg.cc/3JTcjXK3/offers.png"
+      image: "https://i.postimg.cc/Y2d2Kr6Y/Offers.webp"
     },
     {
       name: "Herbicides",
